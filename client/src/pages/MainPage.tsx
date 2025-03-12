@@ -1,13 +1,17 @@
 import MaterialsCard from "@/components/ui/MaterialsCard";
 import NotificationsCard from "@/components/ui/NotificationsCard";
+import CurrentMemberContext from "@/contexts/CurrentMemberContext";
+import { use } from "react";
 
 function MainPage() {
+  const { currentMember } = use(CurrentMemberContext);
+
   return (
     <>
       {/* Greeting */}
       <div className="px-4 py-2">
         <p className="text-2xl font-medium">좋은 아침입니다,</p>
-        <p className="text-2xl font-medium">김삼성님!</p>
+        <p className="text-2xl font-medium">{currentMember?.name}님!</p>
       </div>
 
       <NotificationsCard
