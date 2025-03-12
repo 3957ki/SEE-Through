@@ -8,7 +8,17 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  {
+    ignores: [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      ".git/**",
+      ".husky/**",
+      ".vscode/**",
+      "src/components/ui/**",
+    ],
+  },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
