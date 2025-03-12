@@ -1,10 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/main-card";
-
-interface Material {
-  id: string;
-  name?: string;
-  image?: string;
-}
+import Material from "@/interfaces/Material";
 
 interface MaterialBlockProps {
   material: Material;
