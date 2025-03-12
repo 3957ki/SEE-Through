@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./main-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/main-card";
 
 interface Material {
   id: string;

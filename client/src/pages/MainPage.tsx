@@ -1,5 +1,5 @@
-import MaterialsCard from "@/components/ui/MaterialsCard";
-import NotificationsCard from "@/components/ui/NotificationsCard";
+import MaterialsCard from "@/components/MaterialsCard";
+import NotificationsCard from "@/components/NotificationsCard";
 import CurrentMemberContext from "@/contexts/CurrentMemberContext";
 import { use } from "react";
 
