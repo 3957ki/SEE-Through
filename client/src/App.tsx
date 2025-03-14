@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import CurrentMemberContext from "@/contexts/CurrentMemberContext";
+import { MembersProvider } from "@/contexts/MembersContext";
 import Member from "@/interfaces/Member";
 import MainPage from "@/pages/MainPage";
 import { useMemo, useState } from "react";
@@ -18,12 +19,14 @@ function App() {
   const value = useMemo(() => ({ currentMember, setCurrentMember }), [currentMember]);
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen">
-      <CurrentMemberContext value={value}>
-        <Header />
-        <MainPage />
-      </CurrentMemberContext>
-    </div>
+    <MembersProvider>
+      <div className="max-w-md mx-auto bg-white min-h-screen">
+        <CurrentMemberContext value={value}>
+          <Header />
+          <MainPage />
+        </CurrentMemberContext>
+      </div>
+    </MembersProvider>
   );
 }
 
