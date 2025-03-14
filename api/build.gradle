@@ -51,8 +51,8 @@ dependencies {
     // JUnit 플랫폼 런처: IDE에서 JUnit 테스트 실행을 지원
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // MySQL JDBC 드라이버
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    // PostgreSQL JDBC 드라이버
+    runtimeOnly 'org.postgresql:postgresql'
 
     // Swagger UI 및 OpenAPI 문서
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'

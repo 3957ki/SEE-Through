@@ -8,10 +8,7 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.seethrough.api.common.converter.JsonArrayConverter;
-
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -46,13 +43,13 @@ public class Member {
 	private String imagePath;
 
 	@Builder.Default
-	@Column(name = "preferred_foods", columnDefinition = "JSON", nullable = false)
-	@Convert(converter = JsonArrayConverter.class)
+	@Column(name = "preferred_foods", columnDefinition = "jsonb", nullable = false)
+	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> preferredFoods = new HashSet<>();
 
 	@Builder.Default
-	@Column(name = "disliked_foods", columnDefinition = "JSON", nullable = false)
-	@Convert(converter = JsonArrayConverter.class)
+	@Column(name = "disliked_foods", columnDefinition = "jsonb", nullable = false)
+	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> dislikedFoods = new HashSet<>();
 
 	@Builder.Default
