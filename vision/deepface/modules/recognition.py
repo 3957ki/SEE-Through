@@ -107,6 +107,10 @@ def find(
         anti_spoofing=anti_spoofing,
     )
     
+    # detect된 얼굴이 여러 개일 경우 가장 큰 얼굴만 사용
+    if source_objs:
+        source_objs = [max(source_objs, key=lambda obj: obj["facial_area"]["w"] * obj["facial_area"]["h"])]
+    
     print("detect end")
     
     # Should we have no representations bailout
