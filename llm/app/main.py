@@ -9,7 +9,7 @@ from app.api.recommend_meal_plan import router as recommend_meal_plan_router
 
 app = FastAPI()
 
-# ✅ API 라우터 등록
+# API 라우터 등록
 app.include_router(food_log_router, prefix="/llm")
 app.include_router(user_router, prefix="/llm")
 app.include_router(inventory_router, prefix="/llm")
