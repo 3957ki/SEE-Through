@@ -28,7 +28,7 @@ function Header() {
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
+        <DropdownMenuContent className="w-56 bg-white">
           <DropdownMenuLabel>멤버 변경</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup
