@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/main-card";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
+import Notification from "@/interfaces/Notification";
 import { useEffect, useState } from "react";
 
 function MaterialBlock({ material }: { material: Material }) {
@@ -32,11 +33,6 @@ function MaterialsCard({ materials }: { materials: Material[] }) {
       </CardContent>
     </Card>
   );
-}
-
-interface Notification {
-  messages: string[];
-  bgColor?: string;
 }
 
 function NotificationBlock({ notification }: { notification: Notification }) {
