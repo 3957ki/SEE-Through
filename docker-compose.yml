@@ -1,0 +1,80 @@
+services:
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./client:/client
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/default.conf:/etc/nginx/nginx.conf:ro
+      - ./media/uploads:/app/uploads
+
+  api:
+    image: openjdk:17-alpine
+    build: 
+      context: ./api
+    container_name: api
+    working_dir: /api
+    environment:
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    command: sh -c "
+        apk add --no-cache tzdata &&
+        ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime &&
+        export TZ=Asia/Seoul &&
+        chmod +x /api/gradlew &&
+        /api/gradlew clean build --stacktrace &&
+        cp /api/build/libs/api-0.0.1-SNAPSHOT.jar /api/app.jar &&
+        java -jar /api/app.jar"
+    ports:
+      - "41348:8080"
+    volumes:
+      - ./api/:/api
+      - ./media/uploads:/app/uploads
+
+  llm:
+    build: 
+      context: ./llm
+      dockerfile: Dockerfile
+    container_name: llm
+    ports:
+      - "32209:8000"
+    volumes:
+      - ./llm/:/llm
+      - ./media/uploads:/app/uploads
+
+  db:
+    build: 
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: db
+    restart: always
+    ports:
+      - "57829:5432"
+    environment:
+      LANG: C.UTF-8
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./db:/var/lib/postgresql # 데이터 영구 저장용 볼륨
+
+  # jenkins:
+  #   image: jenkins/jenkins:lts
+  #   container_name: jenkins
+  #   ports:
+  #     - "11027:8080"
+  #   environment:
+  #     - DOCKER_HOST=unix:///var/run/docker.sock
+  #   volumes:
+  #     - ./jenkins:/var/jenkins_home
+  #     - ./jenkins/home:/var/jenkins_home/data
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /usr/bin/docker:/usr/bin/docker
+  #   user: root
