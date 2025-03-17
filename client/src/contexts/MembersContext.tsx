@@ -1,6 +1,6 @@
 import { getMembers } from "@/api/members";
 import Member from "@/interfaces/Member";
-import { createContext, use, useEffect, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useMemo, useState, type ReactNode } from "react";
 
 interface MembersContextType {
   members: Member[];
@@ -16,6 +16,10 @@ export function MembersProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const memo = useMemo(
+    () => ({ members, isLoading, error, reload: fetchMembers }),
+    [members, isLoading, error]
+  );
   const fetchMembers = async () => {
     try {
       setIsLoading(true);
@@ -33,11 +37,7 @@ export function MembersProvider({ children }: { children: ReactNode }) {
     fetchMembers();
   }, []);
 
-  return (
-    <MembersContext value={{ members, isLoading, error, reload: fetchMembers }}>
-      {children}
-    </MembersContext>
-  );
+  return <MembersContext value={memo}>{children}</MembersContext>;
 }
 
 export function useMembers() {
