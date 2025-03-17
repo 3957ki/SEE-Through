@@ -1,2 +1,5 @@
 doc
 .env
+venv
+aws
+app.jar
