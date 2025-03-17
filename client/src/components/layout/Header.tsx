@@ -9,13 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import CurrentMemberContext from "@/contexts/CurrentMemberContext";
+import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Member from "@/interfaces/Member";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BsPersonCircle } from "react-icons/bs";
 
 function Header() {
-  const { currentMember, setCurrentMember } = use(CurrentMemberContext);
+  const { currentMember, setCurrentMember } = useCurrentMember();
   const [members, setMembers] = useState<Member[]>([]);
 
   useEffect(() => {
