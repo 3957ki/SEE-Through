@@ -4,7 +4,7 @@ from app.services.food_service import process_food_logs
 
 router = APIRouter()
 
-@router.post("/log-food", response_model=FoodLogResponse)
+@router.post("/food-log-embedding", response_model=FoodLogResponse)
 def log_food(food_log_request: FoodLogRequest):
     """
     음식 섭취 기록 저장 API
