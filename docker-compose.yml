@@ -50,9 +50,9 @@ services:
       - ./media/uploads:/app/uploads
 
   db:
+    image: pgvector/pgvector:0.8.0-pg15
     build: 
       context: ./db
-      dockerfile: Dockerfile
     container_name: db
     restart: always
     ports:
@@ -64,17 +64,3 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./db:/var/lib/postgresql # 데이터 영구 저장용 볼륨
-
-  # jenkins:
-  #   image: jenkins/jenkins:lts
-  #   container_name: jenkins
-  #   ports:
-  #     - "11027:8080"
-  #   environment:
-  #     - DOCKER_HOST=unix:///var/run/docker.sock
-  #   volumes:
-  #     - ./jenkins:/var/jenkins_home
-  #     - ./jenkins/home:/var/jenkins_home/data
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /usr/bin/docker:/usr/bin/docker
-  #   user: root
