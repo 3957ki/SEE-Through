@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/main-card";
-import CurrentMemberContext from "@/contexts/CurrentMemberContext";
+import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
-import { use } from "react";
 
 function MaterialBlock({ material }: { material: Material }) {
   return (
@@ -73,7 +72,7 @@ function NotificationsCard({
 }
 
 function MainPage() {
-  const { currentMember } = use(CurrentMemberContext);
+  const { currentMember } = useCurrentMember();
 
   return (
     <>
