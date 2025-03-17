@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/main-card";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
+import { useEffect, useState } from "react";
 
 function MaterialBlock({ material }: { material: Material }) {
   return (
@@ -73,6 +74,28 @@ function NotificationsCard({
 
 function MainPage() {
   const { currentMember } = useCurrentMember();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+
+  useEffect(() => {
+    setNotifications([
+      {
+        messages: ["오늘 물 두 잔을 마셨네요!", "물은 하루에 여덟 잔 마시는 것을 추천합니다!"],
+        bgColor: "bg-blue-300",
+      },
+      {
+        messages: ["오늘의 운동을 완료했습니다!", "30분 걷기 - 완료", "스트레칭 - 완료"],
+        bgColor: "bg-green-300",
+      },
+    ]);
+    setMaterials(
+      Array.from({ length: 10 }, (_, i) => ({
+        id: i.toString(),
+        image: "/placeholder.svg",
+        name: "Empty material",
+      }))
+    );
+  }, [currentMember]);
 
   return (
     <>
@@ -82,27 +105,9 @@ function MainPage() {
         <p className="text-2xl font-medium">{currentMember?.name}님!</p>
       </div>
 
-      <NotificationsCard
-        title="알림"
-        notifications={[
-          {
-            messages: ["오늘 물 두 잔을 마셨네요!", "물은 하루에 여덟 잔 마시는 것을 추천합니다!"],
-            bgColor: "bg-blue-300",
-          },
-          {
-            messages: ["오늘의 운동을 완료했습니다!", "30분 걷기 - 완료", "스트레칭 - 완료"],
-            bgColor: "bg-green-300",
-          },
-        ]}
-      />
+      <NotificationsCard title="알림" notifications={notifications} />
 
-      <MaterialsCard
-        materials={Array.from({ length: 10 }, (_, i) => ({
-          id: i.toString(),
-          image: "/placeholder.svg",
-          name: "Empty material",
-        }))}
-      />
+      <MaterialsCard materials={materials} />
     </>
   );
 }
