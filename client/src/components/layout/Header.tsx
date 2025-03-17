@@ -1,4 +1,3 @@
-import { getMembers } from "@/api/members";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,22 +8,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import CurrentMemberContext from "@/contexts/CurrentMemberContext";
-import Member from "@/interfaces/Member";
-import { use, useEffect, useState } from "react";
+import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useMembers } from "@/contexts/MembersContext";
 import { BsPersonCircle } from "react-icons/bs";
 
 function Header() {
-  const { currentMember, setCurrentMember } = use(CurrentMemberContext);
-  const [members, setMembers] = useState<Member[]>([]);
-
-  useEffect(() => {
-    const fetchMembers = async () => {
-      const membersList = await getMembers();
-      setMembers(membersList);
-    };
-    fetchMembers();
-  }, []);
+  const { currentMember, setCurrentMember } = useCurrentMember();
+  const { members } = useMembers();
 
   return (
     <header className="flex justify-between items-center p-4">
@@ -38,7 +28,7 @@ function Header() {
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
+        <DropdownMenuContent className="w-56 bg-white">
           <DropdownMenuLabel>멤버 변경</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup

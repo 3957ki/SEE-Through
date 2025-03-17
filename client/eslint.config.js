@@ -1,4 +1,4 @@
-import js from "@eslint/js";
+import eslint from "@eslint/js";
 import reactDom from "eslint-plugin-react-dom";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactNamingConvention from "eslint-plugin-react-naming-convention";
@@ -8,7 +8,17 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  {
+    ignores: [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      ".git/**",
+      ".husky/**",
+      ".vscode/**",
+      "src/components/ui/**",
+    ],
+  },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -21,7 +31,7 @@ export default tseslint.config(
       },
     },
     plugins: {
-      "@typescript-eslint": tseslint,
+      "@typescript-eslint": tseslint.plugin,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       "react-x": reactX,
@@ -29,14 +39,15 @@ export default tseslint.config(
       "react-naming-convention": reactNamingConvention,
     },
     rules: {
-      ...js.configs.recommended.rules,
+      ...eslint.configs.recommended.rules,
       ...tseslint.configs.recommendedTypeChecked.rules,
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
       ...reactHooks.configs.recommended.rules,
       ...reactX.configs["recommended-type-checked"].rules,
       ...reactDom.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-
-      // Other naming convention rules
+      // Naming convention rules
       "react-naming-convention/filename-extension": [
         "error",
         {
