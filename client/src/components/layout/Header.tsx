@@ -1,4 +1,3 @@
-import { getMembers } from "@/api/members";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,21 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import Member from "@/interfaces/Member";
-import { useEffect, useState } from "react";
+import { useMembers } from "@/contexts/MembersContext";
 import { BsPersonCircle } from "react-icons/bs";
 
 function Header() {
   const { currentMember, setCurrentMember } = useCurrentMember();
-  const [members, setMembers] = useState<Member[]>([]);
-
-  useEffect(() => {
-    const fetchMembers = async () => {
-      const membersList = await getMembers();
-      setMembers(membersList);
-    };
-    fetchMembers();
-  }, []);
+  const { members } = useMembers();
 
   return (
     <header className="flex justify-between items-center p-4">
