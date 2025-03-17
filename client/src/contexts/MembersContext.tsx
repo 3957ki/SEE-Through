@@ -16,10 +16,6 @@ export function MembersProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const memo = useMemo(
-    () => ({ members, isLoading, error, reload: fetchMembers }),
-    [members, isLoading, error]
-  );
   const fetchMembers = async () => {
     try {
       setIsLoading(true);
@@ -32,6 +28,11 @@ export function MembersProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   };
+
+  const memo = useMemo(
+    () => ({ members, isLoading, error, reload: fetchMembers }),
+    [members, isLoading, error]
+  );
 
   useEffect(() => {
     fetchMembers();
