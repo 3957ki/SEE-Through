@@ -15,7 +15,7 @@ export default function FaceRecognition() {
 
   // 웹소켓 연결
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:9000/mock/find_faces/");
+    const socket = new WebSocket("ws://localhost:9000/find_faces/");
 
     socket.onopen = () => {
       console.log("WebSocket 연결됨");

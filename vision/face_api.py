@@ -99,18 +99,33 @@ async def websocket_find_faces(websocket: WebSocket):
                     threshold=0.3,
                 )
 
-                os.remove(temp_file_path)  # 사용 후 파일 삭제
-
                 # 결과 변환
-                if isinstance(dfs, list) and len(dfs) > 0:
+                if isinstance(dfs, list) and len(dfs) > 0:  # 기존 사용자 응답
                     df = dfs[0]
                     result = df.applymap(
                         lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x
                     ).to_dict(orient="records")
-                else:
-                    result = []
+                    is_new = False
 
-                await websocket.send_json({"result": result})
+                else:  # 신규 사용자 등록
+
+                    # UUID로 고유 사용자 ID 생성
+                    user_id = str(uuid.uuid4())
+
+                    DeepFace.update(
+                        user_id=user_id,
+                        image_path=temp_file_path,
+                        db_path=db_path,
+                        model_name=model,
+                        detector_backend=detector_backend,
+                        silent=True,
+                    )
+                    result = [{"identity": user_id}]
+                    is_new = True
+
+                os.remove(temp_file_path)  # 사용 후 파일 삭제
+
+                await websocket.send_json({"result": result, "is_new": is_new})
 
             except Exception as e:
                 await websocket.send_json({"status": "error", "message": str(e)})
