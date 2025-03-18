@@ -9,6 +9,7 @@ load_dotenv()
 
 # DB 연결 정보
 DATABASE_URL = os.getenv("DB_URL")
+print("DATABASE_URL: ",DATABASE_URL)
 if not DATABASE_URL:
     raise ValueError("DB_URL 환경 변수가 설정되지 않았습니다.")
 
