@@ -19,11 +19,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 모델 설정
 detector_backend = "retinaface"
 model = "Facenet"
 db_path = "users"
 
-# 얼굴 식별 API
+
+# 얼굴 인식 API
 @app.post("/find_faces/")
 async def find_faces(file: UploadFile = File(...)):
     """
@@ -31,7 +33,7 @@ async def find_faces(file: UploadFile = File(...)):
     """
 
     start_time = time.time()
-    
+
     # 업로드된 파일을 임시 저장
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
         temp_file.write(await file.read())
@@ -45,15 +47,17 @@ async def find_faces(file: UploadFile = File(...)):
             model_name=model,
             detector_backend=detector_backend,
             silent=True,
-            threshold=0.3
+            threshold=0.3,
         )
 
         os.remove(temp_file_path)  # 사용 후 파일 삭제
-        
+
         # Pandas DataFrame이 반환되면, JSON 변환 전에 Python 기본 타입으로 변환
         if isinstance(dfs, list) and len(dfs) > 0:
             df = dfs[0]  # DeepFace.find()는 리스트 안에 DataFrame을 반환함
-            result = df.applymap(lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x).to_dict(orient="records")
+            result = df.applymap(
+                lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x
+            ).to_dict(orient="records")
         else:
             result = []
 
@@ -62,7 +66,8 @@ async def find_faces(file: UploadFile = File(...)):
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    
+
+
 # 신규 사용자 등록 API
 @app.post("/register_user/")
 async def register_user_endpoint(file: UploadFile = File(...)):
@@ -76,46 +81,50 @@ async def register_user_endpoint(file: UploadFile = File(...)):
     try:
         # UUID로 고유 사용자 ID 생성
         user_id = str(uuid.uuid4())
-        
+
         DeepFace.update(
             user_id=user_id,
             image_path=temp_file_path,
             db_path=db_path,
             model_name=model,
             detector_backend=detector_backend,
-            silent=True
+            silent=True,
         )
-        
+
         os.remove(temp_file_path)
-        
+
         return {"status": "success", "user_id": user_id}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    
+
+
 # 메타데이터 API
-@app.post("/info_user/")
-async def info_user_endpoint(file: UploadFile = File(...)):
+@app.post("/analyze_user/")
+async def analyze_user_endpoint(file: UploadFile = File(...)):
     """
     사용자 메타데이터 표시
     """
-    
+
     start_time = time.time()
-    
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
         temp_file.write(await file.read())
         temp_file_path = temp_file.name
-    try:        
+    try:
         result = DeepFace.analyze(
             img_path=temp_file_path,
-            detector_backend=detector_backend
+            detector_backend=detector_backend,
+            actions=("emotion", "age", "gender"),
         )
         os.remove(temp_file_path)
-        
+
         elapsed_time = time.time() - start_time  # 처리 시간 계산
         return {"result": result, "processing_time": elapsed_time}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    
-if __name__ == "__main__":
-    uvicorn.run("face_api:app", host="0.0.0.0", port=9000, reload=True, log_level="debug")
 
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "face_api:app", host="0.0.0.0", port=9000, reload=True, log_level="debug"
+    )
