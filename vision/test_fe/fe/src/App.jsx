@@ -1,9 +1,9 @@
-import WebcamPage from "./components/YoloTest";
+import FaceRecognition from "./components/FaceRecognitionWebSocket";
 
 function App() {
   return (
     <>
-      <WebcamPage></WebcamPage>
+      <FaceRecognition></FaceRecognition>
     </>
   );
 }

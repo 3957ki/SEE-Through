@@ -106,7 +106,7 @@ export default function FaceRecognition() {
     formData.append("file", file);
 
     try {
-      const res = await axios.post("http://localhost:9000/info_user", formData, {
+      const res = await axios.post("http://localhost:9000/analyze_user", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMetadataResponse(res.data);

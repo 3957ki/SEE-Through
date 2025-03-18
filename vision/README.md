@@ -6,9 +6,10 @@
   ```
   pip install -r requirements.txt
   ```
+- gpu_test.py 실행해서 GPU 사용 가능 여부 체크
 - face_api.py 실행
 - 사용자 이미지 등록하면 users 폴더의 pickle 파일에 저장됨
-- 해당 파일을 지우면서 처음부터 테스트 해보면 됨
+  - 초기에 해당 파일을 지우고 테스트 해보면 됨
 
 ### Convention (VS Code)
 
