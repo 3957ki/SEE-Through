@@ -1,158 +1,212 @@
 import { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
+import axios from "axios";
 
 export default function FaceRecognition() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
+  const [image, setImage] = useState(null);
   const [ws, setWs] = useState(null);
+  const [response, setResponse] = useState(null);
+  const [registerResponse, setRegisterResponse] = useState(null);
+  const [metadataResponse, setMetadataResponse] = useState(null);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [recognizedUser, setRecognizedUser] = useState(null);
-  const [faceBox, setFaceBox] = useState(null);
-  const [statusMessage, setStatusMessage] = useState("얼굴을 감지 중...");
 
-  // ✅ WebSocket 연결 설정
+  // 웹소켓 연결
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8000/ws");
+    const socket = new WebSocket("ws://localhost:9000/find_faces/");
 
     socket.onopen = () => {
-      console.log("✅ WebSocket 연결됨");
-      setWs(socket);
+      console.log("WebSocket 연결됨");
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log("📩 서버 응답:", data);
+      console.log("웹소켓 응답:", data);
+      setResponse(data);
 
-      if (data.error) {
-        setStatusMessage("❌ 얼굴을 감지할 수 없습니다.");
+      if (data.result && data.result.length === 0) {
+        setShowRegisterDialog(true);
         setRecognizedUser(null);
-        setFaceBox(null);
       } else if (data.result && data.result.length > 0) {
-        const faceData = data.result[0];
-        setRecognizedUser(faceData.identity);
-        setFaceBox({
-          x: faceData.source_x,
-          y: faceData.source_y,
-          width: faceData.source_w,
-          height: faceData.source_h,
-        });
-        setStatusMessage(`✅ 환영합니다, ${faceData.identity} 님!`);
-      } else {
-        setRecognizedUser(null);
-        setFaceBox(null);
-        setStatusMessage("🔄 등록되지 않은 사용자입니다.");
+        setRecognizedUser(data.result[0].identity);
+        setShowRegisterDialog(false);
       }
-
-      // ✅ 응답을 받은 후 다시 `sendFrame()` 실행
-      sendFrame();
     };
 
-    socket.onerror = (error) => console.error("🚨 WebSocket 오류:", error);
-    socket.onclose = () => console.log("❌ WebSocket 연결 종료");
+    socket.onerror = (error) => {
+      console.error("WebSocket 오류:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket 연결 종료됨");
+    };
+
+    setWs(socket);
 
     return () => {
       socket.close();
     };
   }, []);
 
-  // ✅ WebSocket 또는 웹캠이 변경될 때마다 `sendFrame()` 실행
-  useEffect(() => {
-    if (ws && ws.readyState === 1 && webcamRef.current) {
-      console.log("🚀 WebSocket & 웹캠 준비 완료 → `sendFrame()` 실행");
-      sendFrame();
-    }
-  }, [ws, webcamRef]);
-
-  // ✅ 응답을 받을 때마다 WebSocket으로 프레임을 전송하는 함수
-  const sendFrame = () => {
-    if (!ws || ws.readyState !== 1 || !webcamRef.current) return 1;
-
-    const video = webcamRef.current.video;
-
-    // ✅ 웹캠 비디오가 준비되지 않은 경우 재시도
-    if (!video || video.readyState < 4) {
-      console.log("⏳ 웹캠이 아직 준비되지 않음... 100ms 후 다시 시도");
-      setTimeout(sendFrame, 100);
-      return;
-    }
-
+  const capture = () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    if (!imageSrc) {
-      console.log("⏳ `getScreenshot()`이 null 반환... 100ms 후 다시 시도");
-      setTimeout(sendFrame, 100);
-      return;
-    }
 
-    console.log("📤 이미지 전송 중...");
+    // 좌우 반전 적용
+    const img = new Image();
+    img.src = imageSrc;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    fetch(imageSrc)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          const base64Data = reader.result.split(",")[1];
-          ws.send(base64Data);
-        };
-      });
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+
+      const base64Image = canvas.toDataURL("image/jpeg").split(",")[1];
+      setImage(base64Image);
+
+      // WebSocket을 통해 서버에 이미지 전송
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(base64Image);
+      }
+    };
   };
 
-  // ✅ 얼굴 박스를 캔버스에 지속적으로 그리기
-  useEffect(() => {
-    if (!canvasRef.current || !webcamRef.current) return;
+  const handleRegister = async () => {
+    if (!image) {
+      alert("사진을 먼저 촬영하세요.");
+      return;
+    }
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const video = webcamRef.current.video;
+    const blob = await fetch(`data:image/jpeg;base64,${image}`).then((res) => res.blob());
+    const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
 
-    const drawFaceBox = () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const formData = new FormData();
+    formData.append("file", file);
 
-      if (faceBox) {
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(faceBox.x, faceBox.y, faceBox.width, faceBox.height);
-      }
+    try {
+      const res = await axios.post("http://localhost:9000/register_user", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setRegisterResponse(res.data);
+      setShowRegisterDialog(false);
+    } catch (error) {
+      console.error("등록 실패:", error);
+      setRegisterResponse("등록 실패");
+    }
+  };
 
-      requestAnimationFrame(drawFaceBox);
-    };
+  const handleMetadataRequest = async () => {
+    if (!image) {
+      alert("사진을 먼저 촬영하세요.");
+      return;
+    }
 
-    drawFaceBox();
-  }, [faceBox]);
+    const blob = await fetch(`data:image/jpeg;base64,${image}`).then((res) => res.blob());
+    const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post("http://localhost:9000/analyze_user", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setMetadataResponse(res.data);
+    } catch (error) {
+      console.error("메타데이터 요청 실패:", error);
+      setMetadataResponse("메타데이터 요청 실패");
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 max-w-6xl">
-      <h1 className="text-2xl font-bold mb-6">실시간 얼굴 인식 시스템</h1>
+      <h1 className="text-2xl font-bold mb-6">실시간 얼굴 인증 시스템</h1>
 
-      <div className="relative w-full max-w-lg mx-auto">
-        {/* 웹캠 */}
-        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" mirrored={true} className="w-full border rounded-lg" />
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-1/2">
+          <div className="mb-6 border rounded-lg overflow-hidden">
+            <Webcam ref={webcamRef} screenshotFormat="image/jpeg" mirrored={true} className="w-full" />
+          </div>
 
-        {/* 얼굴 감지를 표시할 캔버스 */}
-        <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />
+          <div className="flex gap-4 mb-6">
+            <button onClick={capture} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+              사진 촬영 및 인증
+            </button>
+            <button
+              onClick={handleRegister}
+              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
+            >
+              사용자 등록
+            </button>
+            <button
+              onClick={handleMetadataRequest}
+              className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+            >
+              메타데이터 요청
+            </button>
+          </div>
+
+          {recognizedUser && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-green-600 mr-2 mt-0.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <div>
+                <h4 className="font-medium text-green-800">사용자 인증 완료</h4>
+                <p className="text-green-700">환영합니다, {recognizedUser} 님!</p>
+              </div>
+            </div>
+          )}
+
+          {response && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg overflow-auto">
+              <h3 className="text-lg font-semibold mb-2">📌 얼굴 인증 응답:</h3>
+              <pre className="text-sm">{JSON.stringify(response, null, 2)}</pre>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ✅ 상태 메시지 UI */}
-      <div
-        className={`mt-4 p-4 rounded-lg border ${
-          statusMessage.includes("❌")
-            ? "bg-red-50 border-red-200 text-red-700"
-            : statusMessage.includes("✅")
-            ? "bg-green-50 border-green-200 text-green-700"
-            : "bg-yellow-50 border-yellow-200 text-yellow-700"
-        }`}
-      >
-        <h4 className="font-medium">{statusMessage}</h4>
-      </div>
-
-      {/* ✅ 프레임 전송 버튼 */}
-      <button
-        onClick={sendFrame}
-        className="mt-4 px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
-      >
-        📸 얼굴 인식 시작
-      </button>
+      {showRegisterDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-2">신규 사용자 감지</h3>
+            <p className="mb-4 text-gray-600">
+              얼굴 인증 결과, 등록되지 않은 신규 사용자로 확인되었습니다. 사용자 등록을 진행하시겠습니까?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowRegisterDialog(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleRegister}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                등록하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
