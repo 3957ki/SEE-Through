@@ -119,6 +119,23 @@ async def websocket_find_faces(websocket: WebSocket):
         await websocket.send_json({"status": "error", "message": str(e)})
 
 
+# 웹소켓 목업 API
+@app.websocket("/mock/find_faces/")
+async def websocket_mock_find_faces(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()  # Base64 인코딩된 이미지 받기
+
+            # 목업 user id
+            mock_user_id = "8da14086-f4e5-4285-853c-aec875d4572b"
+
+            await websocket.send_json({"result": [{"identity": mock_user_id}]})
+
+    except Exception as e:
+        await websocket.send_json({"status": "error", "message": str(e)})
+
+
 # 신규 사용자 등록 API
 @app.post("/register_user/")
 async def register_user_endpoint(file: UploadFile = File(...)):
