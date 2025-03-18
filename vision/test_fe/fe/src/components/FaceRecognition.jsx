@@ -36,7 +36,7 @@ export default function FaceRecognition() {
       const formData = new FormData();
       formData.append("file", blob, "capture.jpg");
 
-      const { data } = await axios.post("http://localhost:8000/find_faces", formData);
+      const { data } = await axios.post("http://localhost:9000/find_faces", formData);
 
       console.log("📩 서버 응답:", data);
 
@@ -94,7 +94,7 @@ export default function FaceRecognition() {
       const formData = new FormData();
       formData.append("file", blob, "register.jpg");
 
-      const { data } = await axios.post("http://localhost:8000/register_user", formData);
+      const { data } = await axios.post("http://localhost:9000/register_user", formData);
 
       console.log("📩 서버 응답:", data);
 
