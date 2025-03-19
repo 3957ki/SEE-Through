@@ -1,6 +1,6 @@
 import { getMembers } from "@/api/members";
 import Member from "@/interfaces/Member";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CurrentMemberContext } from "./contexts/CurrentMemberContext";
 import { MembersContext } from "./contexts/MembersContext";
 
@@ -18,11 +18,12 @@ export function Providers({ children }: { children: ReactNode }) {
     setCurrentMember(members[0]);
   }, []);
 
+  const membersValue = useMemo(() => ({ members, fetchMembers }), [members]);
+  const currentMemberValue = useMemo(() => ({ currentMember, setCurrentMember }), [currentMember]);
+
   return (
-    <MembersContext value={{ members, fetchMembers }}>
-      <CurrentMemberContext value={{ currentMember, setCurrentMember }}>
-        {children}
-      </CurrentMemberContext>
+    <MembersContext value={membersValue}>
+      <CurrentMemberContext value={currentMemberValue}>{children}</CurrentMemberContext>
     </MembersContext>
   );
 }
