@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, JSON, Enum
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 from .database import Base
@@ -32,3 +32,13 @@ class Ingredient(Base):
     embedding_vector = Column(Vector(1536), nullable=False)
 
     owner = relationship("Member", back_populates="ingredients")
+
+class IngredientLog(Base):
+    __tablename__ = "ingredient_logs"
+
+    ingredient_log_id = Column(String(36), primary_key=True, index=True)
+    member_id = Column(String(36), ForeignKey("members.member_id"), nullable=False)
+    ingredient_name = Column(String, nullable=False)
+    movement_type = Column(Enum("INBOUND", "OUTBOUND", name="movement_enum"), nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False)
+    embedding_vector = Column(Vector(1536), nullable=False)
