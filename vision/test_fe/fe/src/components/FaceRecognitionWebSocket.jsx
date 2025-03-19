@@ -15,7 +15,7 @@ export default function FaceRecognition() {
 
   // 웹소켓 연결
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:9000/find_faces/");
+    const socket = new WebSocket("ws://localhost:9000/vision/find_faces/");
 
     socket.onopen = () => {
       console.log("WebSocket 연결됨");
@@ -90,7 +90,7 @@ export default function FaceRecognition() {
     formData.append("file", file);
 
     try {
-      const res = await axios.post("http://localhost:9000/register_user", formData, {
+      const res = await axios.post("http://localhost:9000/vision/register_user", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setRegisterResponse(res.data);
@@ -114,7 +114,7 @@ export default function FaceRecognition() {
     formData.append("file", file);
 
     try {
-      const res = await axios.post("http://localhost:9000/analyze_user", formData, {
+      const res = await axios.post("http://localhost:9000/vision/analyze_user", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMetadataResponse(res.data);

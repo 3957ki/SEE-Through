@@ -8,6 +8,7 @@ import time
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+
 # import cv2
 # import mediapipe as mp
 
@@ -106,20 +107,25 @@ def find(
         expand_percentage=expand_percentage,
         anti_spoofing=anti_spoofing,
     )
-    
+
     # detect된 얼굴이 여러 개일 경우 가장 큰 얼굴만 사용
     if source_objs:
-        source_objs = [max(source_objs, key=lambda obj: obj["facial_area"]["w"] * obj["facial_area"]["h"])]
-    
+        source_objs = [
+            max(
+                source_objs,
+                key=lambda obj: obj["facial_area"]["w"] * obj["facial_area"]["h"],
+            )
+        ]
+
     print("detect end")
-    
+
     # Should we have no representations bailout
     if len(representations) == 0:
         if not silent:
             toc = time.time()
             logger.info(f"find function duration {toc - tic} seconds")
         return []
-    
+
     if batched:
         return find_batched(
             representations,
@@ -161,7 +167,7 @@ def find(
         result_df["source_y"] = source_region["y"]
         result_df["source_w"] = source_region["w"]
         result_df["source_h"] = source_region["h"]
-        
+
         best_match_id = None
         best_distance = float("inf")
 
@@ -186,38 +192,47 @@ def find(
             )
 
             distances.append(distance)
-            
+
             # **✅ 여기서 바로 가장 가까운 user_id를 저장**
             if distance < best_distance:
                 best_distance = distance
                 best_match_id = instance["identity"]  # 가장 가까운 identity 저장
 
             # ---------------------------
-        target_threshold = threshold or verification.find_threshold(model_name, distance_metric)
+        target_threshold = threshold or verification.find_threshold(
+            model_name, distance_metric
+        )
 
         result_df["threshold"] = target_threshold
         result_df["distance"] = distances
-        
+
         result_df = result_df.drop(columns=["embedding"])
         # pylint: disable=unsubscriptable-object
         result_df = result_df[result_df["distance"] <= target_threshold]
-        result_df = result_df.sort_values(by=["distance"], ascending=True).reset_index(drop=True)
+        result_df = result_df.sort_values(by=["distance"], ascending=True).reset_index(
+            drop=True
+        )
 
         resp_obj.append(result_df)
-        
+
         # 바로 여기에서 가장 가까운 user_id를 사용하여 즉시 임베딩 업데이트
         if best_match_id:
             new_embedding = np.array(target_representation)
-            existing_rep = next((rep for rep in representations if rep["identity"] == best_match_id), None)
+            existing_rep = next(
+                (rep for rep in representations if rep["identity"] == best_match_id),
+                None,
+            )
 
             if existing_rep:
                 alpha = 0.1  # 새로운 얼굴 반영 비율
-                existing_rep["embedding"] = (1 - alpha) * np.array(existing_rep["embedding"]) + alpha * new_embedding
+                existing_rep["embedding"] = (1 - alpha) * np.array(
+                    existing_rep["embedding"]
+                ) + alpha * new_embedding
 
             # 변경된 representations를 Pickle 파일에 저장
             with open(datastore_path, "wb") as f:
                 pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
-        
+
     # -----------------------------------
 
     if not silent:
@@ -225,6 +240,7 @@ def find(
         logger.info(f"find function duration {toc - tic} seconds")
 
     return resp_obj
+
 
 def update(
     user_id: str,
@@ -237,7 +253,7 @@ def update(
     expand_percentage: int = 0,
     normalization: str = "base",
     silent: bool = False,
-) :
+):
 
     tic = time.time()
 
@@ -303,10 +319,10 @@ def update(
         normalization=normalization,
         silent=silent,
     )
-    
+
     for new_rep in new_representations:
         representations.append(new_rep)
-            
+
     with open(datastore_path, "wb") as f:
         pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
 
@@ -316,6 +332,7 @@ def update(
             toc = time.time()
             logger.info(f"find function duration {toc - tic} seconds")
         return []
+
 
 def __find_bulk_embeddings(
     user_id: str,
@@ -371,11 +388,13 @@ def __find_bulk_embeddings(
                 enforce_detection=enforce_detection,
                 align=align,
                 expand_percentage=expand_percentage,
-                color_face='bgr'  # `represent` expects images in bgr format.
+                color_face="bgr",  # `represent` expects images in bgr format.
             )
 
         except ValueError as err:
-            logger.error(f"Exception while extracting faces from {employee}: {str(err)}")
+            logger.error(
+                f"Exception while extracting faces from {employee}: {str(err)}"
+            )
             img_objs = []
 
         if len(img_objs) == 0:
@@ -504,7 +523,10 @@ def find_batched(
     embeddings = np.array(embeddings_list)  # (N, D)
     valid_mask = np.array(valid_mask)  # (N,)
 
-    data = {key: np.array([item.get(key, None) for item in representations]) for key in metadata}
+    data = {
+        key: np.array([item.get(key, None) for item in representations])
+        for key in metadata
+    }
 
     target_embeddings = []
     source_regions = []
@@ -531,7 +553,9 @@ def find_batched(
         target_embeddings.append(target_representation)
         source_regions.append(source_region)
 
-        target_threshold = threshold or verification.find_threshold(model_name, distance_metric)
+        target_threshold = threshold or verification.find_threshold(
+            model_name, distance_metric
+        )
         target_thresholds.append(target_threshold)
 
     target_embeddings = np.array(target_embeddings)  # (M, D)
@@ -543,7 +567,9 @@ def find_batched(
         "source_h": np.array([region["h"] for region in source_regions]),
     }
 
-    distances = verification.find_distance(embeddings, target_embeddings, distance_metric)  # (M, N)
+    distances = verification.find_distance(
+        embeddings, target_embeddings, distance_metric
+    )  # (M, N)
     distances[:, ~valid_mask] = np.inf
 
     resp_obj = []
@@ -569,11 +595,14 @@ def find_batched(
         filtered_data = {key: value[mask] for key, value in result_data.items()}
 
         sorted_indices = np.argsort(filtered_data["distance"])
-        sorted_data = {key: value[sorted_indices] for key, value in filtered_data.items()}
+        sorted_data = {
+            key: value[sorted_indices] for key, value in filtered_data.items()
+        }
 
         num_results = len(sorted_data["distance"])
         result_dicts = [
-            {key: sorted_data[key][i] for key in sorted_data} for i in range(num_results)
+            {key: sorted_data[key][i] for key in sorted_data}
+            for i in range(num_results)
         ]
         resp_obj.append(result_dicts)
     return resp_obj

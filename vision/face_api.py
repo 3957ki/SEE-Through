@@ -1,5 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, WebSocket
+from fastapi import FastAPI, UploadFile, File, WebSocket, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from deepface import DeepFace
 import uvicorn
 import numpy as np
@@ -8,9 +9,11 @@ import os
 import uuid
 import time
 import base64
+import shutil
 from io import BytesIO
 from PIL import Image
 
+vision_router = APIRouter(prefix="/vision")
 app = FastAPI()
 
 # CORS 설정 추가
@@ -29,7 +32,7 @@ db_path = "users"
 
 
 # 얼굴 인식 API (HTTP 버전)
-@app.post("/find_faces/")
+@vision_router.post("/find_faces/")
 async def find_faces(file: UploadFile = File(...)):
     """
     업로드된 이미지를 분석하여 데이터베이스에서 가장 유사한 얼굴을 찾음
@@ -72,7 +75,7 @@ async def find_faces(file: UploadFile = File(...)):
 
 
 # 얼굴 인식 API (웹소켓 버전)
-@app.websocket("/find_faces/")
+@vision_router.websocket("/find_faces/")
 async def websocket_find_faces(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -105,12 +108,14 @@ async def websocket_find_faces(websocket: WebSocket):
                     result = df.applymap(
                         lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x
                     ).to_dict(orient="records")
+                    user_id = result[0]["identity"]  # 기존 사용자 ID 가져오기
                     is_new = False
 
                 else:  # 신규 사용자 등록
 
                     # UUID로 고유 사용자 ID 생성
-                    user_id = str(uuid.uuid4())
+                    user_id = str(uuid.uuid4())  # 새로운 사용자 ID 생성
+                    is_new = True
 
                     DeepFace.update(
                         user_id=user_id,
@@ -121,9 +126,12 @@ async def websocket_find_faces(websocket: WebSocket):
                         silent=True,
                     )
                     result = [{"identity": user_id}]
-                    is_new = True
 
-                os.remove(temp_file_path)  # 사용 후 파일 삭제
+                # userId 기반으로 저장할 경로 설정
+                user_image_path = os.path.join(db_path, f"{user_id}.jpg")
+
+                # 이미지 덮어쓰기 저장
+                shutil.move(temp_file_path, user_image_path)
 
                 await websocket.send_json({"result": result, "is_new": is_new})
 
@@ -135,7 +143,7 @@ async def websocket_find_faces(websocket: WebSocket):
 
 
 # 웹소켓 목업 API
-@app.websocket("/mock/find_faces/")
+@vision_router.websocket("/mock/find_faces/")
 async def websocket_mock_find_faces(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -151,8 +159,22 @@ async def websocket_mock_find_faces(websocket: WebSocket):
         await websocket.send_json({"status": "error", "message": str(e)})
 
 
+# 사용자 얼굴 이미지 Get
+@vision_router.get("/get_faces/")
+async def get_faces(user_id: str):
+    # 사용자 이미지 경로 설정
+    user_image_path = os.path.join(db_path, f"{user_id}.jpg")
+
+    # 파일 존재 여부 확인
+    if not os.path.exists(user_image_path):
+        raise HTTPException(status_code=404, detail="User image not found")
+
+    # 이미지 파일 응답
+    return FileResponse(user_image_path, media_type="image/jpeg")
+
+
 # 신규 사용자 등록 API
-@app.post("/register_user/")
+@vision_router.post("/register_user/")
 async def register_user_endpoint(file: UploadFile = File(...)):
     """
     업로드된 이미지 파일을 받아 UUID로 생성된 폴더에 저장
@@ -182,7 +204,7 @@ async def register_user_endpoint(file: UploadFile = File(...)):
 
 
 # 메타데이터 API
-@app.post("/analyze_user/")
+@vision_router.post("/analyze_user/")
 async def analyze_user_endpoint(file: UploadFile = File(...)):
     """
     사용자 메타데이터 표시
@@ -207,6 +229,7 @@ async def analyze_user_endpoint(file: UploadFile = File(...)):
         return {"status": "error", "message": str(e)}
 
 
+app.include_router(vision_router)
 if __name__ == "__main__":
     uvicorn.run(
         "face_api:app", host="0.0.0.0", port=9000, reload=True, log_level="debug"
