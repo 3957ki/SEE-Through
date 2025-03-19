@@ -3,7 +3,7 @@ import { createContext, use } from "react";
 
 interface CurrentMemberContextType {
   currentMember: Member | null;
-  setCurrentMember: (member: Member | null) => void;
+  setCurrentMember: (uuid: string) => void;
 }
 
 export const CurrentMemberContext = createContext<CurrentMemberContextType | null>(null);

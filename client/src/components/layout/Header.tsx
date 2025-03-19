@@ -33,9 +33,8 @@ function Header() {
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup
             value={currentMember?.id}
-            onValueChange={(value) => {
-              const member = members.find((member) => member.id === value);
-              if (member) setCurrentMember(member);
+            onValueChange={(uuid) => {
+              if (uuid) setCurrentMember(uuid);
             }}
           >
             {members.map((member) => (
