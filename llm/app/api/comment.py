@@ -6,7 +6,7 @@ from app.services.comment_service import generate_food_comment
 
 router = APIRouter()
 
-@router.get("/llm/food/comment", response_model=CommentResponse)
+@router.get("/food/comment", response_model=CommentResponse)
 def get_food_comment(member_id: str, ingredient_id: str, db: Session = Depends(get_db)):
     """
     특정 사용자가 냉장고에서 음식을 꺼낼 때, LLM을 이용한 코멘트를 제공하는 API
