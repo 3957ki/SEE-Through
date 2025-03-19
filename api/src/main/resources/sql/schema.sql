@@ -6,48 +6,62 @@ DO $$
 DECLARE
 r RECORD;
 BEGIN
+    -- 모든 인덱스 삭제
+    FOR r IN (SELECT indexname FROM pg_indexes WHERE schemaname = current_schema())
+        LOOP
+            EXECUTE 'DROP INDEX IF EXISTS ' || quote_ident(r.indexname) || ' CASCADE';
+    END LOOP;
+
 	-- 모든 테이블 삭제
-FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) 
-    LOOP
-    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
-END LOOP;
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema())
+        LOOP
+        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
 
 	-- 모든 사용자 정의 타입 삭제 (ENUM 포함)
-FOR r IN (SELECT typname FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid 
-    WHERE n.nspname = current_schema() AND t.typtype = 'e')
-    LOOP
-    EXECUTE 'DROP TYPE IF EXISTS ' || quote_ident(r.typname) || ' CASCADE';
-END LOOP;
+    FOR r IN (SELECT typname FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid
+        WHERE n.nspname = current_schema() AND t.typtype = 'e')
+        LOOP
+        EXECUTE 'DROP TYPE IF EXISTS ' || quote_ident(r.typname) || ' CASCADE';
+    END LOOP;
 END $$;
 
 -- 구성원 테이블
 CREATE TABLE members (
     member_id VARCHAR(36) NOT NULL,
-    name VARCHAR(100) NOT NULL DEFAULT '???',
+    name VARCHAR(15) NOT NULL DEFAULT '???',
+    birth DATE NOT NULL,
     age INTEGER NOT NULL,
-    image_path VARCHAR(255),
-    preferred_foods JSONB NOT NULL DEFAULT '[]'::jsonb,
-    disliked_foods JSONB NOT NULL DEFAULT '[]'::jsonb,
+    image_path TEXT,
+    preferred_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
+    disliked_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
+    allergies JSONB NOT NULL DEFAULT '[]'::JSONB,
     is_registered BOOLEAN NOT NULL DEFAULT FALSE,
     recognition_times INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
+    embedding_vector VECTOR(1536) NOT NULL,
 
     PRIMARY KEY (member_id)
 );
 
--- 냉장고 재료 테이블
+CREATE INDEX ON members USING HNSW (embedding_vector vector_cosine_ops);
+
+-- 냉장고 식재료 테이블
 CREATE TABLE ingredients (
     ingredient_id VARCHAR(36) NOT NULL,
+    name TEXT NOT NULL,
+    image_path TEXT NOT NULL,
     member_id VARCHAR(36) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    image_path VARCHAR(255) NOT NULL,
     inbound_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expiration_at TIMESTAMP NULL,
+    embedding_vector VECTOR(1536) NOT NULL,
 
     PRIMARY KEY (ingredient_id),
     FOREIGN KEY (member_id) REFERENCES members (member_id)
 );
+
+CREATE INDEX ON ingredients USING HNSW (embedding_vector vector_cosine_ops);
 
 -- 냉장고 로그 입출고 ENUM
 CREATE TYPE MOVEMENT_TYPE AS ENUM ('INBOUND', 'OUTBOUND');
@@ -55,52 +69,37 @@ CREATE TYPE MOVEMENT_TYPE AS ENUM ('INBOUND', 'OUTBOUND');
 -- 냉장고 로그 테이블
 CREATE TABLE ingredient_logs (
     ingredient_log_id SERIAL NOT NULL,
+    ingredient_name TEXT NOT NULL,
     member_id VARCHAR(36) NOT NULL,
-    ingredient_name VARCHAR(100) NOT NULL,
     movement_type MOVEMENT_TYPE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    embedding_vector VECTOR(1536) NOT NULL,
 
     PRIMARY KEY (ingredient_log_id),
     FOREIGN KEY (member_id) REFERENCES members(member_id)
 );
 
+CREATE INDEX ON ingredient_logs USING HNSW (embedding_vector vector_cosine_ops);
+
+-- 경고 테이블
+CREATE TABLE alerts (
+    member_id VARCHAR(36) NOT NULL,
+    ingredient_id VARCHAR(36) NOT NULL,
+    message TEXT NOT NULL,
+
+    PRIMARY KEY (member_id, ingredient_id),
+    FOREIGN KEY (member_id) REFERENCES members(member_id),
+    FOREIGN KEY (ingredient_id) REFERENCES ingredients(ingredient_id)
+);
+
 -- 식단 테이블
 CREATE TABLE meal_plans (
     meal_plan_id VARCHAR(36) NOT NULL,
-    name VARCHAR(100) NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (meal_plan_id)
-);
-
--- 식사 시간대 ENUM
-CREATE TYPE SERVING_TIME AS ENUM ('BREAKFAST', 'LUNCH', 'DINNER');
-
--- 식사 테이블
-CREATE TABLE meals (
-    meal_id VARCHAR(36) NOT NULL,
-    menu JSONB NOT NULL,
-    serving_time SERVING_TIME NOT NULL,
-
-    PRIMARY KEY (meal_id)
-);
-
--- 일일 식단 테이블
-CREATE TABLE daily_meal_plans (
-    daily_meal_plan_id VARCHAR(36) NOT NULL,
-    meal_plan_id VARCHAR(36) NOT NULL,
-    serving_date DATE NOT NULL,
-    breakfast_meal_id VARCHAR(36),
-    lunch_meal_id VARCHAR(36),
-    dinner_meal_id VARCHAR(36),
-
-    PRIMARY KEY (daily_meal_plan_id),
-    UNIQUE(meal_plan_id, serving_date),
-    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
-    FOREIGN KEY (breakfast_meal_id) REFERENCES meals (meal_id),
-    FOREIGN KEY (lunch_meal_id) REFERENCES meals (meal_id),
-    FOREIGN KEY (dinner_meal_id) REFERENCES meals (meal_id)
 );
 
 -- 식단 참여자 테이블
@@ -108,7 +107,32 @@ CREATE TABLE meal_plan_participations (
     member_id VARCHAR(36) NOT NULL,
     meal_plan_id VARCHAR(36) NOT NULL,
 
-    PRIMARY KEY(member_id, meal_plan_id),
+    PRIMARY KEY (member_id, meal_plan_id),
     FOREIGN KEY (member_id) REFERENCES members (member_id),
     FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id)
+);
+
+-- 식사시간 테이블
+CREATE TABLE meal_plan_times (
+    meal_plan_time_id SERIAL NOT NULL,
+    meal_plan_id VARCHAR(36) NOT NULL,
+    serving_time INTEGER CHECK (serving_time >= 1 AND serving_time <= 24) NOT NULL,
+
+    PRIMARY KEY (meal_plan_time_id),
+    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
+    UNIQUE (meal_plan_id, serving_time)
+);
+
+-- 식사 테이블
+CREATE TABLE meals (
+    meal_id VARCHAR(36) NOT NULL,
+    meal_plan_id VARCHAR(36) NOT NULL,
+    serving_date DATE NOT NULL,
+    meal_plan_time_id INTEGER NOT NULL,
+    menu JSONB NOT NULL DEFAULT '[]'::JSONB,
+
+    PRIMARY KEY (meal_id),
+    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
+    FOREIGN KEY (meal_plan_time_id) REFERENCES meal_plan_times (meal_plan_time_id),
+    UNIQUE (serving_date, meal_plan_time_id)
 );
