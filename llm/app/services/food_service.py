@@ -1,5 +1,5 @@
 from app.schemas.food import FoodLogRequest, FoodLogResponse
-from app.schemas.common import Embedding
+from app.schemas.common import EmbeddingLog
 from app.core.embedding import get_embedding
 
 def process_food_logs(request: FoodLogRequest) -> FoodLogResponse:
@@ -12,5 +12,5 @@ def process_food_logs(request: FoodLogRequest) -> FoodLogResponse:
         text = f"{log.member_id}가 {log.date}에 {log.food}를 섭취"
         # 임베딩 생성
         emb = get_embedding(text)
-        embeddings.append(Embedding(ingredient_id=log.ingredient_id, embedding=emb))
+        embeddings.append(EmbeddingLog(ingredient_log_id=log.ingredient_log_id, embedding=emb))
     return FoodLogResponse(embeddings=embeddings)

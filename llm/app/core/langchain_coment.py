@@ -7,43 +7,78 @@ from app.core.config import OPENAI_API_KEY
 # LangChain LLM 객체 생성 (GPT-4 Turbo 사용)
 llm = ChatOpenAI(model="gpt-4-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
 
+### 음식 분류 매핑
+FOOD_CATEGORY_MAPPING = {
+    "경고": (1, "경고"),
+    "주의": (2, "주의"),
+    "보통": (3, "보통"),
+    "추천": (4, "추천"),
+    "권장": (5, "권장")
+}
+
 ### 코멘트 생성
 # JSON 응답을 강제할 스키마 정의
 class FoodCommentSchema(BaseModel):
     food_name: str = Field(..., description="현재 섭취하는 음식 이름")
+    category_name: str = Field(..., description="음식의 분류 단계 (경고, 주의, 보통, 추천, 권장)")
     comment: str = Field(..., description="사용자 맞춤 코멘트")
 
 # LangChain OutputParser 정의 (LLM 응답을 JSON으로 변환)
 parser = PydanticOutputParser(pydantic_object=FoodCommentSchema)
 
-# LLM 프롬프트 템플릿 정의 (OpenAI 응답은 comment만 반환)
+# LLM 프롬프트 템플릿 정의 (OpenAI 응답은 category_name + comment 반환)
 prompt_comment = ChatPromptTemplate.from_template("""
-"{food_name}"을(를) 섭취하려고 합니다. 사용자 로그를 분석하여 다음 내용을 고려한 한 줄 코멘트를 제공하세요:
+"{food_name}"을(를) 섭취하려고 합니다.  
+사용자의 선호 음식 및 비선호 음식 정보를 분석하여 맞춤형 코멘트를 제공하세요.
 
-1. 사용자의 냉장고 로그에서 가장 연관성이 높은 음식: "{related_food}"
-2. 이 음식이 최근 자주 섭취되었는지 여부: "{recently_eaten}"
-3. 사용자의 건강을 고려한 코멘트 생성
+1. 사용자가 선호하는 음식 목록: {preferred_foods}
+2. 사용자가 비선호하는 음식 목록: {disliked_foods}
+3. 사용자의 냉장고 로그에서 가장 연관성이 높은 음식: "{related_food}"
+4. 이 음식이 최근 자주 섭취되었는지 여부: "{recently_eaten}"
 
-한 줄 코멘트만 반환하세요.
+음식 분류 단계에 따라 코멘트를 생성하세요:
+- 경고 (알레르기 또는 독성)
+- 주의 (섭취 제한 음식, 건강에 해로울 가능성 있음)
+- 보통 (일반적 섭취 가능)
+- 추천 (건강한 음식)
+- 권장 (최적의 음식)
+
+응답은 아래 JSON 형식으로 제공하세요:
+{format_instructions}
 """)
 
-def generate_food_comment_from_llm(food_name: str, related_food: str, recently_eaten: str) -> str:
+
+def generate_food_comment_from_llm(food_name: str, preferred_foods: list, disliked_foods: list, related_food: str, recently_eaten: str) -> dict:
     """
     LLM을 이용하여 특정 음식에 대한 사용자 맞춤 코멘트를 생성하는 함수
     """
     response = llm.invoke(prompt_comment.format(
         food_name=food_name,
+        preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
+        disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
         related_food=related_food,
-        recently_eaten=recently_eaten
+        recently_eaten=recently_eaten,
+        format_instructions=parser.get_format_instructions()
     ))
     
     try:
-        # LLM 응답에서 comment만 추출
-        comment = response.content.strip()
-        
-        # LangChain OutputParser를 사용하여 JSON 변환
-        food_data = parser.parse(f'{{"food_name": "{food_name}", "comment": "{comment}"}}')
-        return food_data.comment
+        # LLM 응답을 JSON 스키마에 맞게 변환
+        food_data = parser.parse(response.content)
+
+        # 음식 카테고리를 숫자로 매핑 (이모지 없이)
+        category_num, category_name = FOOD_CATEGORY_MAPPING.get(food_data.category_name, (3, "보통"))
+
+        return {
+            "food_name": food_data.food_name,
+            "category": category_num,
+            "category_name": category_name,
+            "comment": food_data.comment
+        }
     except Exception as e:
         print(f"LLM 응답 파싱 오류: {e}")
-        return "이 음식에 대한 추천 정보를 제공할 수 없습니다."
+        return {
+            "food_name": food_name,
+            "category": 3,  # 기본값: 보통
+            "category_name": "보통",
+            "comment": "이 음식에 대한 추천 정보를 제공할 수 없습니다."
+        }
