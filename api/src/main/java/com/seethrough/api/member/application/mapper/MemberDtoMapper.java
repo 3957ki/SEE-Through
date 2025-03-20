@@ -28,6 +28,7 @@ public class MemberDtoMapper {
 			.preferredFoods(member.getPreferredFoods())
 			.dislikedFoods(member.getDislikedFoods())
 			.allergies(member.getAllergies())
+			.diseases(member.getDiseases())
 			.isRegistered(member.isRegistered())
 			.createdAt(member.getCreatedAt())
 			.build();

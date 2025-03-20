@@ -16,7 +16,6 @@ import com.seethrough.api.common.exception.ErrorResponse;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
 import com.seethrough.api.member.application.service.MemberService;
-import com.seethrough.api.member.presentation.dto.request.AllergiesRequest;
 import com.seethrough.api.member.presentation.dto.request.DislikedFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.LoginMemberRequest;
 import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
@@ -255,50 +254,6 @@ public class MemberController {
 		memberService.removeDislikedFoods(memberId, request);
 
 		log.debug("[Controller] 비선호 음식 삭제 성공");
-
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-	}
-
-	@PostMapping("/{memberId}/allergies")
-	@Operation(
-		summary = "알러지 정보 추가",
-		description = "UUID로 식별되는 구성원의 알러지 정보를 추가합니다.<br>" +
-			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 204 No Content 상태 코드가 반환됩니다."
-	)
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "204", description = "알러지 정보 추가 성공"),
-		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
-			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-	})
-	public ResponseEntity<Void> addAllergies(@PathVariable String memberId, @Valid @RequestBody AllergiesRequest request) {
-		log.info("[Controller - POST /api/member/{memberId}/allergies] 알러지 정보 추가 요청: memberId={}, request={}", memberId, request);
-
-		memberService.addAllergies(memberId, request);
-
-		log.debug("[Controller] 알러지 정보 추가 성공");
-
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-	}
-
-	@DeleteMapping("/{memberId}/allegies")
-	@Operation(
-		summary = "알러지 정보 삭제",
-		description = "UUID로 식별되는 구성원의 알러지 정보를 삭제합니다.<br>" +
-			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 204 No Content 상태 코드가 반환됩니다."
-	)
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "204", description = "알러지 정보 삭제 성공"),
-		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
-			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-	})
-	public ResponseEntity<Void> removeAllergies(@PathVariable String memberId, @Valid @RequestBody AllergiesRequest request) {
-		log.info("[Controller - DELETE /api/member/{memberId}/allegies] 알러지 정보 삭제 요청: memberId={}, request={}", memberId, request);
-
-		memberService.removeAllergies(memberId, request);
-
-		log.debug("[Controller] 알러지 정보 삭제 성공");
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}

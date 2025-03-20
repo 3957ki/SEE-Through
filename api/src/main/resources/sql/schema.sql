@@ -36,6 +36,7 @@ CREATE TABLE members (
     preferred_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
     disliked_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
     allergies JSONB NOT NULL DEFAULT '[]'::JSONB,
+    diseases JSONB NOT NULL DEFAULT '[]'::JSONB,
     is_registered BOOLEAN NOT NULL DEFAULT FALSE,
     recognition_times INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -65,7 +66,7 @@ CREATE TYPE MOVEMENT_TYPE AS ENUM ('INBOUND', 'OUTBOUND');
 
 -- 냉장고 로그 테이블
 CREATE TABLE ingredient_logs (
-    ingredient_log_id SERIAL NOT NULL,
+    ingredient_log_id BIGSERIAL NOT NULL,
     ingredient_name TEXT NOT NULL,
     member_id VARCHAR(36) NOT NULL,
     movement_type MOVEMENT_TYPE NOT NULL,
@@ -82,7 +83,7 @@ CREATE INDEX ON ingredient_logs USING HNSW (embedding_vector vector_cosine_ops);
 CREATE TABLE alerts (
     member_id VARCHAR(36) NOT NULL,
     ingredient_id VARCHAR(36) NOT NULL,
-    message TEXT NOT NULL,
+    comment TEXT NOT NULL,
 
     PRIMARY KEY (member_id, ingredient_id),
     FOREIGN KEY (member_id) REFERENCES members(member_id),
@@ -109,15 +110,19 @@ CREATE TABLE meal_plan_participations (
     FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id)
 );
 
--- 식사시간 테이블
-CREATE TABLE meal_plan_times (
-    meal_plan_time_id SERIAL NOT NULL,
-    meal_plan_id VARCHAR(36) NOT NULL,
-    serving_time INTEGER CHECK (serving_time >= 1 AND serving_time <= 24) NOT NULL,
+-- 요일 ENUM
+CREATE TYPE DAY_OF_WEEK AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY',  'SATURDAY', 'SUNDAY');
 
-    PRIMARY KEY (meal_plan_time_id),
+-- 식단 스케쥴 테이블
+CREATE TABLE meal_plan_schedules (
+    meal_plan_schedule_id BIGSERIAL NOT NULL,
+    meal_plan_id VARCHAR(36) NOT NULL,
+    serving_day DAY_OF_WEEK NOT NULL,
+    serving_time INTEGER CHECK (serving_time >= 0 AND serving_time <= 23) NOT NULL,
+
+    PRIMARY KEY (meal_plan_schedule_id),
     FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
-    UNIQUE (meal_plan_id, serving_time)
+    UNIQUE (meal_plan_id, serving_day, serving_time)
 );
 
 -- 식사 테이블
@@ -125,11 +130,11 @@ CREATE TABLE meals (
     meal_id VARCHAR(36) NOT NULL,
     meal_plan_id VARCHAR(36) NOT NULL,
     serving_date DATE NOT NULL,
-    meal_plan_time_id INTEGER NOT NULL,
+    meal_plan_schedule_id INTEGER NOT NULL,
     menu JSONB NOT NULL DEFAULT '[]'::JSONB,
 
     PRIMARY KEY (meal_id),
     FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
-    FOREIGN KEY (meal_plan_time_id) REFERENCES meal_plan_times (meal_plan_time_id),
-    UNIQUE (serving_date, meal_plan_time_id)
+    FOREIGN KEY (meal_plan_schedule_id) REFERENCES meal_plan_schedules (meal_plan_schedule_id),
+    UNIQUE (serving_date, meal_plan_schedule_id)
 );

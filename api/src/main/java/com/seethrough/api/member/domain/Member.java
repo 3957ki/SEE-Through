@@ -37,9 +37,8 @@ public class Member {
 	@Column(name = "name", columnDefinition = "TEXT", nullable = false)
 	private String name = "???";
 
-	@Builder.Default
 	@Column(name = "birth", columnDefinition = "DATE")
-	private LocalDate birth = LocalDate.now();
+	private LocalDate birth;
 
 	@Column(name = "age", columnDefinition = "INTEGER", nullable = false)
 	private int age;
@@ -61,6 +60,11 @@ public class Member {
 	@Column(name = "allergies", columnDefinition = "JSONB", nullable = false)
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> allergies = new HashSet<>();
+
+	@Builder.Default
+	@Column(name = "diseases", columnDefinition = "JSONB", nullable = false)
+	@JdbcTypeCode(SqlTypes.JSON)
+	private Set<String> diseases = new HashSet<>();
 
 	@Builder.Default
 	@Column(name = "is_registered", columnDefinition = "BOOLEAN", nullable = false)
@@ -89,7 +93,14 @@ public class Member {
 		this.recognitionTimes++;
 	}
 
-	public void update(String name, LocalDate birth, Set<String> preferredFoods, Set<String> dislikedFoods, Set<String> allergies) {
+	public void update(
+		String name,
+		LocalDate birth,
+		Set<String> preferredFoods,
+		Set<String> dislikedFoods,
+		Set<String> allergies,
+		Set<String> diseases
+	) {
 		if (!isRegistered) {
 			this.isRegistered = true;
 		}
@@ -100,6 +111,7 @@ public class Member {
 		this.preferredFoods = preferredFoods;
 		this.dislikedFoods = dislikedFoods;
 		this.allergies = allergies;
+		this.diseases = diseases;
 	}
 
 	public void delete() {

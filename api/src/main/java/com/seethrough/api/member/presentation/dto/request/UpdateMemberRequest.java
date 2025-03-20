@@ -33,4 +33,7 @@ public class UpdateMemberRequest {
 
 	@NotNull
 	private Set<String> allergies;
+
+	@NotNull
+	private Set<String> diseases;
 }

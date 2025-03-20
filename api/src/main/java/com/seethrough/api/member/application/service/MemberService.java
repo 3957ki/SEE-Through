@@ -6,7 +6,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.seethrough.api.common.infrastructure.llm.LlmApiService;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
@@ -15,7 +14,6 @@ import com.seethrough.api.member.domain.Member;
 import com.seethrough.api.member.domain.MemberRepository;
 import com.seethrough.api.member.exception.MemberNotFoundException;
 import com.seethrough.api.member.infrastructure.nickname.NicknameApiService;
-import com.seethrough.api.member.presentation.dto.request.AllergiesRequest;
 import com.seethrough.api.member.presentation.dto.request.DislikedFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.LoginMemberRequest;
 import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
@@ -34,7 +32,6 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final MemberDtoMapper memberDtoMapper;
-	private final LlmApiService llmApiService;
 	private final NicknameApiService nicknameApiService;
 
 	@Transactional
@@ -121,7 +118,8 @@ public class MemberService {
 			request.getBirth(),
 			request.getPreferredFoods(),
 			request.getDislikedFoods(),
-			request.getAllergies()
+			request.getAllergies(),
+			request.getDiseases()
 		);
 	}
 
@@ -178,26 +176,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.removeDislikedFoods(request.getDislikedFoods());
-	}
-
-	public void addAllergies(String memberId, AllergiesRequest request) {
-		log.debug("[Service] addAllergies 호출");
-
-		UUID memberIdObj = UUID.fromString(memberId);
-
-		Member member = findMember(memberIdObj);
-
-		member.addAllergies(request.getAllergies());
-	}
-
-	public void removeAllergies(String memberId, AllergiesRequest request) {
-		log.debug("[Service] removeAllergies 호출");
-
-		UUID memberIdObj = UUID.fromString(memberId);
-
-		Member member = findMember(memberIdObj);
-
-		member.removeAllergies(request.getAllergies());
 	}
 
 	public void checkMemberExists(UUID memberId) {

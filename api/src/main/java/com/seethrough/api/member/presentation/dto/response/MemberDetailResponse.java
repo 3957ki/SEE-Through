@@ -20,6 +20,7 @@ public class MemberDetailResponse {
 	private Set<String> preferredFoods;
 	private Set<String> dislikedFoods;
 	private Set<String> allergies;
+	private Set<String> diseases;
 	private Boolean isRegistered;
 	private LocalDateTime createdAt;
 }
