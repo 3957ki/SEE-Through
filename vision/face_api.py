@@ -103,7 +103,9 @@ async def websocket_find_faces(websocket: WebSocket):
                 )
 
                 # 결과 변환
-                if isinstance(dfs, list) and len(dfs) > 0:  # 기존 사용자 응답
+                if (
+                    isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty
+                ):  # 기존 사용자 응답
                     df = dfs[0]
                     result = df.applymap(
                         lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x
@@ -112,7 +114,6 @@ async def websocket_find_faces(websocket: WebSocket):
                     is_new = False
 
                 else:  # 신규 사용자 등록
-
                     # UUID로 고유 사용자 ID 생성
                     user_id = str(uuid.uuid4())  # 새로운 사용자 ID 생성
                     is_new = True
