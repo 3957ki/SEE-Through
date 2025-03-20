@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.seethrough.api.common.infrastructure.llm.LlmApiService;
-import com.seethrough.api.common.infrastructure.llm.dto.request.LlmUpdateMemberRequest;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
@@ -124,8 +123,6 @@ public class MemberService {
 			request.getDislikedFoods(),
 			request.getAllergies()
 		);
-
-		updateLlmMember(member);
 	}
 
 	@Transactional
@@ -148,8 +145,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.addPreferredFoods(request.getPreferredFoods());
-
-		updateLlmMember(member);
 	}
 
 	@Transactional
@@ -161,8 +156,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.removePreferredFoods(request.getPreferredFoods());
-
-		updateLlmMember(member);
 	}
 
 	@Transactional
@@ -174,8 +167,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.addDislikedFoods(request.getDislikedFoods());
-
-		updateLlmMember(member);
 	}
 
 	@Transactional
@@ -187,8 +178,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.removeDislikedFoods(request.getDislikedFoods());
-
-		updateLlmMember(member);
 	}
 
 	public void addAllergies(String memberId, AllergiesRequest request) {
@@ -228,10 +217,5 @@ public class MemberService {
 			.orElseThrow(() ->
 				new MemberNotFoundException("구성원을 찾을 수 없습니다.")
 			);
-	}
-
-	private void updateLlmMember(Member member) {
-		LlmUpdateMemberRequest llmRequest = LlmUpdateMemberRequest.from(member);
-		llmApiService.sendMemberUpdate(llmRequest);
 	}
 }

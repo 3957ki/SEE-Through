@@ -16,6 +16,7 @@ import com.seethrough.api.common.exception.ErrorResponse;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
 import com.seethrough.api.member.application.service.MemberService;
+import com.seethrough.api.member.presentation.dto.request.AllergiesRequest;
 import com.seethrough.api.member.presentation.dto.request.DislikedFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.LoginMemberRequest;
 import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
@@ -130,7 +131,6 @@ public class MemberController {
 	@Operation(
 		summary = "구성원 수정",
 		description = "UUID로 식별되는 구성원의 정보를 수정합니다.<br>" +
-			"수정 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
@@ -175,7 +175,6 @@ public class MemberController {
 	@Operation(
 		summary = "선호 음식 추가",
 		description = "UUID로 식별되는 구성원의 선호 음식을 추가합니다.<br>" +
-			"선호 음식 추가 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
@@ -198,7 +197,6 @@ public class MemberController {
 	@Operation(
 		summary = "선호 음식 삭제",
 		description = "UUID로 식별되는 구성원의 선호 음식을 삭제합니다.<br>" +
-			"선호 음식 삭제 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
@@ -221,7 +219,6 @@ public class MemberController {
 	@Operation(
 		summary = "비선호 음식 추가",
 		description = "UUID로 식별되는 구성원의 비선호 음식을 추가합니다.<br>" +
-			"비선호 음식 추가 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
@@ -244,7 +241,6 @@ public class MemberController {
 	@Operation(
 		summary = "비선호 음식 삭제",
 		description = "UUID로 식별되는 구성원의 비선호 음식을 삭제합니다.<br>" +
-			"비선호 음식 삭제 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)

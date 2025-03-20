@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.seethrough.api.common.infrastructure.TransactionCallbackManager;
 import com.seethrough.api.common.infrastructure.llm.dto.request.LlmInboundIngredientsRequest;
 import com.seethrough.api.common.infrastructure.llm.dto.request.LlmPersonalNoticeRequest;
-import com.seethrough.api.common.infrastructure.llm.dto.request.LlmUpdateMemberRequest;
 import com.seethrough.api.common.infrastructure.llm.dto.response.LlmPersonalNoticeResponse;
 import com.seethrough.api.common.infrastructure.llm.dto.response.LlmSuccessResponse;
 
@@ -22,19 +21,6 @@ public class LlmApiService {
 
 	private final LlmApiClient llmApiClient;
 	private final TransactionCallbackManager transactionCallbackManager;
-
-	public void sendMemberUpdate(LlmUpdateMemberRequest request) {
-		transactionCallbackManager.executeAfterCommit(() -> {
-			log.info("[LlmApiService] 외부 API 구성원 갱신 요청 시작: request = {}", request);
-
-			llmApiClient.sendPutRequestMono("/llm/update-user", request, LlmSuccessResponse.class)
-				.subscribe(
-					success -> log.info("[LlmApiService] 외부 API 구성원 업데이트 성공: response={}", success),
-					error -> log.error("[LlmApiService] 외부 API 구성원 업데이트 실패 (최대 재시도 후): memberId={}, error={}",
-						request.getMemberId(), error.getMessage())
-				);
-		});
-	}
 
 	public void sendIngredientsInbound(LlmInboundIngredientsRequest request) {
 		transactionCallbackManager.executeAfterCommit(() -> {
