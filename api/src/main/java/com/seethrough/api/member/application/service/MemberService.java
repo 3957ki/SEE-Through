@@ -109,7 +109,7 @@ public class MemberService {
 	}
 
 	@Transactional
-	public Boolean updateMember(UpdateMemberRequest request) {
+	public void updateMember(UpdateMemberRequest request) {
 		log.debug("[Service] updateMember 호출");
 
 		UUID memberIdObj = UUID.fromString(request.getMemberId());
@@ -118,18 +118,17 @@ public class MemberService {
 
 		member.update(
 			request.getName(),
-			request.getAge(),
+			request.getBirth(),
 			request.getPreferredFoods(),
-			request.getDislikedFoods()
+			request.getDislikedFoods(),
+			request.getAllergies()
 		);
 
 		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean deleteMember(String memberId) {
+	public void deleteMember(String memberId) {
 		log.debug("[Service] deleteMember 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -137,12 +136,10 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.delete();
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean addPreferredFoods(String memberId, PreferredFoodsRequest request) {
+	public void addPreferredFoods(String memberId, PreferredFoodsRequest request) {
 		log.debug("[Service] addPreferredFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -152,12 +149,10 @@ public class MemberService {
 		member.addPreferredFoods(request.getPreferredFoods());
 
 		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean removePreferredFoods(String memberId, PreferredFoodsRequest request) {
+	public void removePreferredFoods(String memberId, PreferredFoodsRequest request) {
 		log.debug("[Service] removePreferredFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -167,12 +162,10 @@ public class MemberService {
 		member.removePreferredFoods(request.getPreferredFoods());
 
 		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean addDislikedFoods(String memberId, DislikedFoodsRequest request) {
+	public void addDislikedFoods(String memberId, DislikedFoodsRequest request) {
 		log.debug("[Service] addDislikedFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -182,12 +175,10 @@ public class MemberService {
 		member.addDislikedFoods(request.getDislikedFoods());
 
 		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean removeDislikedFoods(String memberId, DislikedFoodsRequest request) {
+	public void removeDislikedFoods(String memberId, DislikedFoodsRequest request) {
 		log.debug("[Service] removeDislikedFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -197,8 +188,6 @@ public class MemberService {
 		member.removeDislikedFoods(request.getDislikedFoods());
 
 		updateLlmMember(member);
-
-		return true;
 	}
 
 	public void checkMemberExists(UUID memberId) {

@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class NicknameApiClient {
 
-	private static final int TIMEOUT_OF_MILLIS = 1000;
+	private static final int TIMEOUT_OF_MILLIS = 1500;
 
 	private final WebClient nicknameWebClient;
 

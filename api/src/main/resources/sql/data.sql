@@ -1,36 +1,36 @@
 -- 구성원 테이블 데이터
-INSERT INTO members (member_id, name, birth, age, image_path, preferred_foods, disliked_foods, allergies, is_registered, recognition_times, embedding_vector)
+INSERT INTO members (member_id, name, birth, age, image_path, preferred_foods, disliked_foods, allergies, is_registered, recognition_times)
 VALUES
     ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, '/images/profiles/mom.jpg',
      '["김치찌개", "비빔밥", "미역국"]'::JSONB,
      '["생굴", "당근"]'::JSONB,
      '["복숭아"]'::JSONB,
-     TRUE, 35, ARRAY[0.01, 0.02, 0.03]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+     TRUE, 35),
     ('00000000-0000-0000-0000-000000000002', '아빠', '1982-01-01', 43, '/images/profiles/dad.jpg',
      '["삼겹살", "냉면", "소주"]'::JSONB,
      '["피망", "홍어"]'::JSONB,
      '[]'::JSONB,
-     TRUE, 28, ARRAY[0.02, 0.03, 0.04]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+     TRUE, 28),
     ('00000000-0000-0000-0000-000000000003', '아들', '2010-01-01', 15, '/images/profiles/son.jpg',
      '["피자", "치킨", "떡볶이"]'::JSONB,
      '["브로콜리", "시금치"]'::JSONB,
      '["땅콩"]'::JSONB,
-     TRUE, 17, ARRAY[0.03, 0.04, 0.05]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+     TRUE, 17),
     ('00000000-0000-0000-0000-000000000004', '외부인1', NULL, 35, '/images/profiles/visitor1.jpg',
      '["초밥", "스테이크", "파스타"]'::JSONB,
      '["셀러리", "고수"]'::JSONB,
      '["조개류"]'::JSONB,
-     FALSE, 3, ARRAY[0.04, 0.05, 0.06]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+     FALSE, 3),
     ('00000000-0000-0000-0000-000000000005', '외부인2', NULL, 28, NULL,
      '["마라탕", "카레", "쌀국수"]'::JSONB,
      '["오이", "가지"]'::JSONB,
      '[]'::JSONB,
-     FALSE, 1, ARRAY[0.05, 0.06, 0.07]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+     FALSE, 1),
     ('00000000-0000-0000-0000-000000000006', '탈퇴인1', NULL, 27, NULL,
      '["치킨", "비빔밥"]'::JSONB,
      '["치즈"]'::JSONB,
      '["우유"]'::JSONB,
-     FALSE, 3, ARRAY[0.06, 0.07, 0.08]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533)));
+     FALSE, 3);
 
 -- 냉장고 재료 테이블 데이터
 INSERT INTO ingredients (ingredient_id, name, image_path, member_id, inbound_at, expiration_at, embedding_vector)

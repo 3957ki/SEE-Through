@@ -6,12 +6,6 @@ DO $$
 DECLARE
 r RECORD;
 BEGIN
-    -- 모든 인덱스 삭제
-    FOR r IN (SELECT indexname FROM pg_indexes WHERE schemaname = current_schema())
-        LOOP
-            EXECUTE 'DROP INDEX IF EXISTS ' || quote_ident(r.indexname) || ' CASCADE';
-    END LOOP;
-
 	-- 모든 테이블 삭제
     FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema())
         LOOP
@@ -24,6 +18,12 @@ BEGIN
         LOOP
         EXECUTE 'DROP TYPE IF EXISTS ' || quote_ident(r.typname) || ' CASCADE';
     END LOOP;
+
+    -- 모든 인덱스 삭제
+FOR r IN (SELECT indexname FROM pg_indexes WHERE schemaname = current_schema())
+        LOOP
+            EXECUTE 'DROP INDEX IF EXISTS ' || quote_ident(r.indexname) || ' CASCADE';
+END LOOP;
 END $$;
 
 -- 구성원 테이블
@@ -40,12 +40,9 @@ CREATE TABLE members (
     recognition_times INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
-    embedding_vector VECTOR(1536) NOT NULL,
 
     PRIMARY KEY (member_id)
 );
-
-CREATE INDEX ON members USING HNSW (embedding_vector vector_cosine_ops);
 
 -- 냉장고 식재료 테이블
 CREATE TABLE ingredients (

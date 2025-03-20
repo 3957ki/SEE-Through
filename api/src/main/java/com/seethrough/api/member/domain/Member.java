@@ -1,5 +1,6 @@
 package com.seethrough.api.member.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,38 +34,47 @@ public class Member {
 	private UUID memberId;
 
 	@Builder.Default
-	@Column(name = "name", length = 100, nullable = false)
+	@Column(name = "name", columnDefinition = "TEXT", nullable = false)
 	private String name = "???";
 
-	@Column(name = "age", nullable = false)
-	private Integer age;
+	@Builder.Default
+	@Column(name = "birth", columnDefinition = "DATE")
+	private LocalDate birth = LocalDate.now();
 
-	@Column(name = "image_path", length = 255)
+	@Column(name = "age", columnDefinition = "INTEGER", nullable = false)
+	private int age;
+
+	@Column(name = "image_path", columnDefinition = "TEXT")
 	private String imagePath;
 
 	@Builder.Default
-	@Column(name = "preferred_foods", columnDefinition = "jsonb", nullable = false)
+	@Column(name = "preferred_foods", columnDefinition = "JSONB", nullable = false)
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> preferredFoods = new HashSet<>();
 
 	@Builder.Default
-	@Column(name = "disliked_foods", columnDefinition = "jsonb", nullable = false)
+	@Column(name = "disliked_foods", columnDefinition = "JSONB", nullable = false)
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> dislikedFoods = new HashSet<>();
 
 	@Builder.Default
-	@Column(name = "is_registered", nullable = false)
-	private Boolean isRegistered = Boolean.FALSE;
+	@Column(name = "allergies", columnDefinition = "JSONB", nullable = false)
+	@JdbcTypeCode(SqlTypes.JSON)
+	private Set<String> allergies = new HashSet<>();
 
 	@Builder.Default
-	@Column(name = "recognition_times", nullable = false)
-	private Integer recognitionTimes = 0;
+	@Column(name = "is_registered", columnDefinition = "BOOLEAN", nullable = false)
+	private boolean isRegistered = Boolean.FALSE;
 
 	@Builder.Default
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "recognition_times", columnDefinition = "INTEGER", nullable = false)
+	private int recognitionTimes = 0;
+
+	@Builder.Default
+	@Column(name = "created_at", columnDefinition = "TIMESTAMP", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
-	@Column(name = "deleted_at")
+	@Column(name = "deleted_at", columnDefinition = "TIMESTAMP")
 	private LocalDateTime deletedAt;
 
 	// TODO: 검증 로직
@@ -79,15 +89,17 @@ public class Member {
 		this.recognitionTimes++;
 	}
 
-	public void update(String name, int age, Set<String> preferredFoods, Set<String> dislikedFoods) {
+	public void update(String name, LocalDate birth, Set<String> preferredFoods, Set<String> dislikedFoods, Set<String> allergies) {
 		if (!isRegistered) {
 			this.isRegistered = true;
 		}
 
 		this.name = name;
-		this.age = age;
+		this.birth = birth;
+		calculateAge();
 		this.preferredFoods = preferredFoods;
 		this.dislikedFoods = dislikedFoods;
+		this.allergies = allergies;
 	}
 
 	public void delete() {
@@ -115,5 +127,21 @@ public class Member {
 		if (this.deletedAt != null) {
 			throw new IllegalStateException("이미 삭제된 회원입니다.");
 		}
+	}
+
+	private void calculateAge() {
+		if (birth == null)
+			return;
+
+		LocalDate today = LocalDate.now();
+
+		int age = today.getYear() - birth.getYear();
+
+		if ((today.getMonthValue() < birth.getMonthValue()) ||
+			(today.getMonthValue() == birth.getMonthValue() && today.getDayOfMonth() < birth.getDayOfMonth())
+		)
+			age--;
+
+		this.age = age;
 	}
 }
