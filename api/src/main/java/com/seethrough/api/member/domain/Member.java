@@ -123,6 +123,14 @@ public class Member {
 		this.dislikedFoods.removeAll(dislikedFoods);
 	}
 
+	public void addAllergies(Set<String> allergies) {
+		this.allergies.addAll(allergies);
+	}
+
+	public void removeAllergies(Set<String> allergies) {
+		this.allergies.removeAll(allergies);
+	}
+
 	private void validateDeletion() {
 		if (this.deletedAt != null) {
 			throw new IllegalStateException("이미 삭제된 회원입니다.");

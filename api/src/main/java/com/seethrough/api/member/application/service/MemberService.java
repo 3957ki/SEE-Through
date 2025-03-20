@@ -16,6 +16,7 @@ import com.seethrough.api.member.domain.Member;
 import com.seethrough.api.member.domain.MemberRepository;
 import com.seethrough.api.member.exception.MemberNotFoundException;
 import com.seethrough.api.member.infrastructure.nickname.NicknameApiService;
+import com.seethrough.api.member.presentation.dto.request.AllergiesRequest;
 import com.seethrough.api.member.presentation.dto.request.DislikedFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.LoginMemberRequest;
 import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
@@ -188,6 +189,26 @@ public class MemberService {
 		member.removeDislikedFoods(request.getDislikedFoods());
 
 		updateLlmMember(member);
+	}
+
+	public void addAllergies(String memberId, AllergiesRequest request) {
+		log.debug("[Service] addAllergies 호출");
+
+		UUID memberIdObj = UUID.fromString(memberId);
+
+		Member member = findMember(memberIdObj);
+
+		member.addAllergies(request.getAllergies());
+	}
+
+	public void removeAllergies(String memberId, AllergiesRequest request) {
+		log.debug("[Service] removeAllergies 호출");
+
+		UUID memberIdObj = UUID.fromString(memberId);
+
+		Member member = findMember(memberIdObj);
+
+		member.removeAllergies(request.getAllergies());
 	}
 
 	public void checkMemberExists(UUID memberId) {
