@@ -30,7 +30,7 @@ END $$;
 CREATE TABLE members (
     member_id VARCHAR(36) NOT NULL,
     name VARCHAR(15) NOT NULL DEFAULT '???',
-    birth DATE NOT NULL,
+    birth DATE,
     age INTEGER NOT NULL,
     image_path TEXT,
     preferred_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
