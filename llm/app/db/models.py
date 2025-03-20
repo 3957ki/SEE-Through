@@ -16,7 +16,6 @@ class Member(Base):
     recognition_times = Column(Integer, default=0)
     created_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
-    embedding_vector = Column(Vector(1536), nullable=False)
 
     ingredients = relationship("Ingredient", back_populates="owner")
 
