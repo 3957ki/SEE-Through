@@ -6,4 +6,3 @@ node_modules
 .git
 .husky
 .vscode
-src/components/ui
