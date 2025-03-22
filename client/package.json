@@ -12,6 +12,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss}\""
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.6",
     "@tailwindcss/vite": "^4.0.15",
     "axios": "^1.8.2",
     "class-variance-authority": "^0.7.1",

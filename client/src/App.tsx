@@ -1,15 +1,29 @@
 import Header from "@/components/layout/Header";
 import MainPage from "@/pages/MainPage";
-import Providers from "@/Providers";
+import { DialogContextProvider } from "@/providers/DialogContextProvider";
+import MemberContextsProvider from "@/providers/MemberContextsProvider";
+import { useRef } from "react";
+
+function FridgeDisplay() {
+  const fridgeDisplayRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="w-full h-full bg-white">
+      <div ref={fridgeDisplayRef}>
+        <DialogContextProvider portalTargetContainerRef={fridgeDisplayRef.current!}>
+          <Header />
+          <MainPage />
+        </DialogContextProvider>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
-    <Providers>
-      <div className="w-full h-full bg-white">
-        <Header />
-        <MainPage />
-      </div>
-    </Providers>
+    <MemberContextsProvider>
+      <FridgeDisplay />
+    </MemberContextsProvider>
   );
 }
 
