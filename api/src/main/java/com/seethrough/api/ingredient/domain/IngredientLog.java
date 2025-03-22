@@ -13,8 +13,6 @@ import com.seethrough.api.member.domain.Member;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -41,7 +39,7 @@ public class IngredientLog {
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private UUID ingredientLogId;
 
-	@Column(name = "ingredient_name", length = 100, nullable = false)
+	@Column(name = "ingredient_name", columnDefinition = "TEXT", nullable = false)
 	private String ingredientName;
 
 	@Column(name = "member_id", columnDefinition = "VARCHAR(36)", nullable = false)
@@ -53,12 +51,12 @@ public class IngredientLog {
 	@ToString.Exclude
 	private Member member;
 
-	@Column(name = "movement_type", length = 255, nullable = false)
-	@Enumerated(EnumType.STRING)
+	@Column(name = "movement_type", columnDefinition = "MOVEMENT_TYPE", nullable = false)
+	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
 	private MovementType movementType;
 
 	@Builder.Default
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "created_at", columnDefinition = "TIMESTAMP", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@Setter

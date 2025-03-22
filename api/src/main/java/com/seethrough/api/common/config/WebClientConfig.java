@@ -14,14 +14,14 @@ import reactor.netty.http.client.HttpClient;
 public class WebClientConfig {
 
 	@Value("${llm.url}")
-	private String llmUrl;
+	private String LLM_URL;
 
 	@Value("${nickname.url}")
-	private String nicknameUrl;
+	private String NICKNAME_URL;
 
 	@Bean
 	public WebClient llmWebClient(WebClient.Builder builder) {
-		return builder.baseUrl(llmUrl)
+		return builder.baseUrl(LLM_URL)
 			.filter((request, next) -> {
 				log.info("[LlmWebClient] URL: {}", request.url());
 				return next.exchange(request);
@@ -32,7 +32,7 @@ public class WebClientConfig {
 
 	@Bean
 	public WebClient nicknameWebClient(WebClient.Builder builder) {
-		return builder.baseUrl(nicknameUrl)
+		return builder.baseUrl(NICKNAME_URL)
 			.filter((request, next) -> {
 				log.info("[NicknameWebClient] URL: {}", request.url());
 				return next.exchange(request);

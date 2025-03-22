@@ -6,14 +6,14 @@ import java.util.UUID;
 public class IngredientLogFactory {
 
 	public static IngredientLog create(
-		UUID ingredientId,
+		UUID ingredientLogId,
 		String ingredientName,
 		UUID memberId,
 		MovementType movementType,
 		LocalDateTime createdAt
 	) {
 		return IngredientLog.builder()
-			.ingredientLogId(ingredientId)
+			.ingredientLogId(ingredientLogId)
 			.ingredientName(ingredientName)
 			.memberId(memberId)
 			.movementType(movementType)
