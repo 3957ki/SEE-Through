@@ -10,7 +10,7 @@ function UserInfoCard() {
         <div className="flex-shrink-0">
           {currentMember?.avatar ? (
             <img
-              src={currentMember.avatar}
+              src={currentMember.avatar ?? null}
               alt={currentMember?.name}
               className="w-12 h-12 rounded-full object-cover"
             />
