@@ -15,19 +15,12 @@ import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.ingredient.application.mapper.IngredientDtoMapper;
 import com.seethrough.api.ingredient.domain.Ingredient;
 import com.seethrough.api.ingredient.domain.IngredientFactory;
-import com.seethrough.api.ingredient.domain.IngredientLog;
-import com.seethrough.api.ingredient.domain.IngredientLogFactory;
-import com.seethrough.api.ingredient.domain.IngredientLogRepository;
 import com.seethrough.api.ingredient.domain.IngredientRepository;
-import com.seethrough.api.ingredient.domain.MovementType;
 import com.seethrough.api.ingredient.exception.IngredientNotFoundException;
 import com.seethrough.api.ingredient.infrastructure.external.llm.LlmApiIngredientService;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientEmbeddingListRequest;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientEmbeddingRequest;
-import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientLogEmbeddingListRequest;
-import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientLogEmbeddingRequest;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.IngredientEmbeddingResponse;
-import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.IngredientLogEmbeddingResponse;
 import com.seethrough.api.ingredient.presentation.dto.request.InboundIngredientsRequest;
 import com.seethrough.api.ingredient.presentation.dto.request.OutboundIngredientsRequest;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientDetailResponse;
@@ -45,8 +38,8 @@ public class IngredientService {
 
 	private final IngredientRepository ingredientRepository;
 	private final IngredientDtoMapper ingredientDtoMapper;
-	private final IngredientLogRepository ingredientLogRepository;
 	private final MemberService memberService;
+	private final IngredientLogService ingredientLogService;
 	private final LlmApiIngredientService llmApiIngredientService;
 
 	public SliceResponseDto<IngredientListResponse> getIngredientList(
@@ -105,7 +98,7 @@ public class IngredientService {
 
 		ingredientRepository.saveAll(ingredients);
 
-		saveInboundLog(ingredients);
+		ingredientLogService.saveInboundLog(ingredients);
 
 		// TODO: llm 통해 경고 테이블 생성하기
 	}
@@ -133,53 +126,9 @@ public class IngredientService {
 
 		ingredientRepository.deleteAll(ingredients);
 
-		saveOutboundLog(ingredients);
+		ingredientLogService.saveOutboundLog(ingredients);
 
 		return response;
-	}
-
-	private void saveInboundLog(List<Ingredient> ingredients) {
-		log.debug("[Service] saveInboundLog 호출");
-
-		List<IngredientLog> ingredientLogs = ingredients.stream()
-			.map(ingredient -> IngredientLogFactory.create(
-				UUID.randomUUID(),
-				ingredient.getName(),
-				ingredient.getMemberId(),
-				MovementType.INBOUND,
-				ingredient.getInboundAt()))
-			.toList();
-
-		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredientLogs(ingredientLogs);
-
-		ingredientLogs.stream()
-			.filter(ingredientLog -> embeddings.containsKey(ingredientLog.getIngredientLogId()))
-			.forEach(ingredientLog -> ingredientLog.setEmbeddingVector(embeddings.get(ingredientLog.getIngredientLogId())));
-
-		ingredientLogRepository.saveAll(ingredientLogs);
-	}
-
-	private void saveOutboundLog(List<Ingredient> ingredients) {
-		log.debug("[Service] saveOutboundLog 호출");
-
-		LocalDateTime now = LocalDateTime.now();
-
-		List<IngredientLog> ingredientLogs = ingredients.stream()
-			.map(ingredient -> IngredientLogFactory.create(
-				UUID.randomUUID(),
-				ingredient.getName(),
-				ingredient.getMemberId(),
-				MovementType.OUTBOUND,
-				now))
-			.toList();
-
-		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredientLogs(ingredientLogs);
-
-		ingredientLogs.stream()
-			.filter(ingredientLog -> embeddings.containsKey(ingredientLog.getIngredientLogId()))
-			.forEach(ingredientLog -> ingredientLog.setEmbeddingVector(embeddings.get(ingredientLog.getIngredientLogId())));
-
-		ingredientLogRepository.saveAll(ingredientLogs);
 	}
 
 	private Map<UUID, List<Float>> createEmbeddingForIngredients(List<Ingredient> ingredients) {
@@ -198,27 +147,6 @@ public class IngredientService {
 			.collect(Collectors.toMap(
 				response -> UUID.fromString(response.getIngredientId()),
 				IngredientEmbeddingResponse::getEmbedding)
-			);
-	}
-
-	private Map<UUID, List<Float>> createEmbeddingForIngredientLogs(List<IngredientLog> ingredientLogs) {
-		IngredientLogEmbeddingListRequest request = IngredientLogEmbeddingListRequest.builder()
-			.ingredientLogs(ingredientLogs.stream()
-				.map(ingredientLog -> IngredientLogEmbeddingRequest.builder()
-					.ingredientLogId(ingredientLog.getIngredientLogId().toString())
-					.memberId(ingredientLog.getMemberId().toString())
-					.food(ingredientLog.getIngredientName())
-					.date(ingredientLog.getCreatedAt())
-					.build())
-				.toList())
-			.build();
-
-		return llmApiIngredientService.createIngredientLogEmbedding(request)
-			.getEmbeddings()
-			.stream()
-			.collect(Collectors.toMap(
-				response -> UUID.fromString(response.getIngredientLogId()),
-				IngredientLogEmbeddingResponse::getEmbedding)
 			);
 	}
 }

@@ -32,7 +32,7 @@ CREATE TABLE members (
     name VARCHAR(15) NOT NULL DEFAULT '???',
     birth DATE,
     age INTEGER NOT NULL,
-    image_path TEXT,
+    image_path TEXT NOT NULL,
     preferred_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
     disliked_foods JSONB NOT NULL DEFAULT '[]'::JSONB,
     allergies JSONB NOT NULL DEFAULT '[]'::JSONB,
@@ -68,6 +68,7 @@ CREATE TYPE MOVEMENT_TYPE AS ENUM ('INBOUND', 'OUTBOUND');
 CREATE TABLE ingredient_logs (
     ingredient_log_id VARCHAR(36) NOT NULL,
     ingredient_name TEXT NOT NULL,
+    ingredient_image_path TEXT NOT NULL,
     member_id VARCHAR(36) NOT NULL,
     movement_type MOVEMENT_TYPE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
