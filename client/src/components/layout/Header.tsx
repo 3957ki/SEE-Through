@@ -17,7 +17,7 @@ function Header() {
       >
         <AvatarImage src={currentMember?.avatar} alt="User avatar" />
         <AvatarFallback>
-          <BsPersonCircle className="w-6 h-6" />
+          <BsPersonCircle className="w-full h-full" />
         </AvatarFallback>
       </Avatar>
     </header>
