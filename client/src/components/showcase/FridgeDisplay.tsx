@@ -1,5 +1,6 @@
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
+import { cn } from "@/lib/utils";
 import ExamplePage from "@/pages/ExamplePage";
 import MainPage from "@/pages/MainPage";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
@@ -8,9 +9,16 @@ import { useRef, useState, type RefObject } from "react";
 interface FridgeDisplayProps {
   containerRef?: RefObject<HTMLElement>;
   className?: string;
+  targetWidth?: number;
+  targetHeight?: number;
 }
 
-function FridgeDisplay({ containerRef, className = "" }: FridgeDisplayProps) {
+function FridgeDisplay({
+  containerRef,
+  className = "",
+  targetWidth = 375,
+  targetHeight = 667,
+}: FridgeDisplayProps) {
   const localRef = useRef<HTMLDivElement>(null);
   const fridgeDisplayRef = containerRef || localRef;
   const [currentPage, setCurrentPage] = useState<PageType>("main");
@@ -21,25 +29,33 @@ function FridgeDisplay({ containerRef, className = "" }: FridgeDisplayProps) {
 
   return (
     <div
-      className={`w-full h-full bg-white overflow-hidden flex flex-col rounded shadow ${className}`}
+      className={cn(
+        "bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative",
+        className
+      )}
+      style={{
+        width: `${targetWidth}px`,
+        height: `${targetHeight}px`,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      }}
     >
-      <div ref={localRef} className="flex-1 overflow-auto relative">
-        <DialogContextProvider
-          portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}
-        >
+      <DialogContextProvider portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}>
+        <div className="w-full shrink-0">
           <Header />
-          <div className="pb-12 px-1">
-            {currentPage === "main" ? <MainPage /> : <ExamplePage />}
-          </div>
-          <div className="absolute bottom-0 left-0 right-0">
-            <BottomNavigation
-              currentPage={currentPage}
-              onNavigate={handleNavigate}
-              isFixed={false}
-            />
-          </div>
-        </DialogContextProvider>
-      </div>
+        </div>
+
+        <div
+          ref={localRef}
+          className="flex-1 overflow-auto"
+          style={{ height: `calc(100% - 56px - 56px)` }}
+        >
+          <div className="px-1">{currentPage === "main" ? <MainPage /> : <ExamplePage />}</div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 w-full bg-white border-t">
+          <BottomNavigation currentPage={currentPage} onNavigate={handleNavigate} isFixed={false} />
+        </div>
+      </DialogContextProvider>
     </div>
   );
 }

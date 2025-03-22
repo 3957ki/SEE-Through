@@ -54,8 +54,8 @@ function App() {
           <ShowcaseToggleButton onClick={handleToggleShowcase} title="일반 모드로 돌아가기" />
         </>
       ) : (
-        <div className="w-full h-full">
-          <FridgeDisplay />
+        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <FridgeDisplay targetWidth={375} targetHeight={667} />
           <ShowcaseToggleButton onClick={handleToggleShowcase} title="시연 모드 보기" />
         </div>
       )}
