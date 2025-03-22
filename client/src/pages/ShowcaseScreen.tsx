@@ -1,4 +1,4 @@
-import FridgeComponent from "@/components/showcase/FridgeComponent";
+import Fridge from "@/components/showcase/Fridge";
 import FridgeDisplay from "@/components/showcase/FridgeDisplay";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
 import WebcamView from "@/components/showcase/WebcamView";
@@ -29,7 +29,7 @@ function ShowcaseScreen({ onExit }: ShowcaseScreenProps) {
         <div className="flex h-[calc(100%-2rem)] gap-4">
           {/* Left side - Fridge with display */}
           <div className="w-2/3 h-full relative">
-            <FridgeComponent>
+            <Fridge>
               <div className="w-full h-full rounded-md overflow-hidden border border-gray-300 shadow-inner flex items-center justify-center bg-gray-50">
                 <div className="w-[85%] h-[85%] max-w-md max-h-[600px] overflow-hidden">
                   {isShowingInfoScreen ? (
@@ -41,7 +41,7 @@ function ShowcaseScreen({ onExit }: ShowcaseScreenProps) {
                   )}
                 </div>
               </div>
-            </FridgeComponent>
+            </Fridge>
           </div>
 
           {/* Right side - Controls and information */}

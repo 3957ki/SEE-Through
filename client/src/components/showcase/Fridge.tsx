@@ -4,7 +4,7 @@ interface FridgeComponentProps {
   children?: React.ReactNode;
 }
 
-function FridgeComponent({ children }: FridgeComponentProps) {
+function Fridge({ children }: FridgeComponentProps) {
   return (
     <div className="relative w-full h-full">
       {/* Fridge exterior */}
@@ -41,4 +41,4 @@ function FridgeComponent({ children }: FridgeComponentProps) {
   );
 }
 
-export default FridgeComponent;
+export default Fridge;
