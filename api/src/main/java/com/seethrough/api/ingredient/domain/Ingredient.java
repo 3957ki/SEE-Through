@@ -1,13 +1,16 @@
 package com.seethrough.api.ingredient.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import com.seethrough.api.member.domain.Member;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
@@ -35,6 +39,12 @@ public class Ingredient {
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private UUID ingredientId;
 
+	@Column(name = "name", columnDefinition = "TEXT", nullable = false)
+	private String name;
+
+	@Column(name = "image_path", columnDefinition = "TEXT", nullable = false)
+	private String imagePath;
+
 	@Column(name = "member_id", columnDefinition = "VARCHAR(36)", nullable = false)
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private UUID memberId;
@@ -44,16 +54,15 @@ public class Ingredient {
 	@ToString.Exclude
 	private Member member;
 
-	@Column(name = "name", length = 100, nullable = false)
-	private String name;
-
-	@Column(name = "image_path", length = 255, nullable = false)
-	private String imagePath;
-
 	@Builder.Default
-	@Column(name = "inbound_at", nullable = false, updatable = false)
+	@Column(name = "inbound_at", columnDefinition = "TIMESTAMP", nullable = false, updatable = false)
 	private LocalDateTime inboundAt = LocalDateTime.now();
 
-	@Column(name = "expiration_at")
+	@Column(name = "expiration_at", columnDefinition = "TIMESTAMP")
 	private LocalDateTime expirationAt;
+
+	@Setter
+	@Column(name = "embedding_vector", columnDefinition = "VECTOR(1536)")
+	@Type(JsonType.class)
+	private List<Float> embeddingVector;
 }

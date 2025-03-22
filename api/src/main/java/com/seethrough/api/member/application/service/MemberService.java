@@ -121,6 +121,8 @@ public class MemberService {
 			request.getAllergies(),
 			request.getDiseases()
 		);
+
+		// TODO: 질병이나 알러지 수정 여부를 파악하여 llm 통해 경고 테이블 생성하기
 	}
 
 	@Transactional

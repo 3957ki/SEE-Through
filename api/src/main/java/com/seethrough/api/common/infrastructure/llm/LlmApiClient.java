@@ -22,6 +22,17 @@ public class LlmApiClient {
 
 	private final WebClient llmWebClient;
 
+	public <T, R> Mono<R> sendGetRequestMono(String uri, T request, Class<R> responseClass) {
+		return llmWebClient.get()
+			.uri(uri)
+			.retrieve()
+			.bodyToMono(responseClass)
+			.timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
+			.retryWhen(Retry.backoff(MAX_RETRY_ATTEMPTS, Duration.ofMillis(500))
+				.doBeforeRetry(this::logBeforeRetry)
+			);
+	}
+
 	public <T, R> Mono<R> sendPostRequestMono(String uri, T request, Class<R> responseClass) {
 		return llmWebClient.post()
 			.uri(uri)

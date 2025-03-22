@@ -1,7 +1,5 @@
 package com.seethrough.api.ingredient.presentation;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,13 +26,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/ingredient")
+@RequestMapping("/api/ingredients")
 @Tag(name = "식재료 관리", description = "식재료를 관리하는 API")
 public class IngredientController {
 
@@ -112,7 +111,7 @@ public class IngredientController {
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Void> inboundIngredients(@RequestBody InboundIngredientsRequest request) {
+	public ResponseEntity<Void> inboundIngredients(@Valid @RequestBody InboundIngredientsRequest request) {
 		log.info("[Controller - POST /api/ingredient] 식재료 입고 요청: request={}", request);
 
 		ingredientService.inboundIngredients(request);
@@ -127,22 +126,26 @@ public class IngredientController {
 		summary = "식재료 출고",
 		description = "식재료를 출고합니다.<br>" +
 			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"출고 처리 시 시스템에 자동으로 입출고 로그가 기록됩니다. 로그에는 입출고 일시, 담당자, 식재료 이름, 입출고 형태가 포함됩니다.<br>" +
-			"출고 요청 후 LLM API를 동기적으로 호출하여 출고 이벤트를 처리합니다.<br>" +
-			"응답으로는 200 Ok 상태 코드와 함께 LLM 맞춤 알림이 반환됩니다."
+			"출고 요청 데이터가 1개인 경우 LLM API를 비동기적으로 호출하여 출고 이벤트를 처리합니다.<br>" +
+			"출고 처리 시 시스템에 자동으로 입출고 로그가 기록됩니다. 로그에는 입출고 일시, 담당자, 식재료 이름, 입출고 형태가 포함됩니다.<br><br>" +
+			"응답으로는 요청 데이터가 1개인 경우 200 Ok 상태 코드와 함께 LLM 맞춤 알림이 반환됩니다." +
+			"요청 데이터가 여러 개인 경우 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "식재료 출고 성공 및 LLM 맞춤 알람"),
+		@ApiResponse(responseCode = "200", description = "식재료 1개 출고 성공 및 LLM 맞춤 알람"),
+		@ApiResponse(responseCode = "204", description = "식재료 여러개 출고 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<CompletableFuture<String>> outboundIngredients(@RequestBody OutboundIngredientsRequest request) {
+	public ResponseEntity<String> outboundIngredients(@Valid @RequestBody OutboundIngredientsRequest request) {
 		log.info("[Controller - DELETE /api/ingredient] 식재료 출고 요청: request={}", request);
 
-		CompletableFuture<String> result = ingredientService.outboundIngredients(request);
+		String result = ingredientService.outboundIngredients(request);
 
 		log.debug("[Controller] 식재료 출고 성공");
 
-		return ResponseEntity.ok(result);
+		return result == null ?
+			ResponseEntity.status(HttpStatus.NO_CONTENT).build() :
+			ResponseEntity.ok(result);
 	}
 }

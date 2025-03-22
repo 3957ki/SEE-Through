@@ -53,7 +53,7 @@ CREATE TABLE ingredients (
     member_id VARCHAR(36) NOT NULL,
     inbound_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expiration_at TIMESTAMP NULL,
-    embedding_vector VECTOR(1536) NOT NULL,
+    embedding_vector VECTOR(1536),
 
     PRIMARY KEY (ingredient_id),
     FOREIGN KEY (member_id) REFERENCES members (member_id)
@@ -66,12 +66,12 @@ CREATE TYPE MOVEMENT_TYPE AS ENUM ('INBOUND', 'OUTBOUND');
 
 -- 냉장고 로그 테이블
 CREATE TABLE ingredient_logs (
-    ingredient_log_id BIGSERIAL NOT NULL,
+    ingredient_log_id VARCHAR(36) NOT NULL,
     ingredient_name TEXT NOT NULL,
     member_id VARCHAR(36) NOT NULL,
     movement_type MOVEMENT_TYPE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    embedding_vector VECTOR(1536) NOT NULL,
+    embedding_vector VECTOR(1536),
 
     PRIMARY KEY (ingredient_log_id),
     FOREIGN KEY (member_id) REFERENCES members(member_id)
