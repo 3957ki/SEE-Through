@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
 import Notification from "@/interfaces/Notification";
@@ -19,26 +20,18 @@ function MaterialsCard({ materials }: { materials: Material[] }) {
   const MAX_MATERIALS = 10;
 
   return (
-    // <Card>
-    //   <CardHeader>
-    //     <CardTitle>재료 목록</CardTitle>
-    //   </CardHeader>
-    //   <CardContent>
-    //     <div className="grid grid-cols-5 gap-1">
-    //       {materials
-    //         ?.slice(0, MAX_MATERIALS)
-    //         .map((material) => <MaterialBlock key={material.id} material={material} />)}
-    //     </div>
-    //   </CardContent>
-    // </Card>
-    <div>
-      <p>재료 목록</p>
-      <div className="grid grid-cols-5 gap-1">
-        {materials.slice(0, MAX_MATERIALS).map((material) => (
-          <MaterialBlock key={material.id} material={material} />
-        ))}
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>재료 목록</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-5 gap-1">
+          {materials
+            ?.slice(0, MAX_MATERIALS)
+            .map((material) => <MaterialBlock key={material.id} material={material} />)}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -60,24 +53,18 @@ function NotificationsCard({
   notifications: Notification[];
 }) {
   return (
-    // <Card>
-    //   <CardHeader>
-    //     <CardTitle>{title}</CardTitle>
-    //   </CardHeader>
-    //   <CardContent>
-    //     <div className="space-y-3">
-    //       {notifications.map((notification, blockIndex) => (
-    //         <NotificationBlock key={blockIndex} notification={notification} />
-    //       ))}
-    //     </div>
-    //   </CardContent>
-    // </Card>
-    <div>
-      <p>{title}</p>
-      {notifications.map((notification, blockIndex) => (
-        <NotificationBlock key={blockIndex} notification={notification} />
-      ))}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {notifications.map((notification, blockIndex) => (
+            <NotificationBlock key={blockIndex} notification={notification} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
