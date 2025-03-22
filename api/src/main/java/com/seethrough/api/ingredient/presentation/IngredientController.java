@@ -79,8 +79,8 @@ public class IngredientController {
 	@Operation(
 		summary = "식재료 조회",
 		description = "UUID로 식별되는 식재료의 정보를 수정합니다.<br>" +
-			"해당 ID에 매칭되는 식재료가 없는 경우 IngredientNotFoundException이 발생합니다.<br>" +
-			"응답으로는 식재료의 기본 정보(ID, 이름, 주인 등)가 포함됩니다."
+			"해당 ID에 매칭되는 식재료가 없는 경우 IngredientNotFoundException이 발생합니다.<br><br>" +
+			"응답으로는 200 Ok 상태 코드와 함께 식재료의 기본 정보(ID, 이름, 주인 등)가 포함됩니다."
 	)
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "식재료 조회 성공"),
@@ -103,7 +103,7 @@ public class IngredientController {
 		description = "새로운 식재료를 입고합니다.<br>" +
 			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"입고 처리 시 시스템에 자동으로 입출고 로그가 기록됩니다. 로그에는 입출고 일시, 담당자, 식재료 이름, 입출고 형태가 포함됩니다.<br>" +
-			"입고 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 입고 이벤트를 처리합니다.<br>" +
+			"입고 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 식재료에 입고 이벤트를 처리합니다.<br><br>" +
 			"응답으로는 201 Created 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
@@ -128,7 +128,7 @@ public class IngredientController {
 			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"출고 요청 데이터가 1개인 경우 LLM API를 비동기적으로 호출하여 출고 이벤트를 처리합니다.<br>" +
 			"출고 처리 시 시스템에 자동으로 입출고 로그가 기록됩니다. 로그에는 입출고 일시, 담당자, 식재료 이름, 입출고 형태가 포함됩니다.<br><br>" +
-			"응답으로는 요청 데이터가 1개인 경우 200 Ok 상태 코드와 함께 LLM 맞춤 알림이 반환됩니다." +
+			"응답으로는 요청 데이터가 1개인 경우 200 Ok 상태 코드와 함께 LLM 맞춤 알림이 반환됩니다.<br>" +
 			"요청 데이터가 여러 개인 경우 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
