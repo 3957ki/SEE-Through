@@ -14,18 +14,16 @@ function FridgeDisplay() {
   };
 
   return (
-    <div className="w-full h-full bg-white overflow-hidden flex flex-col rounded shadow scale-[0.95] transform-origin-center">
+    <div className="w-full h-full bg-white overflow-hidden flex flex-col rounded shadow">
       <div ref={fridgeDisplayRef} className="flex-1 overflow-auto relative">
         <DialogContextProvider
           portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}
         >
-          <div className="transform scale-[0.9] origin-top">
-            <Header />
-          </div>
-          <div className="pb-12 px-1 text-sm">
+          <Header />
+          <div className="pb-12 px-1">
             {currentPage === "main" ? <MainPage /> : <ExamplePage />}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 transform scale-[0.9] origin-bottom">
+          <div className="absolute bottom-0 left-0 right-0">
             <BottomNavigation
               currentPage={currentPage}
               onNavigate={handleNavigate}
