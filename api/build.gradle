@@ -60,6 +60,9 @@ dependencies {
     // Swagger UI 및 OpenAPI 문서
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
 
+    // Spring Security 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // .env 파일을 통한 환경변수 설정을 지원하는 라이브러리
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
