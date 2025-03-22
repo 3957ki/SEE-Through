@@ -1,12 +1,9 @@
-import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
-import Header from "@/components/layout/Header";
+import { PageType } from "@/components/layout/BottomNavigation";
+import FridgeDisplay from "@/components/showcase/FridgeDisplay";
 import { Button } from "@/components/ui/button";
-import ExamplePage from "@/pages/ExamplePage";
-import MainPage from "@/pages/MainPage";
 import ShowcaseScreen from "@/pages/ShowcaseScreen";
-import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import MemberContextsProvider from "@/providers/MemberContextsProvider";
-import { useRef, useState, type RefObject } from "react";
+import { useState } from "react";
 
 // Extend PageType to include a showcase option
 export type ExtendedPageType = PageType | "showcase";
@@ -40,30 +37,6 @@ function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: 
   );
 }
 
-// For regular app display
-function InternalFridgeDisplay() {
-  const fridgeDisplayRef = useRef<HTMLDivElement>(null);
-  const [currentPage, setCurrentPage] = useState<PageType>("main");
-
-  const handleNavigate = (page: PageType) => {
-    setCurrentPage(page);
-  };
-
-  return (
-    <div className="w-full h-full bg-white">
-      <div ref={fridgeDisplayRef}>
-        <DialogContextProvider
-          portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}
-        >
-          <Header />
-          {currentPage === "main" ? <MainPage /> : <ExamplePage />}
-          <BottomNavigation currentPage={currentPage} onNavigate={handleNavigate} />
-        </DialogContextProvider>
-      </div>
-    </div>
-  );
-}
-
 // Main App with option to show showcase
 function App() {
   // Set showcase mode as default
@@ -81,10 +54,10 @@ function App() {
           <ShowcaseToggleButton onClick={handleToggleShowcase} title="일반 모드로 돌아가기" />
         </>
       ) : (
-        <>
-          <InternalFridgeDisplay />
+        <div className="w-full h-full">
+          <FridgeDisplay />
           <ShowcaseToggleButton onClick={handleToggleShowcase} title="시연 모드 보기" />
-        </>
+        </div>
       )}
     </MemberContextsProvider>
   );

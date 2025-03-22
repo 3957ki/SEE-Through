@@ -5,8 +5,14 @@ import MainPage from "@/pages/MainPage";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
 
-function FridgeDisplay() {
-  const fridgeDisplayRef = useRef<HTMLDivElement>(null);
+interface FridgeDisplayProps {
+  containerRef?: RefObject<HTMLElement>;
+  className?: string;
+}
+
+function FridgeDisplay({ containerRef, className = "" }: FridgeDisplayProps) {
+  const localRef = useRef<HTMLDivElement>(null);
+  const fridgeDisplayRef = containerRef || localRef;
   const [currentPage, setCurrentPage] = useState<PageType>("main");
 
   const handleNavigate = (page: PageType) => {
@@ -14,8 +20,10 @@ function FridgeDisplay() {
   };
 
   return (
-    <div className="w-full h-full bg-white overflow-hidden flex flex-col rounded shadow">
-      <div ref={fridgeDisplayRef} className="flex-1 overflow-auto relative">
+    <div
+      className={`w-full h-full bg-white overflow-hidden flex flex-col rounded shadow ${className}`}
+    >
+      <div ref={localRef} className="flex-1 overflow-auto relative">
         <DialogContextProvider
           portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}
         >

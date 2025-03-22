@@ -17,7 +17,7 @@ function ShowcaseScreen() {
               <div className="w-full h-full rounded-md overflow-hidden border border-gray-300 shadow-inner flex items-center justify-center bg-gray-50">
                 <div className="w-[80%] h-[80%] max-w-xl max-h-[650px] transform scale-[0.85] lg:scale-100 2xl:scale-110">
                   {isShowingInfoScreen ? (
-                    <FridgeDisplay />
+                    <FridgeDisplay className="transform scale-[0.95]" />
                   ) : (
                     <div className="w-full h-full bg-blue-100 flex items-center justify-center">
                       냉장고 내부 카메라 화면
