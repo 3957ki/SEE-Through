@@ -42,6 +42,9 @@ public class IngredientLog {
 	@Column(name = "ingredient_name", columnDefinition = "TEXT", nullable = false)
 	private String ingredientName;
 
+	@Column(name = "ingredient_image_path", columnDefinition = "TEXT", nullable = false)
+	private String ingredientImagePath;
+
 	@Column(name = "member_id", columnDefinition = "VARCHAR(36)", nullable = false)
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	private UUID memberId;

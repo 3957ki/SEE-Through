@@ -25,13 +25,13 @@ VALUES
      '["조개류"]'::JSONB,
      '[]'::JSONB,
      FALSE, 3),
-    ('00000000-0000-0000-0000-000000000005', '외부인2', NULL, 28, NULL,
+    ('00000000-0000-0000-0000-000000000005', '외부인2', NULL, 28, '/images/profiles/visitor2.jpg',
      '["마라탕", "카레", "쌀국수"]'::JSONB,
      '["오이", "가지"]'::JSONB,
      '[]'::JSONB,
      '[]'::JSONB,
      FALSE, 1),
-    ('00000000-0000-0000-0000-000000000006', '탈퇴인1', NULL, 27, NULL,
+    ('00000000-0000-0000-0000-000000000006', '탈퇴인1', NULL, 27, '/images/profiles/leave1.jpg',
      '["치킨", "비빔밥"]'::JSONB,
      '["치즈"]'::JSONB,
      '["우유"]'::JSONB,
@@ -53,27 +53,27 @@ VALUES
     ('00000000-0000-0000-0000-000000000010', '버섯', '/images/ingredients/mushroom.jpg', '00000000-0000-0000-0000-000000000005', '2025-03-08 09:05:44', '2025-03-14 09:05:44', ARRAY[1.0, 0.1, 0.2]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533)));
 
 -- 냉장고 로그 테이블 데이터
-INSERT INTO ingredient_logs (ingredient_log_id, ingredient_name, member_id, movement_type, embedding_vector)
+INSERT INTO ingredient_logs (ingredient_log_id, ingredient_name, ingredient_image_path, member_id, movement_type, embedding_vector)
 VALUES
     -- 입고 기록
-    ('00000000-0000-0000-0000-000000000001', '양파', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.11, 0.22, 0.33]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000002', '돼지고기', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.12, 0.23, 0.34]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000003', '우유', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.13, 0.24, 0.35]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000004', '두부', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.14, 0.25, 0.36]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000005', '고추장', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.15, 0.26, 0.37]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000006', '사과', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.16, 0.27, 0.38]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000007', '치즈', '00000000-0000-0000-0000-000000000004', 'INBOUND', ARRAY[0.17, 0.28, 0.39]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000008', '당근', '00000000-0000-0000-0000-000000000005', 'INBOUND', ARRAY[0.18, 0.29, 0.40]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000009', '김치', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.19, 0.30, 0.41]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000010', '계란', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.20, 0.31, 0.42]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000011', '오이', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.21, 0.32, 0.43]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000012', '닭가슴살', '00000000-0000-0000-0000-000000000004', 'INBOUND', ARRAY[0.22, 0.33, 0.44]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000013', '버섯', '00000000-0000-0000-0000-000000000005', 'INBOUND', ARRAY[0.23, 0.34, 0.45]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000001', '양파', '/images/ingredients/onion.jpg', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.11, 0.22, 0.33]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000002', '돼지고기', '/images/ingredients/pork.jpg', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.12, 0.23, 0.34]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000003', '우유', '/images/ingredients/milk.jpg', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.13, 0.24, 0.35]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000004', '두부', '/images/ingredients/tofu.jpg', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.14, 0.25, 0.36]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000005', '고추장', '/images/ingredients/gochujang.jpg', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.15, 0.26, 0.37]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000006', '사과', '/images/ingredients/apple.jpg', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.16, 0.27, 0.38]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000007', '치즈', '/images/ingredients/cheese.jpg', '00000000-0000-0000-0000-000000000004', 'INBOUND', ARRAY[0.17, 0.28, 0.39]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000008', '당근', '/images/ingredients/carrot.jpg', '00000000-0000-0000-0000-000000000005', 'INBOUND', ARRAY[0.18, 0.29, 0.40]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000009', '김치', '/images/ingredients/kimchi.jpg', '00000000-0000-0000-0000-000000000001', 'INBOUND', ARRAY[0.19, 0.30, 0.41]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000010', '계란', '/images/ingredients/eggs.jpg', '00000000-0000-0000-0000-000000000002', 'INBOUND', ARRAY[0.20, 0.31, 0.42]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000011', '오이', '/images/ingredients/cucumber.jpg', '00000000-0000-0000-0000-000000000003', 'INBOUND', ARRAY[0.21, 0.32, 0.43]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000012', '닭가슴살', '/images/ingredients/chicken_breast.jpg', '00000000-0000-0000-0000-000000000004', 'INBOUND', ARRAY[0.22, 0.33, 0.44]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000013', '버섯', '/images/ingredients/mushroom.jpg', '00000000-0000-0000-0000-000000000005', 'INBOUND', ARRAY[0.23, 0.34, 0.45]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
 
     -- 출고 기록
-    ('00000000-0000-0000-0000-000000000014', '돼지고기', '00000000-0000-0000-0000-000000000002', 'OUTBOUND', ARRAY[0.24, 0.35, 0.46]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000015', '우유', '00000000-0000-0000-0000-000000000003', 'OUTBOUND', ARRAY[0.25, 0.36, 0.47]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
-    ('00000000-0000-0000-0000-000000000016', '양파', '00000000-0000-0000-0000-000000000001', 'OUTBOUND', ARRAY[0.26, 0.37, 0.48]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533)));
+    ('00000000-0000-0000-0000-000000000014', '돼지고기', '/images/ingredients/pork.jpg', '00000000-0000-0000-0000-000000000002', 'OUTBOUND', ARRAY[0.24, 0.35, 0.46]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000015', '우유', '/images/ingredients/milk.jpg', '00000000-0000-0000-0000-000000000003', 'OUTBOUND', ARRAY[0.25, 0.36, 0.47]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533))),
+    ('00000000-0000-0000-0000-000000000016', '양파', '/images/ingredients/onion.jpg', '00000000-0000-0000-0000-000000000001', 'OUTBOUND', ARRAY[0.26, 0.37, 0.48]::float[] || ARRAY(SELECT 0.0 FROM generate_series(1, 1533)));
 
 -- 식단 테이블 데이터
 INSERT INTO meal_plans (meal_plan_id, name, description)

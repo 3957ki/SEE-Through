@@ -18,5 +18,6 @@ public class LoginMemberRequest {
 	@Max(value = 150, message = "나이는 150보다 작아야 합니다")
 	private Integer age;
 
+	@NotNull(message = "이미지 경로는 필수 입력값입니다")
 	private String imagePath;
 }

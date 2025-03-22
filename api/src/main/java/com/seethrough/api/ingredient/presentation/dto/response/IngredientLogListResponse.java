@@ -12,10 +12,10 @@ import lombok.ToString;
 public class IngredientLogListResponse {
 	private String ingredientLogId;
 	private String ingredientName;
+	private String ingredientImagePath;
 	private String memberId;
 	private String memberName;
 	private String memberImagePath;
 	private String movementName;
-	private String imagePath;
 	private LocalDateTime createdAt;
 }
