@@ -1,7 +1,7 @@
+import FridgeDisplay from "@/components/FridgeDisplay";
 import { PageType } from "@/components/layout/BottomNavigation";
-import FridgeDisplay from "@/components/showcase/FridgeDisplay";
+import ShowcaseScreen from "@/components/ShowcaseScreen";
 import { Button } from "@/components/ui/button";
-import ShowcaseScreen from "@/pages/ShowcaseScreen";
 import MemberContextsProvider from "@/providers/MemberContextsProvider";
 import { useEffect, useState } from "react";
 

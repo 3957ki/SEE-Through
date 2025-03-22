@@ -1,8 +1,8 @@
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
+import ExamplePage from "@/components/pages/ExamplePage";
+import MainPage from "@/components/pages/MainPage";
 import { cn } from "@/lib/utils";
-import ExamplePage from "@/pages/ExamplePage";
-import MainPage from "@/pages/MainPage";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
 

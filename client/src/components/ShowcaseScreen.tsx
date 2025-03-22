@@ -1,5 +1,5 @@
+import FridgeDisplay from "@/components/FridgeDisplay";
 import Fridge from "@/components/showcase/Fridge";
-import FridgeDisplay from "@/components/showcase/FridgeDisplay";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
 import WebcamView from "@/components/showcase/WebcamView";
 import { useState } from "react";
