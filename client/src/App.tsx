@@ -2,11 +2,16 @@ import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation
 import Header from "@/components/layout/Header";
 import ExamplePage from "@/pages/ExamplePage";
 import MainPage from "@/pages/MainPage";
+import ShowcaseScreen from "@/pages/ShowcaseScreen";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import MemberContextsProvider from "@/providers/MemberContextsProvider";
-import { useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
-function FridgeDisplay() {
+// Extend PageType to include a showcase option
+export type ExtendedPageType = PageType | "showcase";
+
+// For regular app display
+function InternalFridgeDisplay() {
   const fridgeDisplayRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState<PageType>("main");
 
@@ -29,10 +34,30 @@ function FridgeDisplay() {
   );
 }
 
+// Main App with option to show showcase
 function App() {
+  // For development/demo purposes, use this to toggle showcase view
+  const [showShowcase, setShowShowcase] = useState(false);
+
+  // Add keyboard shortcut to toggle showcase view (Alt+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === "s") {
+        setShowShowcase((prev) => !prev);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleExitShowcase = () => {
+    setShowShowcase(false);
+  };
+
   return (
     <MemberContextsProvider>
-      <FridgeDisplay />
+      {showShowcase ? <ShowcaseScreen onExit={handleExitShowcase} /> : <InternalFridgeDisplay />}
     </MemberContextsProvider>
   );
 }

@@ -2,7 +2,7 @@ import { Section, SectionContent, SectionDivider, SectionTitle } from "@/compone
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
 import { useEffect, useState } from "react";
-import { BsCalendarEvent, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
+import { BsCalendarEvent, BsDisplay, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
 
 // Material Grid Section Components
 function MaterialBlock({ material }: { material: Material }) {
@@ -127,8 +127,18 @@ function MainPage() {
     );
   }, [currentMember]);
 
+  const handleShowcaseClick = () => {
+    // Toggle showcase mode using keyboard shortcut
+    const event = new KeyboardEvent("keydown", {
+      key: "s",
+      altKey: true,
+      bubbles: true,
+    });
+    document.dispatchEvent(event);
+  };
+
   return (
-    <div className="pb-16">
+    <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
 
       <TodaysDietSection />
@@ -136,6 +146,15 @@ function MainPage() {
       <SectionDivider />
 
       <MaterialsSection materials={materials} />
+
+      {/* Showcase mode button - adjust to be relative to the container within a showcase */}
+      <button
+        onClick={handleShowcaseClick}
+        className="absolute bottom-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors z-10"
+        title="시연 모드 보기"
+      >
+        <BsDisplay className="w-5 h-5" />
+      </button>
     </div>
   );
 }
