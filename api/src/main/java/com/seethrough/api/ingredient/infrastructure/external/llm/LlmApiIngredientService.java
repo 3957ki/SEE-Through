@@ -3,6 +3,7 @@ package com.seethrough.api.ingredient.infrastructure.external.llm;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -30,25 +31,25 @@ public class LlmApiIngredientService {
 			.build()
 			.toUriString();
 
-		return llmApiClient.sendPostRequestMono(uri, request, IngredientEmbeddingListResponse.class)
+		return llmApiClient.sendRequestMono(HttpMethod.POST, uri, request, IngredientEmbeddingListResponse.class)
 			.doOnNext(response -> log.info("[LlmApiIngredientService] 식재료 임베딩 벡터 응답: {}", response))
 			.block();
 	}
 
 	public IngredientLogEmbeddingListResponse createIngredientLogEmbedding(IngredientLogEmbeddingListRequest request) {
-		log.info("[LlmApiIngredientService] 출고 로그 임베딩 벡터 요청 시작: request = {}", request);
+		log.info("[LlmApiIngredientService] 입출고 로그 임베딩 벡터 요청 시작: request = {}", request);
 
 		String uri = UriComponentsBuilder.fromPath("/llm/embedding/food-log")
 			.build()
 			.toUriString();
 
-		return llmApiClient.sendPostRequestMono(uri, request, IngredientLogEmbeddingListResponse.class)
-			.doOnNext(response -> log.info("[LlmApiIngredientService] 출고 로그 임베딩 벡터 응답: {}", response))
+		return llmApiClient.sendRequestMono(HttpMethod.POST, uri, request, IngredientLogEmbeddingListResponse.class)
+			.doOnNext(response -> log.info("[LlmApiIngredientService] 입출고 로그 임베딩 벡터 응답: {}", response))
 			.block();
 	}
 
 	// TODO: Stream 형식으로 변경하기
-	public String creaetComment(UUID memberId, UUID ingredientId) {
+	public String createComment(UUID memberId, UUID ingredientId) {
 		log.info("[LlmApiIngredientService] 외부 API 식재료 출고 개인 알림 요청 시작: memberId = {}, ingredientId = {}", memberId, ingredientId);
 
 		String uri = UriComponentsBuilder.fromPath("/llm/food/comment")
@@ -57,7 +58,7 @@ public class LlmApiIngredientService {
 			.build()
 			.toUriString();
 
-		return Optional.ofNullable(llmApiClient.sendGetRequestMono(uri, null, CommentResponse.class)
+		return Optional.ofNullable(llmApiClient.sendRequestMono(HttpMethod.GET, uri, CommentResponse.class)
 				.doOnNext(response -> log.info("[LlmApiService] 외부 API 식재료 출고 개인 알림 응답: {}", response))
 				.block())
 			.map(CommentResponse::getComment)

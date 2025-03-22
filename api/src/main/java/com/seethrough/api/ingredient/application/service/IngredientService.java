@@ -129,7 +129,7 @@ public class IngredientService {
 		// TODO: steram으로 수정 예정(호출 위치도 마지막으로 수정되어야 함)
 		String response = null;
 		if (ingredients.size() == 1)
-			response = llmApiIngredientService.creaetComment(memberIdObj, ingredients.get(0).getIngredientId());
+			response = llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId());
 
 		ingredientRepository.deleteAll(ingredients);
 
@@ -143,7 +143,7 @@ public class IngredientService {
 
 		List<IngredientLog> ingredientLogs = ingredients.stream()
 			.map(ingredient -> IngredientLogFactory.create(
-				ingredient.getIngredientId(),
+				UUID.randomUUID(),
 				ingredient.getName(),
 				ingredient.getMemberId(),
 				MovementType.INBOUND,
@@ -166,7 +166,7 @@ public class IngredientService {
 
 		List<IngredientLog> ingredientLogs = ingredients.stream()
 			.map(ingredient -> IngredientLogFactory.create(
-				ingredient.getIngredientId(),
+				UUID.randomUUID(),
 				ingredient.getName(),
 				ingredient.getMemberId(),
 				MovementType.OUTBOUND,

@@ -15,7 +15,7 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 public class IngredientLogEmbeddingRequest {
-	@JsonProperty("ingredient_long_id")
+	@JsonProperty("ingredient_log_id")
 	private String ingredientLogId;
 
 	@JsonProperty("member_id")

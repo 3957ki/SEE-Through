@@ -14,7 +14,7 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 public class IngredientLogEmbeddingListRequest {
-	@JsonProperty("ingredients")
+	@JsonProperty("logs")
 	private List<IngredientLogEmbeddingRequest> ingredientLogs;
 
 	public static IngredientLogEmbeddingListRequest from(List<IngredientLogEmbeddingRequest> ingredientLogs) {

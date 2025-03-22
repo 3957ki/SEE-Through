@@ -2,6 +2,7 @@ package com.seethrough.api.common.infrastructure.llm;
 
 import java.time.Duration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -22,19 +23,8 @@ public class LlmApiClient {
 
 	private final WebClient llmWebClient;
 
-	public <T, R> Mono<R> sendGetRequestMono(String uri, T request, Class<R> responseClass) {
-		return llmWebClient.get()
-			.uri(uri)
-			.retrieve()
-			.bodyToMono(responseClass)
-			.timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-			.retryWhen(Retry.backoff(MAX_RETRY_ATTEMPTS, Duration.ofMillis(500))
-				.doBeforeRetry(this::logBeforeRetry)
-			);
-	}
-
-	public <T, R> Mono<R> sendPostRequestMono(String uri, T request, Class<R> responseClass) {
-		return llmWebClient.post()
+	public <T, R> Mono<R> sendRequestMono(HttpMethod httpMethod, String uri, T request, Class<R> responseClass) {
+		return llmWebClient.method(httpMethod)
 			.uri(uri)
 			.bodyValue(request)
 			.retrieve()
@@ -45,8 +35,19 @@ public class LlmApiClient {
 			);
 	}
 
-	public <T, R> Flux<R> sendPostRequestFlux(String uri, T request, Class<R> resposneClass) {
-		return llmWebClient.post()
+	public <R> Mono<R> sendRequestMono(HttpMethod httpMethod, String uri, Class<R> responseClass) {
+		return llmWebClient.method(httpMethod)
+			.uri(uri)
+			.retrieve()
+			.bodyToMono(responseClass)
+			.timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
+			.retryWhen(Retry.backoff(MAX_RETRY_ATTEMPTS, Duration.ofMillis(500))
+				.doBeforeRetry(this::logBeforeRetry)
+			);
+	}
+
+	public <T, R> Flux<R> sendRequestFlux(HttpMethod httpMethod, String uri, T request, Class<R> resposneClass) {
+		return llmWebClient.method(httpMethod)
 			.uri(uri)
 			.bodyValue(request)
 			.retrieve()
@@ -55,18 +56,6 @@ public class LlmApiClient {
 			.doOnSubscribe(s -> log.info("[LlmApiClient] 스트리밍 요청 시작"))
 			.doOnComplete(() -> log.info("[LlmApiClient] 스트리밍 완료"))
 			.doOnError(e -> log.error("[LlmApiClient] 스트리밍 오류: error={}", e.getMessage()));
-	}
-
-	public <T, R> Mono<R> sendPutRequestMono(String uri, T request, Class<R> responseClass) {
-		return llmWebClient.put()
-			.uri(uri)
-			.bodyValue(request)
-			.retrieve()
-			.bodyToMono(responseClass)
-			.timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-			.retryWhen(Retry.backoff(MAX_RETRY_ATTEMPTS, Duration.ofMillis(500))
-				.doBeforeRetry(this::logBeforeRetry)
-			);
 	}
 
 	private void logBeforeRetry(Retry.RetrySignal retrySignal) {
