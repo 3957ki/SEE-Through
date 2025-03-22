@@ -6,8 +6,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.seethrough.api.common.infrastructure.llm.LlmApiService;
-import com.seethrough.api.common.infrastructure.llm.dto.request.LlmUpdateMemberRequest;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
@@ -34,7 +32,6 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final MemberDtoMapper memberDtoMapper;
-	private final LlmApiService llmApiService;
 	private final NicknameApiService nicknameApiService;
 
 	@Transactional
@@ -109,7 +106,7 @@ public class MemberService {
 	}
 
 	@Transactional
-	public Boolean updateMember(UpdateMemberRequest request) {
+	public void updateMember(UpdateMemberRequest request) {
 		log.debug("[Service] updateMember 호출");
 
 		UUID memberIdObj = UUID.fromString(request.getMemberId());
@@ -118,18 +115,18 @@ public class MemberService {
 
 		member.update(
 			request.getName(),
-			request.getAge(),
+			request.getBirth(),
 			request.getPreferredFoods(),
-			request.getDislikedFoods()
+			request.getDislikedFoods(),
+			request.getAllergies(),
+			request.getDiseases()
 		);
 
-		updateLlmMember(member);
-
-		return true;
+		// TODO: 질병이나 알러지 수정 여부를 파악하여 llm 통해 경고 테이블 생성하기
 	}
 
 	@Transactional
-	public Boolean deleteMember(String memberId) {
+	public void deleteMember(String memberId) {
 		log.debug("[Service] deleteMember 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -137,12 +134,10 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.delete();
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean addPreferredFoods(String memberId, PreferredFoodsRequest request) {
+	public void addPreferredFoods(String memberId, PreferredFoodsRequest request) {
 		log.debug("[Service] addPreferredFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -150,14 +145,10 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.addPreferredFoods(request.getPreferredFoods());
-
-		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean removePreferredFoods(String memberId, PreferredFoodsRequest request) {
+	public void removePreferredFoods(String memberId, PreferredFoodsRequest request) {
 		log.debug("[Service] removePreferredFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -165,14 +156,10 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.removePreferredFoods(request.getPreferredFoods());
-
-		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean addDislikedFoods(String memberId, DislikedFoodsRequest request) {
+	public void addDislikedFoods(String memberId, DislikedFoodsRequest request) {
 		log.debug("[Service] addDislikedFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -180,14 +167,10 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.addDislikedFoods(request.getDislikedFoods());
-
-		updateLlmMember(member);
-
-		return true;
 	}
 
 	@Transactional
-	public Boolean removeDislikedFoods(String memberId, DislikedFoodsRequest request) {
+	public void removeDislikedFoods(String memberId, DislikedFoodsRequest request) {
 		log.debug("[Service] removeDislikedFoods 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -195,10 +178,6 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.removeDislikedFoods(request.getDislikedFoods());
-
-		updateLlmMember(member);
-
-		return true;
 	}
 
 	public void checkMemberExists(UUID memberId) {
@@ -218,10 +197,5 @@ public class MemberService {
 			.orElseThrow(() ->
 				new MemberNotFoundException("구성원을 찾을 수 없습니다.")
 			);
-	}
-
-	private void updateLlmMember(Member member) {
-		LlmUpdateMemberRequest llmRequest = LlmUpdateMemberRequest.from(member);
-		llmApiService.sendMemberUpdate(llmRequest);
 	}
 }

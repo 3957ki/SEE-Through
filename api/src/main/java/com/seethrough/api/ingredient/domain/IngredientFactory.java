@@ -6,17 +6,18 @@ import java.util.UUID;
 public class IngredientFactory {
 
 	public static Ingredient create(
-		UUID memberId,
+		UUID ingredientId,
 		String name,
 		String imagePath,
+		UUID memberId,
 		LocalDateTime inboundAt,
 		LocalDateTime expirationAt
 	) {
 		return Ingredient.builder()
-			.ingredientId(UUID.randomUUID())
-			.memberId(memberId)
+			.ingredientId(ingredientId)
 			.name(name)
 			.imagePath(imagePath)
+			.memberId(memberId)
 			.inboundAt(inboundAt)
 			.expirationAt(expirationAt)
 			.build();

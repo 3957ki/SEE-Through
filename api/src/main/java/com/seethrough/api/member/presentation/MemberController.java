@@ -30,13 +30,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 @Tag(name = "구성원 관리", description = "구성원 정보를 관리하는 API")
 public class MemberController {
 
@@ -55,7 +56,7 @@ public class MemberController {
 		@ApiResponse(responseCode = "200", description = "기존 구성원 로그인 성공"),
 		@ApiResponse(responseCode = "201", description = "신규 구성원 생성 성공")
 	})
-	public ResponseEntity<MemberDetailResponse> login(@RequestBody LoginMemberRequest request) {
+	public ResponseEntity<MemberDetailResponse> login(@Valid @RequestBody LoginMemberRequest request) {
 		log.info("[Controller - POST /api/member] 구성원 식별 요청: request={}", request);
 
 		LoginMemberResult result = memberService.login(request);
@@ -129,23 +130,22 @@ public class MemberController {
 	@Operation(
 		summary = "구성원 수정",
 		description = "UUID로 식별되는 구성원의 정보를 수정합니다.<br>" +
-			"수정 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 수정 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "구성원 수정 성공"),
+		@ApiResponse(responseCode = "204", description = "구성원 수정 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Boolean> updateMember(@RequestBody UpdateMemberRequest request) {
+	public ResponseEntity<Void> updateMember(@Valid @RequestBody UpdateMemberRequest request) {
 		log.info("[Controller - PUT /api/member] 구성원 수정 요청: request={}", request);
 
-		Boolean result = memberService.updateMember(request);
+		memberService.updateMember(request);
 
-		log.debug("[Controller] 구성원 수정 결과: {}", result);
+		log.debug("[Controller] 구성원 수정 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@DeleteMapping("/{memberId}")
@@ -153,107 +153,108 @@ public class MemberController {
 		summary = "구성원 삭제",
 		description = "UUID로 작성된 구성원의 키를 활용해 시스템에 등록된 특정 사용자를 삭제합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 삭제 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "구성원 삭제 성공"),
+		@ApiResponse(responseCode = "204", description = "구성원 삭제 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Boolean> deleteMember(@PathVariable String memberId) {
+	public ResponseEntity<Void> deleteMember(@PathVariable String memberId) {
 		log.info("[Controller - DELETE /api/member/{memberId}] 구성원 삭제 요청: memberId={}", memberId);
 
-		Boolean result = memberService.deleteMember(memberId);
+		memberService.deleteMember(memberId);
 
-		log.debug("[Controller] 구성원 삭제 결과: {}", result);
+		log.debug("[Controller] 구성원 삭제 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@PostMapping("/{memberId}/preferred-foods")
 	@Operation(
 		summary = "선호 음식 추가",
 		description = "UUID로 식별되는 구성원의 선호 음식을 추가합니다.<br>" +
-			"선호 음식 추가 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 추가 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "구성원 삭제 성공"),
+		@ApiResponse(responseCode = "204", description = "선호 음식 추가 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Boolean> addPreferredFoods(@PathVariable String memberId, @RequestBody PreferredFoodsRequest request) {
+	public ResponseEntity<Void> addPreferredFoods(@PathVariable String memberId, @Valid @RequestBody PreferredFoodsRequest request) {
 		log.info("[Controller - POST /api/member/{memberId}/preferred-foods] 선호 음식 추가 요청: memberId={}, request={}", memberId, request);
 
-		Boolean result = memberService.addPreferredFoods(memberId, request);
+		memberService.addPreferredFoods(memberId, request);
 
-		log.debug("[Controller] 선호 음식 추가 결과: {}", result);
+		log.debug("[Controller] 선호 음식 추가 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@DeleteMapping("/{memberId}/preferred-foods")
 	@Operation(
 		summary = "선호 음식 삭제",
 		description = "UUID로 식별되는 구성원의 선호 음식을 삭제합니다.<br>" +
-			"선호 음식 삭제 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 삭제 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "구성원 삭제 성공"),
+		@ApiResponse(responseCode = "200", description = "선호 음식 삭제 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Boolean> removePreferredFoods(@PathVariable String memberId, @RequestBody PreferredFoodsRequest request) {
+	public ResponseEntity<Void> removePreferredFoods(@PathVariable String memberId, @Valid @RequestBody PreferredFoodsRequest request) {
 		log.info("[Controller - DELETE /api/member/{memberId}/preferred-foods] 선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
 
-		Boolean result = memberService.removePreferredFoods(memberId, request);
+		memberService.removePreferredFoods(memberId, request);
 
-		log.debug("[Controller] 선호 음식 삭제 결과: {}", result);
+		log.debug("[Controller] 선호 음식 삭제 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@PostMapping("/{memberId}/disliked-foods")
 	@Operation(
 		summary = "비선호 음식 추가",
 		description = "UUID로 식별되는 구성원의 비선호 음식을 추가합니다.<br>" +
-			"비선호 음식 추가 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 추가 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "구성원 삭제 성공"),
+		@ApiResponse(responseCode = "204", description = "비선호 음식 추가 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Boolean> addDislikedFoods(@PathVariable String memberId, @RequestBody DislikedFoodsRequest request) {
+	public ResponseEntity<Void> addDislikedFoods(@PathVariable String memberId, @Valid @RequestBody DislikedFoodsRequest request) {
 		log.info("[Controller - POST /api/member/{memberId}/disliked-foods] 비선호 음식 추가 요청: memberId={}, request={}", memberId, request);
 
-		Boolean result = memberService.addDislikedFoods(memberId, request);
+		memberService.addDislikedFoods(memberId, request);
 
-		log.debug("[Controller] 비선호 음식 추가 결과: {}", result);
+		log.debug("[Controller] 비선호 음식 추가 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@DeleteMapping("/{memberId}/disliked-foods")
 	@Operation(
 		summary = "비선호 음식 삭제",
 		description = "UUID로 식별되는 구성원의 비선호 음식을 삭제합니다.<br>" +
-			"비선호 음식 삭제 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 수정 이벤트를 처리합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 삭제 성공 여부(Boolean)가 반환됩니다."
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
-	public ResponseEntity<Boolean> removeDislikedFoods(@PathVariable String memberId, @RequestBody DislikedFoodsRequest request) {
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "204", description = "비선호 음식 삭제 성공"),
+		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
+			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+	})
+	public ResponseEntity<Void> removeDislikedFoods(@PathVariable String memberId, @Valid @RequestBody DislikedFoodsRequest request) {
 		log.info("[Controller - DELETE /api/member/{memberId}/disliked-foods] 비선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
 
-		Boolean result = memberService.removeDislikedFoods(memberId, request);
+		memberService.removeDislikedFoods(memberId, request);
 
-		log.debug("[Controller] 비선호 음식 삭제 결과: {}", result);
+		log.debug("[Controller] 비선호 음식 삭제 성공");
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

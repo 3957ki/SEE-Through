@@ -14,7 +14,7 @@ public class MemberDtoMapper {
 			.memberId(member.getMemberId().toString())
 			.name(member.getName())
 			.imagePath(member.getImagePath())
-			.isRegistered(member.getIsRegistered())
+			.isRegistered(member.isRegistered())
 			.build();
 	}
 
@@ -22,11 +22,14 @@ public class MemberDtoMapper {
 		return MemberDetailResponse.builder()
 			.memberId(member.getMemberId().toString())
 			.name(member.getName())
+			.birth(member.getBirth())
 			.age(member.getAge())
 			.imagePath(member.getImagePath())
 			.preferredFoods(member.getPreferredFoods())
 			.dislikedFoods(member.getDislikedFoods())
-			.isRegistered(member.getIsRegistered())
+			.allergies(member.getAllergies())
+			.diseases(member.getDiseases())
+			.isRegistered(member.isRegistered())
 			.createdAt(member.getCreatedAt())
 			.build();
 	}
