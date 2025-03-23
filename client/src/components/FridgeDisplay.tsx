@@ -2,6 +2,7 @@ import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation
 import Header from "@/components/layout/Header";
 import ExamplePage from "@/components/pages/ExamplePage";
 import MainPage from "@/components/pages/MainPage";
+import MealPage from "@/components/pages/MealPage";
 import { cn } from "@/lib/utils";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
@@ -22,6 +23,7 @@ const pages = {
   logs: <LogPage />,
   monitoring: <MonitoringPage />,
   example: <ExamplePage />,
+  meal: <MealPage />,
 };
 
 function FridgeDisplay({
