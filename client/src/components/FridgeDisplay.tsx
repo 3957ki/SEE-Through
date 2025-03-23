@@ -6,6 +6,9 @@ import MealPage from "@/components/pages/MealPage";
 import { cn } from "@/lib/utils";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
+import PinModal from "./modal/PinModal";
+import LogPage from "./pages/LogPage";
+import MonitoringPage from "./pages/MonitoringPage";
 
 interface FridgeDisplayProps {
   containerRef?: RefObject<HTMLElement>;
@@ -13,6 +16,15 @@ interface FridgeDisplayProps {
   targetWidth?: number;
   targetHeight?: number;
 }
+
+// 각 페이지
+const pages = {
+  main: <MainPage />,
+  logs: <LogPage />,
+  monitoring: <MonitoringPage />,
+  example: <ExamplePage />,
+  meal: <MealPage />,
+};
 
 function FridgeDisplay({
   containerRef,
@@ -23,15 +35,23 @@ function FridgeDisplay({
   const localRef = useRef<HTMLDivElement>(null);
   const fridgeDisplayRef = containerRef || localRef;
   const [currentPage, setCurrentPage] = useState<PageType>("main");
+  const [showPinModal, setShowPinModal] = useState(false); // 넘버 패드 모달 state
 
   const handleNavigate = (page: PageType) => {
     setCurrentPage(page);
   };
 
-  const pages: Record<PageType, JSX.Element> = {
-    main: <MainPage />,
-    example: <ExamplePage />,
-    meal: <MealPage />,
+  // 현재 모니터링 페이지가 아닐때만 Pin Modal 작동
+  const handlePinModal = (isShown: boolean) => {
+    if (currentPage !== "monitoring") {
+      setShowPinModal(isShown);
+    }
+  };
+
+  // Pin 번호 성공시 모니터링 페이지로 이동
+  const handlePinSuccess = () => {
+    setShowPinModal(false);
+    handleNavigate("monitoring");
   };
 
   return (
@@ -56,12 +76,25 @@ function FridgeDisplay({
           className="flex-1 overflow-auto"
           style={{ height: `calc(100% - 56px - 56px)` }}
         >
-          <div className="px-1">{pages[currentPage] ?? <MainPage />}</div>
+          <div className="px-1">{pages[currentPage]}</div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 w-full bg-white border-t">
-          <BottomNavigation currentPage={currentPage} onNavigate={handleNavigate} isFixed={false} />
+          <BottomNavigation
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            setShowPinModal={handlePinModal}
+            isFixed={false}
+          />
         </div>
+        {/* Pin 번호 입력창 모달 */}
+        {showPinModal && (
+          <PinModal
+            correctPin="0000" // 임시 비밀번호 0000으로 함
+            onSuccess={handlePinSuccess}
+            onClose={() => setShowPinModal(false)}
+          />
+        )}
       </DialogContextProvider>
     </div>
   );
