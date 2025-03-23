@@ -1,59 +1,51 @@
 import Member from "@/interfaces/Member";
 
-interface MembersResponse {
-  members: Member[];
-  currentMember: Member;
-}
+// Mock data for testing
+const mockMembers: Member[] = [
+  {
+    id: "0",
+    name: "김삼성",
+    avatar: "", // Empty string to test fallback
+  },
+  {
+    id: "1",
+    name: "김철수",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
+  {
+    id: "2",
+    name: "이영희",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    id: "3",
+    name: "박지민",
+    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+  },
+  {
+    id: "4",
+    name: "정태식",
+    avatar: "https://randomuser.me/api/portraits/men/75.jpg",
+  },
+];
 
+// Simulated API calls
 export async function getMembers(): Promise<Member[]> {
-  // try {
-  //   const response = await ServerMembersFetcher().get("/");
-  //   return response.data;
-  // } catch (error) {
-  //   console.error("Failed to fetch members:", error);
-  //   return [];
-  // }
-  return [
-    {
-      id: "1",
-      name: "Gwon Hong",
-      avatar: "https://avatars.githubusercontent.com/gwonhong",
-    },
-    {
-      id: "2",
-      name: "shadcn",
-      avatar: "https://avatars.githubusercontent.com/shadcn",
-    },
-  ];
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockMembers;
 }
 
-export async function getMembersAndCurrentMember(uuid: string): Promise<MembersResponse> {
-  // try {
-  //   const response = await ServerMembersFetcher().get("/");
-  //   const members = response.data;
-  //   const currentMember = uuid
-  //     ? members.find(m => m.id === uuid) ?? members[0]
-  //     : members[0];
-  //   return { members, currentMember };
-  // } catch (error) {
-  //   console.error("Failed to fetch members:", error);
-  //   return { members: [], currentMember: null };
-  // }
+export async function getMembersAndCurrentMember(
+  uuid: string
+): Promise<{ members: Member[]; currentMember: Member | null }> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const members = [
-    {
-      id: "1",
-      name: "Gwon Hong",
-      avatar: "https://avatars.githubusercontent.com/gwonhong",
-    },
-    {
-      id: "2",
-      name: "shadcn",
-      avatar: "https://avatars.githubusercontent.com/shadcn",
-    },
-  ];
+  const currentMember = mockMembers.find((member) => member.id === uuid) || mockMembers[0];
 
-  const currentMember = members.find((m) => m.id === uuid) ?? members[0];
-
-  return { members, currentMember };
+  return {
+    members: mockMembers,
+    currentMember,
+  };
 }
