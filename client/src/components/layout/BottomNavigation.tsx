@@ -7,7 +7,7 @@ import {
 } from "react-icons/bs";
 
 // Available pages for navigation
-export type PageType = "main" | "example" | "meal";
+export type PageType = "main" | "logs" | "monitoring" | "example" | "meal";
 
 // Bottom Navigation Component
 interface BottomNavigationProps {
