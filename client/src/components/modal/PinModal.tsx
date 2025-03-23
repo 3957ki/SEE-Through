@@ -6,11 +6,7 @@ interface PinModalProps {
   onClose?: () => void;
 }
 
-const PinModal: React.FC<PinModalProps> = ({
-  correctPin = "1234", // Default PIN, should be overridden with props
-  onSuccess,
-  onClose,
-}) => {
+const PinModal: React.FC<PinModalProps> = ({ correctPin, onSuccess, onClose }) => {
   const [pin, setPin] = useState<string>("");
 
   // Handle number button click
@@ -31,14 +27,13 @@ const PinModal: React.FC<PinModalProps> = ({
     if (enteredPin === correctPin) {
       // PIN is correct
       setTimeout(() => {
-        alert("PIN이 일치합니다!"); // Alert that PIN matches
         onSuccess && onSuccess();
-      }, 300);
+      }, 200);
     } else {
       // PIN is incorrect, reset after a short delay
       setTimeout(() => {
         setPin("");
-      }, 500);
+      }, 200);
     }
   };
 
@@ -48,8 +43,8 @@ const PinModal: React.FC<PinModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-xl p-6 w-[300px] flex flex-col items-center">
+    <div className="absolute inset-0 z-50 flex justify-center items-center backdrop-blur-sm bg-black/30">
+      <div className="bg-white rounded-xl p-6 w-[300px] flex flex-col items-center shadow-lg">
         <h2 className="text-[#FF9933] text-xl font-semibold mb-6">PIN 입력</h2>
 
         {/* PIN display */}
