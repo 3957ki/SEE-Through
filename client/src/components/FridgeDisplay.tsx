@@ -58,7 +58,7 @@ function FridgeDisplay({
                 case "example":
                   return <ExamplePage />;
                 case "meal":
-                  return <MealPage />; // ✅ 이 부분만 추가하면 해결됩니다!
+                  return <MealPage />;
                 default:
                   return <MainPage />;
               }
