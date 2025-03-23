@@ -28,6 +28,12 @@ function FridgeDisplay({
     setCurrentPage(page);
   };
 
+  const pages: Record<PageType, JSX.Element> = {
+    main: <MainPage />,
+    example: <ExamplePage />,
+    meal: <MealPage />,
+  };
+
   return (
     <div
       className={cn(
@@ -50,20 +56,7 @@ function FridgeDisplay({
           className="flex-1 overflow-auto"
           style={{ height: `calc(100% - 56px - 56px)` }}
         >
-          <div className="px-1">
-            {(() => {
-              switch (currentPage) {
-                case "main":
-                  return <MainPage />;
-                case "example":
-                  return <ExamplePage />;
-                case "meal":
-                  return <MealPage />;
-                default:
-                  return <MainPage />;
-              }
-            })()}
-          </div>
+          <div className="px-1">{pages[currentPage] ?? <MainPage />}</div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 w-full bg-white border-t">
