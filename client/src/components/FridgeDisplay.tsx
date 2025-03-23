@@ -2,6 +2,7 @@ import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation
 import Header from "@/components/layout/Header";
 import ExamplePage from "@/components/pages/ExamplePage";
 import MainPage from "@/components/pages/MainPage";
+import MealPage from "@/components/pages/MealPage";
 import { cn } from "@/lib/utils";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
@@ -49,7 +50,20 @@ function FridgeDisplay({
           className="flex-1 overflow-auto"
           style={{ height: `calc(100% - 56px - 56px)` }}
         >
-          <div className="px-1">{currentPage === "main" ? <MainPage /> : <ExamplePage />}</div>
+          <div className="px-1">
+            {(() => {
+              switch (currentPage) {
+                case "main":
+                  return <MainPage />;
+                case "example":
+                  return <ExamplePage />;
+                case "meal":
+                  return <MealPage />; // ✅ 이 부분만 추가하면 해결됩니다!
+                default:
+                  return <MainPage />;
+              }
+            })()}
+          </div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 w-full bg-white border-t">

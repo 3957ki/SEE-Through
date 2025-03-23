@@ -7,7 +7,7 @@ import {
 } from "react-icons/bs";
 
 // Available pages for navigation
-export type PageType = "main" | "example";
+export type PageType = "main" | "example" | "meal";
 
 // Bottom Navigation Component
 interface BottomNavigationProps {
@@ -32,8 +32,13 @@ function BottomNavigation({
       <button className="flex flex-col items-center justify-center p-2">
         <BsPersonCircle className="w-6 h-6 text-gray-600" />
       </button>
-      <button className="flex flex-col items-center justify-center p-2">
-        <BsCalendarEvent className="w-6 h-6 text-gray-600" />
+      <button
+        className="flex flex-col items-center justify-center p-2"
+        onClick={() => onNavigate("meal")}
+      >
+        <BsCalendarEvent
+          className={`w-6 h-6 ${currentPage === "meal" ? "text-orange-500" : "text-gray-600"}`}
+        />
       </button>
       <button
         className="flex flex-col items-center justify-center p-2"
