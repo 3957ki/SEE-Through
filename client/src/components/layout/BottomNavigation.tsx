@@ -13,12 +13,14 @@ export type PageType = "main" | "logs" | "monitoring" | "example" | "meal";
 interface BottomNavigationProps {
   currentPage: PageType;
   onNavigate: (page: PageType) => void;
+  setShowPinModal: (isShown: boolean) => void;
   isFixed?: boolean; // New prop to control fixed vs relative positioning
 }
 
 function BottomNavigation({
   currentPage,
   onNavigate,
+  setShowPinModal,
   isFixed = true, // Default to fixed positioning for backward compatibility
 }: BottomNavigationProps) {
   // Common classes for the navigation bar
@@ -48,8 +50,23 @@ function BottomNavigation({
           className={`w-6 h-6 ${currentPage === "main" ? "text-orange-500" : "text-gray-600"}`}
         />
       </button>
-      <button className="flex flex-col items-center justify-center p-2">
-        <BsPencilSquare className="w-6 h-6 text-gray-600" />
+      {/* 입출고 로그 페이지 */}
+      <button
+        className="flex flex-col items-center justify-center p-2"
+        onClick={() => onNavigate("logs")}
+      >
+        <BsPencilSquare
+          className={`w-6 h-6 ${currentPage === "logs" ? "text-orange-500" : "text-gray-600"}`}
+        />
+      </button>
+      {/* Pin 번호 입력 창 */}
+      <button
+        className="flex flex-col items-center justify-center p-2"
+        onClick={() => setShowPinModal(true)}
+      >
+        <BsEyeglasses
+          className={`w-6 h-6 ${currentPage === "monitoring" ? "text-orange-500" : "text-gray-600"}`}
+        />
       </button>
       <button
         className="flex flex-col items-center justify-center p-2"
