@@ -4,18 +4,14 @@ import axios from "axios";
 
 export default function FaceRecognition() {
   const webcamRef = useRef(null);
-  const canvasRef = useRef(null);
   const [image, setImage] = useState(null);
   const [ws, setWs] = useState(null);
   const [response, setResponse] = useState(null);
-  const [registerResponse, setRegisterResponse] = useState(null);
-  const [metadataResponse, setMetadataResponse] = useState(null);
-  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [recognizedUser, setRecognizedUser] = useState(null);
 
   // 웹소켓 연결
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:9000/find_faces/");
+    const socket = new WebSocket("ws://localhost:9000/vision/find_faces/");
 
     socket.onopen = () => {
       console.log("WebSocket 연결됨");
@@ -27,11 +23,9 @@ export default function FaceRecognition() {
       setResponse(data);
 
       if (data.result && data.result.length === 0) {
-        setShowRegisterDialog(true);
         setRecognizedUser(null);
       } else if (data.result && data.result.length > 0) {
         setRecognizedUser(data.result[0].identity);
-        setShowRegisterDialog(false);
       }
     };
 
@@ -77,53 +71,6 @@ export default function FaceRecognition() {
     };
   };
 
-  const handleRegister = async () => {
-    if (!image) {
-      alert("사진을 먼저 촬영하세요.");
-      return;
-    }
-
-    const blob = await fetch(`data:image/jpeg;base64,${image}`).then((res) => res.blob());
-    const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await axios.post("http://localhost:9000/register_user", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setRegisterResponse(res.data);
-      setShowRegisterDialog(false);
-    } catch (error) {
-      console.error("등록 실패:", error);
-      setRegisterResponse("등록 실패");
-    }
-  };
-
-  const handleMetadataRequest = async () => {
-    if (!image) {
-      alert("사진을 먼저 촬영하세요.");
-      return;
-    }
-
-    const blob = await fetch(`data:image/jpeg;base64,${image}`).then((res) => res.blob());
-    const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await axios.post("http://localhost:9000/analyze_user", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setMetadataResponse(res.data);
-    } catch (error) {
-      console.error("메타데이터 요청 실패:", error);
-      setMetadataResponse("메타데이터 요청 실패");
-    }
-  };
-
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       <h1 className="text-2xl font-bold mb-6">실시간 얼굴 인증 시스템</h1>
@@ -137,18 +84,6 @@ export default function FaceRecognition() {
           <div className="flex gap-4 mb-6">
             <button onClick={capture} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
               사진 촬영 및 인증
-            </button>
-            <button
-              onClick={handleRegister}
-              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
-            >
-              사용자 등록
-            </button>
-            <button
-              onClick={handleMetadataRequest}
-              className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-            >
-              메타데이터 요청
             </button>
           </div>
 
@@ -182,31 +117,6 @@ export default function FaceRecognition() {
           )}
         </div>
       </div>
-
-      {showRegisterDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-2">신규 사용자 감지</h3>
-            <p className="mb-4 text-gray-600">
-              얼굴 인증 결과, 등록되지 않은 신규 사용자로 확인되었습니다. 사용자 등록을 진행하시겠습니까?
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowRegisterDialog(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleRegister}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              >
-                등록하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
