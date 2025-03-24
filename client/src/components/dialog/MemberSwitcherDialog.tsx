@@ -14,11 +14,11 @@ const MemberItem = ({ member, isSelected, onSelect }: MemberItemProps) => {
   return (
     <div
       className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer ${isSelected ? "bg-orange-100" : "hover:bg-gray-100"}`}
-      onClick={() => onSelect(member.id)}
+      onClick={() => onSelect(member.member_id)}
     >
       <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-        {member.avatar ? (
-          <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+        {member.image_path ? (
+          <img src={member.image_path} alt={member.name} className="w-full h-full object-cover" />
         ) : (
           <BsPersonCircle className="w-6 h-6 text-gray-400" />
         )}
@@ -52,9 +52,9 @@ export function MemberSwitcherDialog() {
         {members.length > 0 ? (
           members.map((member) => (
             <MemberItem
-              key={member.id}
+              key={member.member_id}
               member={member}
-              isSelected={member.id === currentMember?.id}
+              isSelected={member.member_id === currentMember?.member_id}
               onSelect={handleSelectMember}
             />
           ))

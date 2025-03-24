@@ -6,7 +6,7 @@ import { useDialog } from "@/contexts/DialogContext";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 
 const MEASUREMENT_TYPES = ["절병", "알러지", "선호 음식", "비선호 음식"] as const;
 
@@ -16,11 +16,42 @@ export default function MyPage() {
   const { currentMember } = useCurrentMember();
   const { showDialog, hideDialog } = useDialog();
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
-  const [name, setName] = useState("");
-  const [birthday, setBirthday] = useState<Date>();
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [targetWeight, setTargetWeight] = useState("");
+  const [name, setName] = useState(currentMember?.name || "");
+  const [birthday, setBirthday] = useState<Date | undefined>(
+    currentMember && "birth" in currentMember && currentMember.birth
+      ? new Date(currentMember.birth)
+      : undefined
+  );
+  const [preferredFoods, setPreferredFoods] = useState<string[]>(
+    currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : []
+  );
+  const [dislikedFoods, setDislikedFoods] = useState<string[]>(
+    currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : []
+  );
+  const [allergies, setAllergies] = useState<string[]>(
+    currentMember && "allergies" in currentMember ? currentMember.allergies : []
+  );
+  const [diseases, setDiseases] = useState<string[]>(
+    currentMember && "diseases" in currentMember ? currentMember.diseases : []
+  );
+
+  // Update state values when currentMember changes
+  useEffect(() => {
+    setName(currentMember?.name || "");
+    setBirthday(
+      currentMember && "birth" in currentMember && currentMember.birth
+        ? new Date(currentMember.birth)
+        : undefined
+    );
+    setPreferredFoods(
+      currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : []
+    );
+    setDislikedFoods(
+      currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : []
+    );
+    setAllergies(currentMember && "allergies" in currentMember ? currentMember.allergies : []);
+    setDiseases(currentMember && "diseases" in currentMember ? currentMember.diseases : []);
+  }, [currentMember]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, setter: (value: string) => void) => {
     setter(e.target.value);
@@ -42,6 +73,38 @@ export default function MyPage() {
     );
   };
 
+  const getCurrentList = () => {
+    switch (measurementType) {
+      case "선호 음식":
+        return preferredFoods;
+      case "비선호 음식":
+        return dislikedFoods;
+      case "알러지":
+        return allergies;
+      case "절병":
+        return diseases;
+      default:
+        return [];
+    }
+  };
+
+  const setCurrentList = (newList: string[]) => {
+    switch (measurementType) {
+      case "선호 음식":
+        setPreferredFoods(newList);
+        break;
+      case "비선호 음식":
+        setDislikedFoods(newList);
+        break;
+      case "알러지":
+        setAllergies(newList);
+        break;
+      case "절병":
+        setDiseases(newList);
+        break;
+    }
+  };
+
   return (
     <div className="pb-16 relative">
       <div className="p-4 flex flex-col gap-4">
@@ -50,7 +113,7 @@ export default function MyPage() {
           <div className="flex-1">
             <div className="text-sm text-gray-500 mb-1">이름</div>
             <Input
-              placeholder={currentMember?.name || "김삼성"}
+              placeholder="이름을 입력하세요"
               value={name}
               onChange={(e) => handleInputChange(e, setName)}
             />
@@ -63,7 +126,7 @@ export default function MyPage() {
               className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {birthday ? format(birthday, "yyyy.MM.dd", { locale: ko }) : "1998.11.05"}
+              {birthday ? format(birthday, "yyyy.MM.dd", { locale: ko }) : "생일을 알려주세요!"}
             </Button>
           </div>
         </div>
@@ -91,32 +154,41 @@ export default function MyPage() {
 
         {/* Input Fields */}
         <div className="space-y-4">
+          {getCurrentList().map((item, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input
+                placeholder={`${measurementType} 입력`}
+                value={item}
+                onChange={(e) => {
+                  const newList = [...getCurrentList()];
+                  newList[index] = e.target.value;
+                  setCurrentList(newList);
+                }}
+                className="flex-1"
+              />
+              <div
+                className="text-gray-400 cursor-pointer"
+                onClick={() => {
+                  const newList = getCurrentList().filter((_, i) => i !== index);
+                  setCurrentList(newList);
+                }}
+              >
+                삭제
+              </div>
+            </div>
+          ))}
           <div className="flex items-center gap-2">
             <Input
-              placeholder="소주"
-              value={height}
-              onChange={(e) => handleInputChange(e, setHeight)}
+              placeholder={`${measurementType} 추가`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                  setCurrentList([...getCurrentList(), e.currentTarget.value.trim()]);
+                  e.currentTarget.value = "";
+                }
+              }}
               className="flex-1"
             />
-            <div className="text-gray-400">삭제</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="피자"
-              value={weight}
-              onChange={(e) => handleInputChange(e, setWeight)}
-              className="flex-1"
-            />
-            <div className="text-gray-400">삭제</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="초밥"
-              value={targetWeight}
-              onChange={(e) => handleInputChange(e, setTargetWeight)}
-              className="flex-1"
-            />
-            <div className="text-gray-400">삭제</div>
+            <div className="text-gray-400">추가</div>
           </div>
         </div>
 
