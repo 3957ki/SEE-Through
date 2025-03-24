@@ -1,5 +1,4 @@
 import { SectionTitle } from "@/components/ui/section";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -7,10 +6,6 @@ import { useState } from "react";
 import {
   BsArrowClockwise,
   BsCalendarEvent,
-  BsClipboardCheck,
-  BsFillChatDotsFill,
-  BsFillHouseDoorFill,
-  BsFillPersonFill,
   BsHandThumbsDown,
   BsHandThumbsUp,
 } from "react-icons/bs";
@@ -119,20 +114,7 @@ function MealSection({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function BottomNavBar() {
-  return (
-    <div className="fixed bottom-0 w-full border-t bg-white flex justify-around py-2 z-10">
-      <BsFillPersonFill className="w-6 h-6" />
-      <BsClipboardCheck className="w-6 h-6" />
-      <BsFillHouseDoorFill className="w-6 h-6" />
-      <BsFillChatDotsFill className="w-6 h-6" />
-      <BsCalendarEvent className="w-6 h-6" />
-    </div>
-  );
-}
-
 function MealPage() {
-  const { currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const handleGoToday = () => {
@@ -155,8 +137,6 @@ function MealPage() {
 
       <MealSection title="아침" items={["삼각김밥", "바나나"]} />
       <MealSection title="점심" items={["닭가슴살볶음밥", "토마토", "오렌지주스 150ml"]} />
-
-      <BottomNavBar />
     </div>
   );
 }
