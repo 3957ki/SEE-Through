@@ -10,6 +10,7 @@ class MealScheduleRequest(BaseModel):
 class MealScheduleResponse(BaseModel):
     meal_id: str
     menu: List[str]
+    reason: str
 
 class MealPlanRequest(BaseModel):
     meal_plan_id: str
