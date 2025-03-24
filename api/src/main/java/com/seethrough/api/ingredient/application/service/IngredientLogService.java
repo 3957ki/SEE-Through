@@ -23,6 +23,7 @@ import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.Ing
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientLogEmbeddingRequest;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.IngredientLogEmbeddingResponse;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientLogListResponse;
+import com.seethrough.api.member.application.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +37,18 @@ public class IngredientLogService {
 	private final IngredientLogRepository ingredientLogRepository;
 	private final IngredientLogDtoMapper ingredientLogDtoMapper;
 	private final LlmApiIngredientLogService llmApiIngredientLogService;
+	private final MemberService memberService;
 
-	public SliceResponseDto<IngredientLogListResponse> getIngredientLogList(Integer page, Integer size, String sortBy, String sortDirection) {
+	public SliceResponseDto<IngredientLogListResponse> getIngredientLogList(
+		String memberId, Integer page, Integer size, String sortBy, String sortDirection
+	) {
 		log.debug("[Service] getIngredientLogList 호출");
+
+		UUID memberIdObj = null;
+		if (memberId != null && !memberId.isEmpty()) {
+			memberIdObj = UUID.fromString(memberId);
+			memberService.checkMemberExists(memberIdObj);
+		}
 
 		SliceRequestDto sliceRequestDto = SliceRequestDto.builder()
 			.page(page)
@@ -47,7 +57,7 @@ public class IngredientLogService {
 			.sortDirection(sortDirection)
 			.build();
 
-		Slice<IngredientLog> ingredientLogs = ingredientLogRepository.findIngredientLogs(sliceRequestDto.toPageable());
+		Slice<IngredientLog> ingredientLogs = ingredientLogRepository.findIngredientLogs(memberIdObj, sliceRequestDto.toPageable());
 
 		return SliceResponseDto.of(ingredientLogs.map(ingredientLogDtoMapper::toListResponse));
 	}

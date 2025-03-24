@@ -1,6 +1,7 @@
 package com.seethrough.api.ingredient.infrastructure;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -24,11 +25,11 @@ public class IngredientLogRepositoryImpl implements IngredientLogRepository {
 	private final IngredientLogJpaRepository ingredientLogJpaRepository;
 
 	@Override
-	public Slice<IngredientLog> findIngredientLogs(Pageable pageable) {
-		log.debug("[Repository] findIngredientLogs 호출: page={}, size={}, sort={}", pageable.getPageNumber(), pageable.getPageSize(),
-			pageable.getSort());
+	public Slice<IngredientLog> findIngredientLogs(UUID memberId, Pageable pageable) {
+		log.debug("[Repository] findIngredientLogs 호출: memberId={}, page={}, size={}, sort={}",
+			memberId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
-		Slice<IngredientLog> entities = ingredientLogJpaRepository.findAllBy(pageable);
+		Slice<IngredientLog> entities = ingredientLogJpaRepository.findAllByUserIdOptional(memberId, pageable);
 
 		log.debug("[Repository] 조회된 입출고 로그 수: {}, 남은 데이터 여부: {}", entities.getNumberOfElements(), entities.hasNext());
 

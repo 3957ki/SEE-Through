@@ -59,7 +59,8 @@ public class IngredientController {
 		@Parameter(description = "정렬 방향 (ASC: 오름차순, DESC: 내림차순)")
 		@RequestParam(defaultValue = "ASC") String sortDirection
 	) {
-		log.info("[Controller - GET /api/ingredient] 식재료 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy, sortDirection);
+		log.info("[Controller - GET /api/ingredients] 식재료 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy,
+			sortDirection);
 
 		SliceResponseDto<IngredientListResponse> responseList = ingredientService.getIngredientList(page, size, sortBy, sortDirection);
 
@@ -88,7 +89,7 @@ public class IngredientController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<IngredientDetailResponse> getIngredientDetail(@PathVariable String ingredientId) {
-		log.info("[Controller - GET /api/ingredient/{ingredientId}] 식재료 조회 요청: ingredientId={}", ingredientId);
+		log.info("[Controller - GET /api/ingredients/{ingredientId}] 식재료 조회 요청: ingredientId={}", ingredientId);
 
 		IngredientDetailResponse response = ingredientService.getIngredientDetail(ingredientId);
 
@@ -112,7 +113,7 @@ public class IngredientController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> inboundIngredients(@Valid @RequestBody InboundIngredientsRequest request) {
-		log.info("[Controller - POST /api/ingredient] 식재료 입고 요청: request={}", request);
+		log.info("[Controller - POST /api/ingredients] 식재료 입고 요청: request={}", request);
 
 		ingredientService.inboundIngredients(request);
 
@@ -138,7 +139,7 @@ public class IngredientController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<String> outboundIngredients(@Valid @RequestBody OutboundIngredientsRequest request) {
-		log.info("[Controller - DELETE /api/ingredient] 식재료 출고 요청: request={}", request);
+		log.info("[Controller - DELETE /api/ingredients] 식재료 출고 요청: request={}", request);
 
 		String result = ingredientService.outboundIngredients(request);
 
