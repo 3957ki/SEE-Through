@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.seethrough.api.member.domain.Member;
 import com.seethrough.api.member.presentation.dto.response.MemberDetailResponse;
 import com.seethrough.api.member.presentation.dto.response.MemberListResponse;
+import com.seethrough.api.member.presentation.dto.response.MemberMonitoringListResponse;
 
 @Component
 public class MemberDtoMapper {
@@ -31,6 +32,15 @@ public class MemberDtoMapper {
 			.diseases(member.getDiseases())
 			.isRegistered(member.isRegistered())
 			.createdAt(member.getCreatedAt())
+			.build();
+	}
+
+	public MemberMonitoringListResponse toMonitoringListResponse(Member member) {
+		return MemberMonitoringListResponse.builder()
+			.memberId(member.getMemberId().toString())
+			.name(member.getName())
+			.imagePath(member.getImagePath())
+			.isMonitored(member.isMonitored())
 			.build();
 	}
 }

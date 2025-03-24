@@ -71,6 +71,10 @@ public class Member {
 	private boolean isRegistered = Boolean.FALSE;
 
 	@Builder.Default
+	@Column(name = "is_monitored", columnDefinition = "BOOLEAN", nullable = false)
+	private boolean isMonitored = Boolean.FALSE;
+
+	@Builder.Default
 	@Column(name = "recognition_times", columnDefinition = "INTEGER", nullable = false)
 	private int recognitionTimes = 0;
 
