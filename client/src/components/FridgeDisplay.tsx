@@ -79,7 +79,7 @@ function FridgeDisplay({
           <div className="px-1">{pages[currentPage]}</div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 w-full bg-white border-t">
+        <div className="w-full bg-white border-t">
           <BottomNavigation
             currentPage={currentPage}
             onNavigate={handleNavigate}

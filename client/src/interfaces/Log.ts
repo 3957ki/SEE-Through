@@ -1,21 +1,31 @@
 // 로그 인터페이스
 export interface Log {
-  ingredientLogId: string;
-  ingredientName: string;
-  ingredientImagePath: string;
-  memberId: string;
-  memberName: string;
-  memberImagePath: string;
-  movementName: string;
-  createdAt: string;
+  ingredient_log_id: string;
+  ingredient_name: string;
+  ingredient_image_path: string;
+  member_id: string;
+  member_name: string;
+  member_image_path: string;
+  movement_name: string;
+  created_at: string;
 }
 
 // 그룹화된 로그 인터페이스
 export interface GroupedLogs {
   [date: string]: {
     material: string;
-    userName: string;
+    user_name: string;
     type: string;
     time: string;
   }[];
+}
+
+// 로그 응답 인터페이스
+export interface LogsResponse {
+  content: Log[];
+  slice_info: {
+    current_page: number;
+    page_size: number;
+    has_next: boolean;
+  };
 }
