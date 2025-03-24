@@ -302,20 +302,20 @@ public class MemberController {
 		summary = "모니터링 여부 수정",
 		description = "UUID로 식별되는 구성원의 모니터링 정보를 수정합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
-			"응답으로는 204 No Content 상태 코드가 반환됩니다."
+			"응답으로는 200 Ok 상태 코드와 수정된 모니터링 여부가 반환됩니다."
 	)
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "204", description = "모니터링 여부 수정 성공"),
+		@ApiResponse(responseCode = "200", description = "모니터링 여부 수정 성공"),
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<Void> updateMemberMonitoring(@PathVariable String memberId) {
+	public ResponseEntity<Boolean> updateMemberMonitoring(@PathVariable String memberId) {
 		log.info("[Controller - PATCH /api/members/{memberId}/monitoring] 모니터링 여부 수정 요청: memberId={}", memberId);
 
-		memberService.updateMemberMonitoring(memberId);
+		boolean result = memberService.updateMemberMonitoring(memberId);
 
 		log.debug("[Controller] 모니터링 여부 수정 성공");
 
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.ok(result);
 	}
 }

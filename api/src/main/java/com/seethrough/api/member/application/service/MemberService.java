@@ -209,7 +209,7 @@ public class MemberService {
 	}
 
 	@Transactional
-	public void updateMemberMonitoring(String memberId) {
+	public boolean updateMemberMonitoring(String memberId) {
 		log.debug("[Service] updateMemberMonitoring 호출");
 
 		UUID memberIdObj = UUID.fromString(memberId);
@@ -217,6 +217,8 @@ public class MemberService {
 		Member member = findMember(memberIdObj);
 
 		member.changeMonitoring();
+
+		return member.isMonitored();
 	}
 
 	private Member findMember(UUID memberId) {
