@@ -10,6 +10,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.ingredient.application.mapper.IngredientLogDtoMapper;
@@ -67,7 +68,7 @@ public class IngredientLogService {
 
 		List<IngredientLog> ingredientLogs = ingredients.stream()
 			.map(ingredient -> IngredientLogFactory.create(
-				UUID.randomUUID(),
+				UuidCreator.getTimeOrderedEpoch(),
 				ingredient.getName(),
 				ingredient.getImagePath(),
 				ingredient.getMemberId(),
@@ -91,7 +92,7 @@ public class IngredientLogService {
 
 		List<IngredientLog> ingredientLogs = ingredients.stream()
 			.map(ingredient -> IngredientLogFactory.create(
-				UUID.randomUUID(),
+				UuidCreator.getTimeOrderedEpoch(),
 				ingredient.getName(),
 				ingredient.getImagePath(),
 				ingredient.getMemberId(),
