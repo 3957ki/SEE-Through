@@ -81,8 +81,7 @@ public class IngredientService {
 	public void inboundIngredients(InboundIngredientsRequest request) {
 		log.debug("[Service] inboundIngredients 호출");
 
-		UUID memberIdObj = UUID.fromString(request.getMemberId());
-		memberService.checkMemberExists(memberIdObj);
+		UUID memberIdObj = memberService.checkMemberExists(request.getMemberId());
 
 		LocalDateTime now = LocalDateTime.now();
 
@@ -109,8 +108,7 @@ public class IngredientService {
 	public String outboundIngredients(OutboundIngredientsRequest request) {
 		log.debug("[Service] outboundIngredients 호출");
 
-		UUID memberIdObj = UUID.fromString(request.getMemberId());
-		memberService.checkMemberExists(memberIdObj);
+		UUID memberIdObj = memberService.checkMemberExists(request.getMemberId());
 
 		List<UUID> ingredientIdList = request.getIngredientIdList()
 			.stream()

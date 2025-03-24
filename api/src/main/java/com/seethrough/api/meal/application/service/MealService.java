@@ -29,8 +29,7 @@ public class MealService {
 	public DailyMealResponse getDailyMeal(String memberId, LocalDate servingDate) {
 		log.debug("[Service] getDailyMeal 호출");
 
-		UUID memberIdObj = UUID.fromString(memberId);
-		memberService.checkMemberExists(memberIdObj);
+		UUID memberIdObj = memberService.checkMemberExists(memberId);
 
 		List<Meal> meals = mealRepository.findMealsByMemberIdAndDate(memberIdObj, servingDate);
 

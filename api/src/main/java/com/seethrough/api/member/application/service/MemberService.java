@@ -181,16 +181,20 @@ public class MemberService {
 		member.removeDislikedFoods(request.getDislikedFoods());
 	}
 
-	public void checkMemberExists(UUID memberId) {
+	public UUID checkMemberExists(String memberId) {
 		if (memberId == null) {
 			throw new MemberNotFoundException("구성원 ID가 존재하지 않습니다.");
 		}
 
-		boolean result = memberRepository.existsByMemberId(memberId);
+		UUID memberIdObj = UUID.fromString(memberId);
+
+		boolean result = memberRepository.existsByMemberId(memberIdObj);
 
 		if (!result) {
 			throw new MemberNotFoundException("구성원을 찾을 수 없습니다.");
 		}
+
+		return memberIdObj;
 	}
 
 	public SliceResponseDto<MemberMonitoringListResponse> getMemberMonitoringList(Integer page, Integer size, String sortBy, String sortDirection) {
