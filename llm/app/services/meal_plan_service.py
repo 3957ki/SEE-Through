@@ -36,7 +36,8 @@ def create_meal_plan_service(request: MealPlanRequest, db: Session) -> MealPlanR
     response_schedules = [
         MealScheduleResponse(
             meal_id=request.schedules[i].meal_id,
-            menu=llm_result.schedules[i].menu
+            menu=llm_result.schedules[i].menu,
+            reason=llm_result.schedules[i].reason
         )
         for i in range(len(request.schedules))
     ]
