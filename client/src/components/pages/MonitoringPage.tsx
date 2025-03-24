@@ -4,12 +4,10 @@ import { Lock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 export default function MonitoringPage() {
-  // 상태 관리
   const [users, setUsers] = useState<MonitoringUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [savingUsers, setSavingUsers] = useState<number[]>([]); // 저장 중인 사용자 ID 추적
+  const [savingUsers, setSavingUsers] = useState<string[]>([]); // UUID는 string
 
-  // 사용자 데이터 로드
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -22,45 +20,31 @@ export default function MonitoringPage() {
     }
   }, []);
 
-  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
-  // 사용자 선택 토글 및 즉시 저장 함수
-  const toggleUserSelection = async (userId: number) => {
-    // 현재 토글 중인 사용자를 저장 중 상태로 표시
+  const toggleUserSelection = async (userId: string) => {
     setSavingUsers((prev) => [...prev, userId]);
 
-    // 사용자 상태 업데이트
+    // UI 업데이트 (토글)
     const updatedUsers = users.map((user) =>
-      user.id === userId ? { ...user, isMonitoring: !user.isMonitoring } : user
+      user.member_id === userId ? { ...user, is_monitored: !user.is_monitored } : user
     );
-
-    // UI 상태 즉시 업데이트
     setUsers(updatedUsers);
 
     try {
-      // 모니터링 대상 사용자 ID 목록
-      const monitoringUserIds = updatedUsers
-        .filter((user) => user.isMonitoring)
-        .map((user) => user.id);
-
-      // 저장 요청 보내기
-      const success = await updateMonitoring({ userIds: monitoringUserIds });
+      const success = await updateMonitoring({ userId });
 
       if (!success) {
-        // 저장 실패 시 상태 롤백
-        setUsers(users);
+        setUsers(users); // 롤백
         alert("저장에 실패했습니다.");
       }
     } catch (error) {
       console.error("저장 실패:", error);
-      // 저장 실패 시 상태 롤백
-      setUsers(users);
+      setUsers(users); // 롤백
       alert("저장 중 오류가 발생했습니다.");
     } finally {
-      // 저장 중 상태 제거
       setSavingUsers((prev) => prev.filter((id) => id !== userId));
     }
   };
@@ -77,23 +61,23 @@ export default function MonitoringPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-6">
           {users.map((user) => {
-            const isSaving = savingUsers.includes(user.id);
+            const isSaving = savingUsers.includes(user.member_id);
 
             return (
               <div
-                key={user.id}
-                onClick={() => !isSaving && toggleUserSelection(user.id)}
+                key={user.member_id}
+                onClick={() => !isSaving && toggleUserSelection(user.member_id)}
                 className={`
                   p-4 rounded-lg flex flex-col items-center justify-center 
                   ${isSaving ? "opacity-70" : "cursor-pointer"}
-                  ${user.isMonitoring ? "border-2 border-orange-400" : "border border-gray-300"}
+                  ${user.is_monitored ? "border-2 border-orange-400" : "border border-gray-300"}
                 `}
               >
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                  <div className="w-6 h-6 bg-black rounded-full relative">
-                    <div className="absolute w-3 h-3 bg-black rounded-full -bottom-1 left-1/2 transform -translate-x-1/2"></div>
-                  </div>
-                </div>
+                <img
+                  src={user.image_path}
+                  alt={user.name}
+                  className="w-16 h-16 rounded-full mb-2 object-cover"
+                />
                 <span className="text-center">{user.name}</span>
                 {isSaving && <span className="text-xs text-orange-500 mt-1">저장 중...</span>}
               </div>

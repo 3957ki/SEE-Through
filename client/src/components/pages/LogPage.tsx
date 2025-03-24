@@ -1,21 +1,8 @@
 import { getLogs } from "@/api/logs";
 import { Button } from "@/components/ui/button";
-import type { GroupedLogs, Log } from "@/interfaces/Log";
+import type { GroupedLogs, LogsResponse } from "@/interfaces/Log";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-
-// 페이지네이션 정보 인터페이스
-interface SliceInfo {
-  currentPage: number;
-  pageSize: number;
-  hasNext: boolean;
-}
-
-// API 응답 인터페이스
-interface LogsResponse {
-  content: Log[];
-  sliceInfo: SliceInfo;
-}
 
 export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
@@ -35,15 +22,15 @@ export default function LogPage() {
 
         // 페이지네이션 파라미터 추가
         const response: LogsResponse = await getLogs(currentPage, pageSize);
-        const { content, sliceInfo } = response;
+        const { content, slice_info } = response;
 
         // 페이지네이션 정보 업데이트
-        setHasNextPage(sliceInfo.hasNext);
+        setHasNextPage(slice_info.has_next);
 
         // 날짜별로 로그 그룹화
         const grouped = content.reduce<GroupedLogs>((acc, log) => {
           // ISO 날짜 문자열에서 날짜 부분만 추출 (YYYY-MM-DD)
-          const date = new Date(log.createdAt).toISOString().split("T")[0];
+          const date = new Date(log.created_at).toISOString().split("T")[0];
 
           if (!acc[date]) {
             acc[date] = [];
@@ -51,10 +38,10 @@ export default function LogPage() {
 
           // 로그 데이터 형식 변환
           acc[date].push({
-            material: log.ingredientName,
-            userName: log.memberName,
-            type: log.movementName,
-            time: new Date(log.createdAt).toLocaleTimeString("ko-KR", {
+            material: log.ingredient_name,
+            user_name: log.member_name,
+            type: log.movement_name,
+            time: new Date(log.created_at).toLocaleTimeString("ko-KR", {
               hour: "2-digit",
               minute: "2-digit",
             }),
@@ -106,6 +93,30 @@ export default function LogPage() {
     <div className="max-w-md mx-auto p-4">
       {Object.entries(groupedLogs).map(([date, entries]) => (
         <div key={date} className="mb-6">
+          {/* 페이지네이션 컨트롤 */}
+          <div className="flex justify-between items-center px-4">
+            <Button
+              variant="outline"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              이전
+            </Button>
+
+            <span className="text-sm font-medium">페이지 {currentPage}</span>
+
+            <Button
+              variant="outline"
+              onClick={goToNextPage}
+              disabled={!hasNextPage}
+              className="flex items-center gap-1"
+            >
+              다음
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
           {/* 날짜 헤더 */}
           <h2 className="text-xl font-bold text-center mb-4">{date}</h2>
 
@@ -120,7 +131,7 @@ export default function LogPage() {
                   </span>
 
                   {/* 사용자 이름 */}
-                  <span className="ml-2"> {entry.userName}</span>
+                  <span className="ml-2"> {entry.user_name}</span>
 
                   {/* 구분자 */}
                   <span className="mx-2">•</span>
@@ -140,31 +151,6 @@ export default function LogPage() {
           </div>
         </div>
       ))}
-
-      {/* 페이지네이션 컨트롤 */}
-      <div className="flex justify-between items-center mt-8 px-4">
-        <Button
-          variant="outline"
-          onClick={goToPreviousPage}
-          disabled={currentPage === 1}
-          className="flex items-center gap-1"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          이전
-        </Button>
-
-        <span className="text-sm font-medium">페이지 {currentPage}</span>
-
-        <Button
-          variant="outline"
-          onClick={goToNextPage}
-          disabled={!hasNextPage}
-          className="flex items-center gap-1"
-        >
-          다음
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 }
