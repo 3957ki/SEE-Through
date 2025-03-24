@@ -7,7 +7,7 @@ from app.core.config import OPENAI_API_KEY
 
 ### 위험 음식 코멘트 생성
 # LangChain LLM 객체 생성 (GPT-4 Turbo 사용)
-llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
 
 # JSON 응답을 강제할 스키마 정의
 class RiskyFoodSchema(BaseModel):

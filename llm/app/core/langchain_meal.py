@@ -5,10 +5,11 @@ from pydantic import BaseModel, Field
 from app.core.config import OPENAI_API_KEY
 from typing import List
 
-llm = ChatOpenAI(model="gpt-4-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
 
 class MealScheduleSchema(BaseModel):
     menu: List[str] = Field(..., description="해당 식사에 포함될 음식 5가지")
+    reason: str = Field(..., description="이 식단이 구성된 이유 또는 설명")
 
 class MealPlanSchema(BaseModel):
     schedules: List[MealScheduleSchema] = Field(..., description="각 시간대별 식단")
@@ -24,9 +25,9 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 - 단, 특정 음식을 만들기 위해 꼭 필요한 재료가 `available_ingredients`에 없으면, `required_ingredients` 리스트에 추가합니다.
                                                     
 1. 사용 가능한 재료 목록: {available_ingredients}
-2. 참여자들의 선호 음식 목록: {preferred_foods}
-3. 참여자들의 비선호 음식 목록: {disliked_foods}
-4. 참여자들의 알러지 정보: {allergies}
+2. 가족 구성원의 선호 음식 목록: {preferred_foods}
+3. 가족 구성원들의 비선호 음식 목록: {disliked_foods}
+4. 가족 구성원의 알러지 정보: {allergies}
 5. 식단 설명: "{description}"
 
 ## 추가 제약 사항
@@ -38,10 +39,21 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
    - **아침(6~10시):** 가벼운 식사 (죽, 샐러드, 계란, 빵 등)
    - **점심(11~15시):** 일반적인 한식 또는 양식 (밥, 국, 반찬 등)
    - **저녁(16~21시):** 가벼우면서도 포만감 있는 식사 (구이, 찜 요리 등)
-6. **알러지가 있는 재료는 사용하지 말아야 합니다.**                                                  
+6. **알러지가 있는 재료는 사용하지 말아야 합니다.** 
+7. `schedules`의 길이는 입력으로 주어진 meal_id 개수({meal_count})와 반드시 일치해야 합니다.
 
-응답 형식:
+또한, 각 식단이 해당 시간대에 추천된 이유를 `reason` 필드에 자연스럽게 설명해 주세요. 한 줄로 작성해주세요. (~니다. 로 끝나도록록)
+이 설명은 다음 요소들 중 최소한 하나 이상을 포함하여 **가족 구성원에 맞춘 개인화된 이유**가 드러나야 합니다:
+- 해당 메뉴가 가족 구성원의 선호 음식과 얼마나 잘 맞는지  
+- 냉장고에 있는 재료를 활용했다는 점  
+- 최근 자주 먹은 음식과의 연관성 또는 변화를 주기 위한 구성 의도
+                                                    
+아래 조건을 반드시 지키세요:
+- 응답은 설명 없이 오직 JSON 형식으로만 출력하세요.
+- 예시, 텍스트 설명, 코드 블록 없이 JSON 객체만 출력해야 합니다.
+- JSON의 형식은 아래 스키마와 정확히 일치해야 합니다.
 {format_instructions}
+
 """)
 
 def generate_meal_plan_from_llm(description, schedules, preferred_foods, disliked_foods, allergies, available_ingredients):
@@ -49,13 +61,15 @@ def generate_meal_plan_from_llm(description, schedules, preferred_foods, dislike
     LLM을 이용하여 최적의 식단을 생성하는 함수
     """
     response = llm.invoke(prompt_meal_plan.format(
-        description=description,
-        available_ingredients=", ".join(available_ingredients),
-        preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
-        disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
-        allergies=", ".join(allergies) if allergies else "없음",
-        format_instructions=parser.get_format_instructions()
-    ))
+    description=description,
+    available_ingredients=", ".join(available_ingredients),
+    preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
+    disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
+    allergies=", ".join(allergies) if allergies else "없음",
+    meal_count=len(schedules), 
+    format_instructions=parser.get_format_instructions()
+))
+
 
     try:
         return parser.parse(response.content)
