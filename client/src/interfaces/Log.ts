@@ -1,13 +1,21 @@
-// 로그 데이터 타입 정의
-export interface LogEntry {
-  date: string;
-  time: string;
-  material: string;
-  userName: string;
-  type: "입고" | "출고";
+// 로그 인터페이스
+export interface Log {
+  ingredientLogId: string;
+  ingredientName: string;
+  ingredientImagePath: string;
+  memberId: string;
+  memberName: string;
+  memberImagePath: string;
+  movementName: string;
+  createdAt: string;
 }
 
-// 날짜별로 그룹화된 로그 타입
+// 그룹화된 로그 인터페이스
 export interface GroupedLogs {
-  [date: string]: LogEntry[];
+  [date: string]: {
+    material: string;
+    userName: string;
+    type: string;
+    time: string;
+  }[];
 }

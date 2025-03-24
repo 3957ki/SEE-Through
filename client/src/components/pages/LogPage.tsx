@@ -1,11 +1,31 @@
 import { getLogs } from "@/api/logs";
-import { GroupedLogs } from "@/interfaces/Log";
+import { Button } from "@/components/ui/button";
+import type { GroupedLogs, Log } from "@/interfaces/Log";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+
+// 페이지네이션 정보 인터페이스
+interface SliceInfo {
+  currentPage: number;
+  pageSize: number;
+  hasNext: boolean;
+}
+
+// API 응답 인터페이스
+interface LogsResponse {
+  content: Log[];
+  sliceInfo: SliceInfo;
+}
 
 export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 페이지네이션 상태 추가
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const pageSize = 10; // 페이지당 항목 수
 
   // 백엔드에서 로그 데이터 가져오기
   useEffect(() => {
@@ -13,16 +33,36 @@ export default function LogPage() {
       try {
         setIsLoading(true);
 
-        const data = await getLogs();
+        // 페이지네이션 파라미터 추가
+        const response: LogsResponse = await getLogs(currentPage, pageSize);
+        const { content, sliceInfo } = response;
+
+        // 페이지네이션 정보 업데이트
+        setHasNextPage(sliceInfo.hasNext);
 
         // 날짜별로 로그 그룹화
-        const grouped = data.reduce<GroupedLogs>((acc, log) => {
-          if (!acc[log.date]) {
-            acc[log.date] = [];
+        const grouped = content.reduce<GroupedLogs>((acc, log) => {
+          // ISO 날짜 문자열에서 날짜 부분만 추출 (YYYY-MM-DD)
+          const date = new Date(log.createdAt).toISOString().split("T")[0];
+
+          if (!acc[date]) {
+            acc[date] = [];
           }
-          acc[log.date].push(log);
+
+          // 로그 데이터 형식 변환
+          acc[date].push({
+            material: log.ingredientName,
+            userName: log.memberName,
+            type: log.movementName,
+            time: new Date(log.createdAt).toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            // 추가 필드가 필요하면 여기에 매핑
+          });
+
           return acc;
-        }, {} as GroupedLogs); // 초기값에 타입 어노테이션 추가
+        }, {});
 
         setGroupedLogs(grouped);
       } catch (err) {
@@ -33,7 +73,21 @@ export default function LogPage() {
     };
 
     fetchLogs();
-  }, []);
+  }, [currentPage, pageSize]); // 페이지 변경 시 데이터 다시 로드
+
+  // 이전 페이지로 이동
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  // 다음 페이지로 이동
+  const goToNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   if (isLoading) {
     return <div className="p-4 text-center">로딩 중...</div>;
@@ -86,6 +140,31 @@ export default function LogPage() {
           </div>
         </div>
       ))}
+
+      {/* 페이지네이션 컨트롤 */}
+      <div className="flex justify-between items-center mt-8 px-4">
+        <Button
+          variant="outline"
+          onClick={goToPreviousPage}
+          disabled={currentPage === 1}
+          className="flex items-center gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          이전
+        </Button>
+
+        <span className="text-sm font-medium">페이지 {currentPage}</span>
+
+        <Button
+          variant="outline"
+          onClick={goToNextPage}
+          disabled={!hasNextPage}
+          className="flex items-center gap-1"
+        >
+          다음
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
