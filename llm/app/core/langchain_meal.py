@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from app.core.config import OPENAI_API_KEY
 from typing import List
 
-llm = ChatOpenAI(model="gpt-4-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
 
 class MealScheduleSchema(BaseModel):
     menu: List[str] = Field(..., description="해당 식사에 포함될 음식 5가지")
