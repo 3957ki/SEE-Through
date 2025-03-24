@@ -20,6 +20,7 @@ import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.UpdateMemberRequest;
 import com.seethrough.api.member.presentation.dto.response.MemberDetailResponse;
 import com.seethrough.api.member.presentation.dto.response.MemberListResponse;
+import com.seethrough.api.member.presentation.dto.response.MemberMonitoringListResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -190,6 +191,32 @@ public class MemberService {
 		if (!result) {
 			throw new MemberNotFoundException("구성원을 찾을 수 없습니다.");
 		}
+	}
+
+	public SliceResponseDto<MemberMonitoringListResponse> getMemberMonitoringList(Integer page, Integer size, String sortBy, String sortDirection) {
+		log.debug("[Service] getMemberMonitoringList 호출");
+
+		SliceRequestDto sliceRequestDto = SliceRequestDto.builder()
+			.page(page)
+			.size(size)
+			.sortBy(sortBy)
+			.sortDirection(sortDirection)
+			.build();
+
+		Slice<Member> members = memberRepository.findMembers(sliceRequestDto.toPageable());
+
+		return SliceResponseDto.of(members.map(memberDtoMapper::toMonitoringListResponse));
+	}
+
+	@Transactional
+	public void updateMemberMonitoring(String memberId) {
+		log.debug("[Service] updateMemberMonitoring 호출");
+
+		UUID memberIdObj = UUID.fromString(memberId);
+
+		Member member = findMember(memberIdObj);
+
+		member.changeMonitoring();
 	}
 
 	private Member findMember(UUID memberId) {
