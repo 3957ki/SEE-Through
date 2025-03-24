@@ -3,13 +3,13 @@ import Header from "@/components/layout/Header";
 import ExamplePage from "@/components/pages/ExamplePage";
 import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
+import MyPage from "@/components/pages/MyPage";
 import { cn } from "@/lib/utils";
 import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
 import PinModal from "./modal/PinModal";
 import LogPage from "./pages/LogPage";
 import MonitoringPage from "./pages/MonitoringPage";
-
 interface FridgeDisplayProps {
   containerRef?: RefObject<HTMLElement>;
   className?: string;
@@ -24,6 +24,7 @@ const pages = {
   monitoring: <MonitoringPage />,
   example: <ExamplePage />,
   meal: <MealPage />,
+  my: <MyPage />,
 };
 
 function FridgeDisplay({
