@@ -1,26 +1,21 @@
 from pydantic import BaseModel
 from typing import List
 
-class MealScheduleRequest(BaseModel):
+class SimpleMealScheduleRequest(BaseModel):
     meal_id: str
     serving_date: str
-    serving_day: str
-    serving_time: int
-
-class MealScheduleResponse(BaseModel):
+    serving_time: str 
+    
+class SimpleMealScheduleResponse(BaseModel):
     meal_id: str
     menu: List[str]
     reason: str
 
-class MealPlanRequest(BaseModel):
-    meal_plan_id: str
-    participations: List[str]
-    description: str
-    schedules: List[MealScheduleRequest]
+class SimpleMealPlanRequest(BaseModel):
+    member_id: str
+    schedules: List[SimpleMealScheduleRequest]
 
-class MealPlanResponse(BaseModel):
-    meal_plan_id: str
-    participations: List[str]
-    description: str
-    schedules: List[MealScheduleResponse]
+class SimpleMealPlanResponse(BaseModel):
+    member_id: str
+    schedules: List[SimpleMealScheduleResponse]
     required_ingredients: List[str]
