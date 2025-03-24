@@ -96,7 +96,6 @@ def find(
     # ----------------------------
     # now, we got representations for facial database
 
-    print("detect start")
     # img path might have more than once face
     source_objs = detection.extract_faces(
         img_path=img_path,
@@ -116,8 +115,6 @@ def find(
                 key=lambda obj: obj["facial_area"]["w"] * obj["facial_area"]["h"],
             )
         ]
-
-    print("detect end")
 
     # Should we have no representations bailout
     if len(representations) == 0:
