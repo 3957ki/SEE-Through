@@ -48,6 +48,7 @@ function ShowcaseScreen() {
 
               <div className="space-y-4 md:space-y-6">
                 <button
+                  type="button"
                   onClick={() => setIsShowingInfoScreen(!isShowingInfoScreen)}
                   className="w-full py-2 md:py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-sm md:text-base"
                 >

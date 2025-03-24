@@ -1,29 +1,45 @@
 import { getMembers, getMembersAndCurrentMember } from "@/api/members";
 import { CurrentMemberContext } from "@/contexts/CurrentMemberContext";
 import { MembersContext } from "@/contexts/MembersContext";
-import Member from "@/interfaces/Member";
+import type { DetailedMember, Member } from "@/interfaces/Member";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 export function MemberContextsProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<Member[]>([]);
-  const [currentMember, setCurrentMember] = useState<Member | null>(null);
+  const [currentMember, setCurrentMember] = useState<DetailedMember | null>(null);
   const currentMemberIdRef = useRef<string | null>(null);
 
   async function updateMembers() {
-    const members = await getMembers();
-    setMembers(members);
+    try {
+      const fetchedMembers = await getMembers();
+      setMembers(fetchedMembers);
+      return fetchedMembers;
+    } catch (error) {
+      console.error("Failed to fetch members:", error);
+      return [];
+    }
   }
 
-  async function updateMembersAndCurrentMember(uuid: string) {
-    const { members, currentMember } = await getMembersAndCurrentMember(uuid);
-    setMembers(members);
-    setCurrentMember(currentMember);
-    currentMemberIdRef.current = currentMember?.id ?? null;
+  async function updateMembersAndCurrentMember(memberId: string) {
+    try {
+      const { members, currentMember } = await getMembersAndCurrentMember(memberId);
+      setMembers(members);
+      setCurrentMember(currentMember);
+      currentMemberIdRef.current = currentMember?.member_id ?? null;
+    } catch (error) {
+      console.error("Failed to fetch members and current member:", error);
+    }
   }
 
   // 초기 멤버 업데이트
   useEffect(() => {
-    updateMembersAndCurrentMember("0"); // only for the first time
+    async function init() {
+      const fetchedMembers = await updateMembers();
+      if (fetchedMembers.length > 0) {
+        updateMembersAndCurrentMember(fetchedMembers[0].member_id);
+      }
+    }
+    init();
   }, []);
 
   // // 메시지 수신 시 멤버 목록 & 현재 멤버 업데이트
@@ -39,11 +55,19 @@ export function MemberContextsProvider({ children }: { children: ReactNode }) {
   //   return () => window.removeEventListener("message", handleMessage);
   // }, []);
 
-  const membersValue = useMemo(() => ({ members, fetchMembers: () => updateMembers() }), [members]);
+  const membersValue = useMemo(
+    () => ({
+      members,
+      fetchMembers: async () => {
+        await updateMembers();
+      },
+    }),
+    [members]
+  );
   const currentMemberValue = useMemo(
     () => ({
       currentMember,
-      setCurrentMember: (uuid: string) => updateMembersAndCurrentMember(uuid),
+      setCurrentMember: (memberId: string) => updateMembersAndCurrentMember(memberId),
     }),
     [currentMember]
   );

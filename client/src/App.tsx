@@ -12,8 +12,8 @@ export type ExtendedPageType = PageType | "showcase";
 function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: string }) {
   return (
     <Button
-      variant="floating"
-      size="floating"
+      variant="outline"
+      size="icon"
       onClick={onClick}
       className="fixed bottom-20 right-4 z-50 flex items-center justify-center"
       title={title}

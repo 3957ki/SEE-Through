@@ -7,7 +7,7 @@ import {
 } from "react-icons/bs";
 
 // Available pages for navigation
-export type PageType = "main" | "logs" | "monitoring" | "example" | "meal";
+export type PageType = "main" | "logs" | "monitoring" | "example" | "meal" | "my";
 
 // Bottom Navigation Component
 interface BottomNavigationProps {
@@ -31,10 +31,17 @@ function BottomNavigation({
 
   return (
     <nav className={`${baseClasses} ${positionClasses}`}>
-      <button className="flex flex-col items-center justify-center p-2">
-        <BsPersonCircle className="w-6 h-6 text-gray-600" />
+      <button
+        type="button"
+        className="flex flex-col items-center justify-center p-2"
+        onClick={() => onNavigate("my")}
+      >
+        <BsPersonCircle
+          className={`w-6 h-6 ${currentPage === "my" ? "text-orange-500" : "text-gray-600"}`}
+        />
       </button>
       <button
+        type="button"
         className="flex flex-col items-center justify-center p-2"
         onClick={() => onNavigate("meal")}
       >
@@ -43,6 +50,7 @@ function BottomNavigation({
         />
       </button>
       <button
+        type="button"
         className="flex flex-col items-center justify-center p-2"
         onClick={() => onNavigate("main")}
       >
@@ -52,6 +60,7 @@ function BottomNavigation({
       </button>
       {/* 입출고 로그 페이지 */}
       <button
+        type="button"
         className="flex flex-col items-center justify-center p-2"
         onClick={() => onNavigate("logs")}
       >
@@ -61,6 +70,7 @@ function BottomNavigation({
       </button>
       {/* Pin 번호 입력 창 */}
       <button
+        type="button"
         className="flex flex-col items-center justify-center p-2"
         onClick={() => setShowPinModal(true)}
       >
@@ -69,6 +79,7 @@ function BottomNavigation({
         />
       </button>
       <button
+        type="button"
         className="flex flex-col items-center justify-center p-2"
         onClick={() => onNavigate("example")}
       >
