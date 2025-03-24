@@ -44,6 +44,7 @@ CREATE TABLE members
     allergies         JSONB       NOT NULL DEFAULT '[]'::JSONB,
     diseases          JSONB       NOT NULL DEFAULT '[]'::JSONB,
     is_registered     BOOLEAN     NOT NULL DEFAULT FALSE,
+    is_monitored      BOOLEAN     NOT NULL DEFAULT FALSE,
     recognition_times INTEGER     NOT NULL DEFAULT 0,
     created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at        TIMESTAMP,
@@ -146,6 +147,7 @@ CREATE TABLE meals
     serving_date          DATE        NOT NULL,
     meal_plan_schedule_id BIGINT      NOT NULL,
     menu                  JSONB       NOT NULL DEFAULT '[]'::JSONB,
+    reason                TEXT,
 
     PRIMARY KEY (meal_id),
     FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
