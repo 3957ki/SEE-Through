@@ -112,7 +112,6 @@ public class IngredientService {
 		UUID memberIdObj = UUID.fromString(request.getMemberId());
 		memberService.checkMemberExists(memberIdObj);
 
-		// TODO: UUID 유틸로 뽑아내기
 		List<UUID> ingredientIdList = request.getIngredientIdList()
 			.stream()
 			.map(UUID::fromString)
