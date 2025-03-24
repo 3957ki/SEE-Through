@@ -208,6 +208,17 @@ public class MemberService {
 		return SliceResponseDto.of(members.map(memberDtoMapper::toMonitoringListResponse));
 	}
 
+	@Transactional
+	public void updateMemberMonitoring(String memberId) {
+		log.debug("[Service] updateMemberMonitoring 호출");
+
+		UUID memberIdObj = UUID.fromString(memberId);
+
+		Member member = findMember(memberIdObj);
+
+		member.changeMonitoring();
+	}
+
 	private Member findMember(UUID memberId) {
 		return memberRepository.findByMemberId(memberId)
 			.orElseThrow(() ->

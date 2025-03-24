@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,7 +59,7 @@ public class MemberController {
 		@ApiResponse(responseCode = "201", description = "신규 구성원 생성 성공")
 	})
 	public ResponseEntity<MemberDetailResponse> login(@Valid @RequestBody LoginMemberRequest request) {
-		log.info("[Controller - POST /api/member] 구성원 식별 요청: request={}", request);
+		log.info("[Controller - POST /api/members] 구성원 식별 요청: request={}", request);
 
 		LoginMemberResult result = memberService.login(request);
 
@@ -89,7 +90,7 @@ public class MemberController {
 		@Parameter(description = "정렬 방향 (ASC: 오름차순, DESC: 내림차순)")
 		@RequestParam(defaultValue = "DESC") String sortDirection
 	) {
-		log.info("[Controller - GET /api/member] 구성원 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy, sortDirection);
+		log.info("[Controller - GET /api/members] 구성원 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy, sortDirection);
 
 		SliceResponseDto<MemberListResponse> responseList = memberService.getMemberList(page, size, sortBy, sortDirection);
 
@@ -118,7 +119,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<MemberDetailResponse> getMemberDetail(@PathVariable String memberId) {
-		log.info("[Controller - GET /api/member/{memberId}] 구성원 조회 요청: memberId={}", memberId);
+		log.info("[Controller - GET /api/members/{memberId}] 구성원 조회 요청: memberId={}", memberId);
 
 		MemberDetailResponse response = memberService.getMemberDetail(memberId);
 
@@ -140,7 +141,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> updateMember(@Valid @RequestBody UpdateMemberRequest request) {
-		log.info("[Controller - PUT /api/member] 구성원 수정 요청: request={}", request);
+		log.info("[Controller - PUT /api/members] 구성원 수정 요청: request={}", request);
 
 		memberService.updateMember(request);
 
@@ -162,7 +163,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> deleteMember(@PathVariable String memberId) {
-		log.info("[Controller - DELETE /api/member/{memberId}] 구성원 삭제 요청: memberId={}", memberId);
+		log.info("[Controller - DELETE /api/members/{memberId}] 구성원 삭제 요청: memberId={}", memberId);
 
 		memberService.deleteMember(memberId);
 
@@ -184,7 +185,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> addPreferredFoods(@PathVariable String memberId, @Valid @RequestBody PreferredFoodsRequest request) {
-		log.info("[Controller - POST /api/member/{memberId}/preferred-foods] 선호 음식 추가 요청: memberId={}, request={}", memberId, request);
+		log.info("[Controller - POST /api/members/{memberId}/preferred-foods] 선호 음식 추가 요청: memberId={}, request={}", memberId, request);
 
 		memberService.addPreferredFoods(memberId, request);
 
@@ -206,7 +207,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> removePreferredFoods(@PathVariable String memberId, @Valid @RequestBody PreferredFoodsRequest request) {
-		log.info("[Controller - DELETE /api/member/{memberId}/preferred-foods] 선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
+		log.info("[Controller - DELETE /api/members/{memberId}/preferred-foods] 선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
 
 		memberService.removePreferredFoods(memberId, request);
 
@@ -228,7 +229,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> addDislikedFoods(@PathVariable String memberId, @Valid @RequestBody DislikedFoodsRequest request) {
-		log.info("[Controller - POST /api/member/{memberId}/disliked-foods] 비선호 음식 추가 요청: memberId={}, request={}", memberId, request);
+		log.info("[Controller - POST /api/members/{memberId}/disliked-foods] 비선호 음식 추가 요청: memberId={}, request={}", memberId, request);
 
 		memberService.addDislikedFoods(memberId, request);
 
@@ -250,7 +251,7 @@ public class MemberController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<Void> removeDislikedFoods(@PathVariable String memberId, @Valid @RequestBody DislikedFoodsRequest request) {
-		log.info("[Controller - DELETE /api/member/{memberId}/disliked-foods] 비선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
+		log.info("[Controller - DELETE /api/members/{memberId}/disliked-foods] 비선호 음식 삭제 요청: memberId={}, request={}", memberId, request);
 
 		memberService.removeDislikedFoods(memberId, request);
 
@@ -259,7 +260,7 @@ public class MemberController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
-	@GetMapping()
+	@GetMapping("/monitoring")
 	@Operation(
 		summary = "구성원 모니터링 여부 목록 조회",
 		description = "탈퇴하지 않은 모든 사용자의 모니터링 여부 목록을 페이지네이션을 적용하여 반환합니다.<br>" +
@@ -279,7 +280,7 @@ public class MemberController {
 		@Parameter(description = "정렬 방향 (ASC: 오름차순, DESC: 내림차순)")
 		@RequestParam(defaultValue = "DESC") String sortDirection
 	) {
-		log.info("[Controller - GET /api/member] 구성원 모니터링 여부 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy,
+		log.info("[Controller - GET /api/members/monitoring] 구성원 모니터링 여부 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy,
 			sortDirection);
 
 		SliceResponseDto<MemberMonitoringListResponse> responseList = memberService.getMemberMonitoringList(page, size, sortBy, sortDirection);
@@ -294,5 +295,27 @@ public class MemberController {
 			responseList.getSliceInfo().getHasNext());
 
 		return ResponseEntity.ok(responseList);
+	}
+
+	@PatchMapping("/{memberId}/monitoring")
+	@Operation(
+		summary = "모니터링 여부 수정",
+		description = "UUID로 식별되는 구성원의 모니터링 정보를 수정합니다.<br>" +
+			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
+			"응답으로는 204 No Content 상태 코드가 반환됩니다."
+	)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "204", description = "모니터링 여부 수정 성공"),
+		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
+			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+	})
+	public ResponseEntity<Void> updateMemberMonitoring(@PathVariable String memberId) {
+		log.info("[Controller - PATCH /api/members/{memberId}/monitoring] 모니터링 여부 수정 요청: memberId={}", memberId);
+
+		memberService.updateMemberMonitoring(memberId);
+
+		log.debug("[Controller] 모니터링 여부 수정 성공");
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

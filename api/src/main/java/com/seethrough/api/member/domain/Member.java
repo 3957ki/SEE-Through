@@ -147,6 +147,10 @@ public class Member {
 		this.allergies.removeAll(allergies);
 	}
 
+	public void changeMonitoring() {
+		this.isMonitored = !this.isMonitored;
+	}
+
 	private void validateDeletion() {
 		if (this.deletedAt != null) {
 			throw new IllegalStateException("이미 삭제된 회원입니다.");
