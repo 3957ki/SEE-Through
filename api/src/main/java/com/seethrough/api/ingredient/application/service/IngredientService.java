@@ -10,6 +10,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.ingredient.application.mapper.IngredientDtoMapper;
@@ -87,7 +88,8 @@ public class IngredientService {
 
 		List<Ingredient> ingredients = request.getInboundIngredientRequestList()
 			.stream()
-			.map(obj -> IngredientFactory.create(UUID.randomUUID(), obj.getName(), obj.getImagePath(), memberIdObj, now, obj.getExpirationAt()))
+			.map(obj -> IngredientFactory.create(UuidCreator.getTimeOrderedEpoch(), obj.getName(), obj.getImagePath(), memberIdObj, now,
+				obj.getExpirationAt()))
 			.toList();
 
 		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredients(ingredients);
