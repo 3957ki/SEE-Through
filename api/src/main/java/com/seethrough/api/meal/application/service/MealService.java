@@ -63,8 +63,36 @@ public class MealService {
 		List<LocalDate> missingDateList = findMissingDates(dailyMealList, today, endDate);
 
 		if (!missingDateList.isEmpty()) {
-			saveMissingMeals(memberIdObj, missingDateList);
+			saveMeals(memberIdObj, missingDateList);
 		}
+	}
+
+	@Transactional
+	public DailyMealResponse replaceDailyMeal(String memberId, LocalDate servingDate) {
+		log.debug("[Service] replaceDailyMeal 호출");
+
+		UUID memberIdObj = memberService.checkMemberExists(memberId);
+
+		DailyMeal dailyMeal = findDailyMeal(memberIdObj, servingDate);
+
+		System.out.println("!!!!" + dailyMeal);
+
+		List<Meal> newMeals = createMeals(memberIdObj, List.of(servingDate));
+
+		newMeals.forEach(newMeal -> {
+			switch (newMeal.getServingTime()) {
+				case BREAKFAST:
+					dailyMeal.getBreakfast().update(newMeal.getMenu(), newMeal.getReason());
+				case LUNCH:
+					dailyMeal.getLunch().update(newMeal.getMenu(), newMeal.getReason());
+				case DINNER:
+					dailyMeal.getDinner().update(newMeal.getMenu(), newMeal.getReason());
+			}
+		});
+
+		System.out.println("!!!!" + dailyMeal);
+
+		return dailyMealDtoMapper.toDailyResponse(dailyMeal);
 	}
 
 	private DailyMeal findDailyMeal(UUID memberIdObj, LocalDate servingDate) {
@@ -102,22 +130,22 @@ public class MealService {
 		return missingDateList;
 	}
 
-	private void saveMissingMeals(UUID memberIdObj, List<LocalDate> missingDateList) {
-		log.debug("[Service] saveMissingMeals 호출");
+	private void saveMeals(UUID memberIdObj, List<LocalDate> dateList) {
+		log.debug("[Service] saveMeals 호출");
 
-		List<Meal> meals = createMissingMeals(memberIdObj, missingDateList);
+		List<Meal> meals = createMeals(memberIdObj, dateList);
 
 		mealRepository.saveAll(meals);
 	}
 
 	// TODO: 5일에 한 번씩 요청 보내도록 수정
-	private List<Meal> createMissingMeals(UUID memberIdObj, List<LocalDate> missingDateList) {
+	private List<Meal> createMeals(UUID memberIdObj, List<LocalDate> dateList) {
 		Map<UUID, ScheduleMealRequest> requestMap = new HashMap<>();
 
 		ScheduleMealListRequest request = ScheduleMealListRequest.builder()
 			.memberId(memberIdObj.toString())
 			.schedules(
-				missingDateList.stream()
+				dateList.stream()
 					.flatMap(date -> Arrays.stream(ServingTime.values())
 						.map(servingTime -> {
 							UUID mealId = UuidCreator.getTimeOrderedEpoch();

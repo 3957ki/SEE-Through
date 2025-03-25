@@ -60,4 +60,9 @@ public class Meal {
 
 	@Column(name = "reason", columnDefinition = "TEXT")
 	private String reason;
+
+	public void update(List<String> menu, String reason) {
+		this.menu = menu;
+		this.reason = reason;
+	}
 }
