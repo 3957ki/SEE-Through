@@ -95,6 +95,7 @@ export default function MyPage() {
             hideDialog();
           }}
           initialFocus
+          defaultMonth={birthday}
         />
       </div>
     );
