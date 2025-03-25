@@ -49,7 +49,7 @@ public class IngredientLogController {
 		@Parameter(description = "정렬 방향 (ASC: 오름차순, DESC: 내림차순)")
 		@RequestParam(defaultValue = "DESC") String sortDirection
 	) {
-		log.info("[Controller - GET /api/ingredient-logs] 입출고 로그 목록 조회 요청: memberId = {}, page={}, size={}, sortBy={}, sortDirection={}",
+		log.info("[Controller - GET /api/ingredient-logs] 입출고 로그 목록 조회 요청: memberId={}, page={}, size={}, sortBy={}, sortDirection={}",
 			memberId, page, size, sortBy, sortDirection);
 
 		SliceResponseDto<IngredientLogListResponse> responseList =
