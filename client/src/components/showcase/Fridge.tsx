@@ -1,5 +1,6 @@
 import React from "react";
 import { DroppedMaterial } from "@/interfaces/DroppedMaterial";
+import Material from "@/interfaces/Material";
 
 interface FridgeComponentProps {
   children?: React.ReactNode;
@@ -7,7 +8,7 @@ interface FridgeComponentProps {
   toggleDoor: () => void;
   handleDrop: (e: React.DragEvent<HTMLDivElement>) => void;
   droppedIngredients: DroppedMaterial[];
-  removeIngredient: (id: string) => void;
+  removeIngredient: (material: Material) => void;
 }
 
 function Fridge({
@@ -96,8 +97,8 @@ function Fridge({
           >
             {droppedIngredients.map((item, index) => (
               <div
-                key={`${item.material.id}-${index}`}
-                onClick={() => removeIngredient(item.material.id)}
+                key={`${item.material.ingredient_id}-${index}`}
+                onClick={() => removeIngredient(item.material)}
                 style={{
                   position: "absolute",
                   left: item.x,

@@ -1,12 +1,13 @@
-import FridgeDisplay from "@/components/FridgeDisplay";
 import Fridge from "@/components/showcase/Fridge";
+import FridgeDisplay from "@/components/FridgeDisplay";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
 import WebcamView from "@/components/showcase/WebcamView";
 import React, { useState } from "react";
-import { DroppedMaterial } from "@/interfaces/DroppedMaterial";
 import Material from "@/interfaces/Material";
+import MaterialProvider from "@/providers/MaterialContextProvider";
+import { useMaterialContext } from "@/contexts/MaterialContext";
 
-// 드래그 가능한 재료 컴포넌트 (Material 객체를 전달)
+// 드래그 가능한 재료 컴포넌트 (Material 객체 기반)
 interface DraggableIngredientProps {
   material: Material;
 }
@@ -26,22 +27,23 @@ function DraggableIngredient({ material }: DraggableIngredientProps) {
   );
 }
 
-function ShowcaseScreen() {
+function ShowcaseContent() {
   const [isShowingInfoScreen, setIsShowingInfoScreen] = useState(true);
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
-
-  // availableIngredients를 Material 객체 배열로 관리
+  // 재료 식탁에 표시되는 로컬 available 재료 목록
   const [availableIngredients, setAvailableIngredients] = useState<Material[]>([
-    { id: "tomato", name: "토마토", image: "/src/assets/tomato.jpg" },
-    { id: "lettuce", name: "양상추", image: "/src/assets/lettuce.jpg" },
-    { id: "chicken", name: "치킨", image: "/src/assets/chicken.jpg" },
-    { id: "peanut", name: "땅콩", image: "/src/assets/peanut.jpg" },
-    { id: "corn", name: "옥수수", image: "/src/assets/corn.jpg" },
+    { ingredient_id: "tomato", name: "토마토", image_path: "/src/assets/tomato.jpg" },
+    { ingredient_id: "lettuce", name: "양상추", image_path: "/src/assets/lettuce.jpg" },
+    { ingredient_id: "chicken", name: "치킨", image_path: "/src/assets/chicken.jpg" },
+    { ingredient_id: "peanut", name: "땅콩", image_path: "/src/assets/peanut.jpg" },
+    { ingredient_id: "corn", name: "옥수수", image_path: "/src/assets/corn.jpg" },
   ]);
-  // droppedIngredients는 DroppedMaterial 객체 배열로 관리
-  const [droppedIngredients, setDroppedIngredients] = useState<DroppedMaterial[]>([]);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  // Context에서 draggedMaterials 및 액션 함수들을 가져옴
+  const { draggedMaterials, addDraggedMaterial, removeDraggedMaterial } = useMaterialContext();
+
+  // 드롭 이벤트 핸들러
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const data = e.dataTransfer.getData("material");
     if (!data) return;
@@ -49,27 +51,15 @@ function ShowcaseScreen() {
     const rect = e.currentTarget.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
-    // 드롭된 재료 추가
-    setDroppedIngredients((prev) => [
-      ...prev,
-      { material, x: offsetX, y: offsetY },
-    ]);
-    // availableIngredients에서 해당 재료 제거
-    setAvailableIngredients((prev) =>
-      prev.filter((item) => item.id !== material.id)
-    );
+    await addDraggedMaterial(material, offsetX, offsetY);
+    // 식탁 available에서 제거
+    setAvailableIngredients((prev) => prev.filter((item) => item.ingredient_id !== material.ingredient_id));
   };
 
-  const removeIngredient = (materialId: string) => {
-    const removed = droppedIngredients.find(
-      (item) => item.material.id === materialId
-    );
-    if (removed) {
-      setAvailableIngredients((prev) => [...prev, removed.material]);
-      setDroppedIngredients((prev) =>
-        prev.filter((item) => item.material.id !== materialId)
-      );
-    }
+  // 재료 제거 시, dragged에서 제거하고 available에 추가하는 핸들러
+  const handleRemoveFromDragged = async (material: Material) => {
+    await removeDraggedMaterial(material.ingredient_id);
+    setAvailableIngredients((prev) => [...prev, material]);
   };
 
   return (
@@ -81,8 +71,9 @@ function ShowcaseScreen() {
             leftDoorOpen={leftDoorOpen}
             toggleDoor={() => setLeftDoorOpen(!leftDoorOpen)}
             handleDrop={handleDrop}
-            droppedIngredients={droppedIngredients}
-            removeIngredient={removeIngredient}
+            // Fridge에서는 draggedMaterials를 표시합니다.
+            droppedIngredients={draggedMaterials}
+            removeIngredient={handleRemoveFromDragged}
           >
             <div className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50">
               {isShowingInfoScreen ? (
@@ -97,10 +88,8 @@ function ShowcaseScreen() {
             </div>
           </Fridge>
         </div>
-
-        {/* 오른쪽 영역 - 컨트롤 및 정보, 재료 식탁 */}
+        {/* 오른쪽 영역 - 컨트롤 및 재료 식탁 */}
         <div className="w-1/4 h-full flex flex-col gap-4 md:gap-6 relative">
-          {/* 웹캠 뷰 */}
           <div className="h-1/3">
             <WebcamView />
           </div>
@@ -110,14 +99,13 @@ function ShowcaseScreen() {
           >
             {isShowingInfoScreen ? "내부 카메라 화면 보기" : "정보 화면 보기"}
           </button>
-          {/* 사용자 정보 카드 */}
           <div className="h-1/5">
             <UserInfoCard />
           </div>
         </div>
-        {/* 재료 식탁 */}
+        {/* 재료 식탁: availableIngredients를 표시 */}
         <div
-            className="absolute bottom-0 right-0 flex-1 w-2/5 p-4 md:p-6 bg-cover bg-center"
+            className="absolute bottom-0 right-0 w-2/5 flex-1 p-4 md:p-6 bg-cover bg-center"
             style={{
               backgroundImage: "url('/src/assets/table.jpg')",
               clipPath: "polygon(20% 0, 100% 0, 100% 100%, 10% 100%)",
@@ -125,12 +113,20 @@ function ShowcaseScreen() {
           >
             <div className="flex flex-wrap flex-row-reverse gap-2 w-3/4 ml-auto mr-auto">
               {availableIngredients.map((material) => (
-                <DraggableIngredient key={material.id} material={material} />
+                <DraggableIngredient key={material.ingredient_id} material={material} />
               ))}
             </div>
           </div>
       </div>
     </div>
+  );
+}
+
+function ShowcaseScreen() {
+  return (
+    <MaterialProvider>
+      <ShowcaseContent />
+    </MaterialProvider>
   );
 }
 

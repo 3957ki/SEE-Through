@@ -1,7 +1,9 @@
 interface Material {
-  id: string;
+  ingredient_id: string;
   name?: string;
-  image?: string;
+  image_path?: string;
+  inbound_at?: string;
+  expiration_at?: string;
 }
 
 export default Material;
