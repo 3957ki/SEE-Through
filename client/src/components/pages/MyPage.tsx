@@ -6,9 +6,9 @@ import { useDialog } from "@/contexts/DialogContext";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
-const MEASUREMENT_TYPES = ["절병", "알러지", "선호 음식", "비선호 음식"] as const;
+const MEASUREMENT_TYPES = ["질병", "알러지", "선호 음식", "비선호 음식"] as const;
 
 type MeasurementType = (typeof MEASUREMENT_TYPES)[number];
 
@@ -34,6 +34,32 @@ export default function MyPage() {
   const [diseases, setDiseases] = useState<string[]>(
     currentMember && "diseases" in currentMember ? currentMember.diseases : []
   );
+
+  // Check if any changes were made
+  const isModified = useMemo(() => {
+    if (!currentMember) return false;
+
+    const initialBirthday =
+      currentMember && "birth" in currentMember && currentMember.birth
+        ? new Date(currentMember.birth)
+        : undefined;
+
+    const memberPreferredFoods =
+      "preferred_foods" in currentMember ? currentMember.preferred_foods : [];
+    const memberDislikedFoods =
+      "disliked_foods" in currentMember ? currentMember.disliked_foods : [];
+    const memberAllergies = "allergies" in currentMember ? currentMember.allergies : [];
+    const memberDiseases = "diseases" in currentMember ? currentMember.diseases : [];
+
+    return (
+      name !== currentMember.name ||
+      birthday?.getTime() !== initialBirthday?.getTime() ||
+      JSON.stringify(preferredFoods) !== JSON.stringify(memberPreferredFoods) ||
+      JSON.stringify(dislikedFoods) !== JSON.stringify(memberDislikedFoods) ||
+      JSON.stringify(allergies) !== JSON.stringify(memberAllergies) ||
+      JSON.stringify(diseases) !== JSON.stringify(memberDiseases)
+    );
+  }, [currentMember, name, birthday, preferredFoods, dislikedFoods, allergies, diseases]);
 
   // Update state values when currentMember changes
   useEffect(() => {
@@ -81,7 +107,7 @@ export default function MyPage() {
         return dislikedFoods;
       case "알러지":
         return allergies;
-      case "절병":
+      case "질병":
         return diseases;
       default:
         return [];
@@ -99,7 +125,7 @@ export default function MyPage() {
       case "알러지":
         setAllergies(newList);
         break;
-      case "절병":
+      case "질병":
         setDiseases(newList);
         break;
     }
@@ -192,8 +218,45 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <Button className="w-full bg-orange-500 text-white hover:bg-orange-600 mt-4">수정</Button>
+        <div className="flex gap-2 mt-4">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              setName(currentMember?.name || "");
+              setBirthday(
+                currentMember && "birth" in currentMember && currentMember.birth
+                  ? new Date(currentMember.birth)
+                  : undefined
+              );
+              setPreferredFoods(
+                currentMember && "preferred_foods" in currentMember
+                  ? currentMember.preferred_foods
+                  : []
+              );
+              setDislikedFoods(
+                currentMember && "disliked_foods" in currentMember
+                  ? currentMember.disliked_foods
+                  : []
+              );
+              setAllergies(
+                currentMember && "allergies" in currentMember ? currentMember.allergies : []
+              );
+              setDiseases(
+                currentMember && "diseases" in currentMember ? currentMember.diseases : []
+              );
+            }}
+            disabled={!isModified}
+          >
+            취소
+          </Button>
+          <Button
+            className="flex-1 bg-orange-500 text-white hover:bg-orange-600"
+            disabled={!isModified}
+          >
+            저장
+          </Button>
+        </div>
       </div>
     </div>
   );
