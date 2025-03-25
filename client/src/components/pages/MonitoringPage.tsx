@@ -1,12 +1,20 @@
 import { fetchMonitoringUsers, updateMonitoring } from "@/api/monitoring";
+import ChangePinModal from "@/components/modal/ChangePinModal";
+import { useDialog } from "@/contexts/DialogContext";
 import type { MonitoringUser } from "@/interfaces/Monitoring";
 import { Lock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-export default function MonitoringPage() {
+type MonitoringPageProps = {
+  currentPin: string;
+  onPinChange: (newPin: string) => void;
+};
+
+export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPageProps) {
   const [users, setUsers] = useState<MonitoringUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [savingUsers, setSavingUsers] = useState<string[]>([]); // UUID는 string
+  const { showDialog, hideDialog } = useDialog();
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -49,11 +57,33 @@ export default function MonitoringPage() {
     }
   };
 
+  const handlePinChange = async (newPin: string): Promise<boolean> => {
+    try {
+      onPinChange(newPin);
+      return true;
+    } catch (error) {
+      console.error("PIN 변경 실패:", error);
+      return false;
+    }
+  };
+
+  const handleLockClick = () => {
+    showDialog(
+      <ChangePinModal currentPin={currentPin} onPinChange={handlePinChange} onClose={hideDialog} />
+    );
+  };
+
   return (
     <div className="max-w-md mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">모니터링</h1>
-        <Lock className="w-6 h-6" />
+        <button
+          onClick={handleLockClick}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="PIN 변경"
+        >
+          <Lock className="w-6 h-6" />
+        </button>
       </div>
 
       {loading ? (
@@ -74,7 +104,7 @@ export default function MonitoringPage() {
                 `}
               >
                 <img
-                  src={user.image_path}
+                  src={user.image_path || "/placeholder.svg"}
                   alt={user.name}
                   className="w-16 h-16 rounded-full mb-2 object-cover"
                 />

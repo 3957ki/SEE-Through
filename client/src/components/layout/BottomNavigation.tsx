@@ -1,3 +1,4 @@
+import { useDialog } from "@/contexts/DialogContext";
 import {
   BsCalendarEvent,
   BsEyeglasses,
@@ -5,29 +6,40 @@ import {
   BsPencilSquare,
   BsPersonCircle,
 } from "react-icons/bs";
+import PinModal from "../modal/PinModal";
 
 // Available pages for navigation
 export type PageType = "main" | "logs" | "monitoring" | "example" | "meal" | "my";
 
 // Bottom Navigation Component
 interface BottomNavigationProps {
+  currentPin: string;
+  onSuccess: () => void;
   currentPage: PageType;
   onNavigate: (page: PageType) => void;
-  setShowPinModal: (isShown: boolean) => void;
   isFixed?: boolean; // New prop to control fixed vs relative positioning
 }
 
 function BottomNavigation({
+  currentPin,
+  onSuccess,
   currentPage,
   onNavigate,
-  setShowPinModal,
   isFixed = true, // Default to fixed positioning for backward compatibility
 }: BottomNavigationProps) {
+  const { showDialog, hideDialog } = useDialog();
+
   // Common classes for the navigation bar
   const baseClasses = "bg-white border-t flex justify-around items-center h-14 px-4";
 
   // Add fixed positioning only when isFixed is true
   const positionClasses = isFixed ? "fixed bottom-0 left-0 right-0" : "w-full";
+
+  const handleMonitoringClick = () => {
+    if (currentPage !== "monitoring") {
+      showDialog(<PinModal correctPin={currentPin} onSuccess={onSuccess} onClose={hideDialog} />);
+    }
+  };
 
   return (
     <nav className={`${baseClasses} ${positionClasses}`}>
@@ -72,7 +84,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => setShowPinModal(true)}
+        onClick={handleMonitoringClick}
       >
         <BsEyeglasses
           className={`w-6 h-6 ${currentPage === "monitoring" ? "text-orange-500" : "text-gray-600"}`}
