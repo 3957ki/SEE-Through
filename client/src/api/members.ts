@@ -26,11 +26,11 @@ export async function getMembersAndCurrentMember(
 }
 
 export async function updateMember(data: {
-  memberId: string;
+  member_id: string;
   name: string;
   birth: string;
-  preferredFoods: string[];
-  dislikedFoods: string[];
+  preferred_foods: string[];
+  disliked_foods: string[];
   allergies: string[];
   diseases: string[];
 }): Promise<void> {
