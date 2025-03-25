@@ -19,14 +19,19 @@ def create_meal_plan_service(request: SimpleMealPlanRequest, db: Session) -> Sim
     available_ingredients = db.query(Ingredient.name).distinct().all()
     available_ingredients = {ing.name for ing in available_ingredients}
 
+    birthday = member.birth
+    diseases = member.diseases or []
+
     llm_result = generate_meal_plan_from_llm(
-        description="사용자의 일정에 맞는 식단 구성",
-        schedules=request.schedules,
-        preferred_foods=preferred_foods,
-        disliked_foods=disliked_foods,
-        allergies=allergies,
-        available_ingredients=available_ingredients
-    )
+    description="사용자의 일정에 맞는 식단 구성",
+    schedules=request.schedules,
+    preferred_foods=preferred_foods,
+    disliked_foods=disliked_foods,
+    allergies=allergies,
+    diseases=diseases,
+    birthday=birthday,
+    available_ingredients=available_ingredients
+)
 
     response_schedules = [
         SimpleMealScheduleResponse(

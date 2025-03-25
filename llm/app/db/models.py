@@ -3,21 +3,26 @@ from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 from .database import Base
 
+from sqlalchemy import Column, String, Integer, Boolean, JSON, TIMESTAMP, Date
+
 class Member(Base):
     __tablename__ = "members"
 
     member_id = Column(String(36), primary_key=True, index=True)
     name = Column(String(15), nullable=False)
     age = Column(Integer, nullable=False)
+    birth = Column(Date, nullable=True)  
     preferred_foods = Column(JSON, nullable=False)
     disliked_foods = Column(JSON, nullable=False)
     allergies = Column(JSON, nullable=False)
+    diseases = Column(JSON, nullable=False)
     is_registered = Column(Boolean, default=False)
     recognition_times = Column(Integer, default=0)
     created_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
     ingredients = relationship("Ingredient", back_populates="owner")
+
 
 class Ingredient(Base):
     __tablename__ = "ingredients"
