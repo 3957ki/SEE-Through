@@ -5,7 +5,7 @@ import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
 const MEASUREMENT_TYPES = ["질병", "알러지", "선호 음식", "비선호 음식"] as const;
@@ -99,6 +99,42 @@ export default function MyPage() {
     );
   };
 
+  const handleShowAddDialog = () => {
+    showDialog(
+      <div className="p-4 space-y-4">
+        <h2 className="text-lg font-medium">{measurementType} 추가</h2>
+        <Input
+          placeholder={`${measurementType} 입력`}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.currentTarget.value.trim()) {
+              setCurrentList([...getCurrentList(), e.currentTarget.value.trim()]);
+              hideDialog();
+            }
+          }}
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => hideDialog()}>
+            취소
+          </Button>
+          <Button
+            onClick={(e) => {
+              const input = (e.target as HTMLElement)
+                .closest("div.p-4")
+                ?.querySelector("input") as HTMLInputElement;
+              if (input && input.value.trim()) {
+                setCurrentList([...getCurrentList(), input.value.trim()]);
+                hideDialog();
+              }
+            }}
+          >
+            추가
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const getCurrentList = () => {
     switch (measurementType) {
       case "선호 음식":
@@ -180,42 +216,28 @@ export default function MyPage() {
 
         {/* Input Fields */}
         <div className="space-y-4">
-          {getCurrentList().map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                placeholder={`${measurementType} 입력`}
-                value={item}
-                onChange={(e) => {
-                  const newList = [...getCurrentList()];
-                  newList[index] = e.target.value;
-                  setCurrentList(newList);
-                }}
-                className="flex-1"
-              />
+          <div className="grid grid-cols-2 gap-4">
+            {getCurrentList().map((item, index) => (
               <div
-                className="text-gray-400 cursor-pointer"
-                onClick={() => {
-                  const newList = getCurrentList().filter((_, i) => i !== index);
-                  setCurrentList(newList);
-                }}
+                key={index}
+                className="flex-1 py-2 px-3 border rounded-md bg-gray-50 flex items-center justify-between gap-2"
               >
-                삭제
+                <div className="break-words flex-1">{item}</div>
+                <button
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    const newList = getCurrentList().filter((_, i) => i !== index);
+                    setCurrentList(newList);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-          ))}
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder={`${measurementType} 추가`}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                  setCurrentList([...getCurrentList(), e.currentTarget.value.trim()]);
-                  e.currentTarget.value = "";
-                }
-              }}
-              className="flex-1"
-            />
-            <div className="text-gray-400">추가</div>
+            ))}
           </div>
+          <Button variant="outline" className="w-full" onClick={handleShowAddDialog}>
+            {measurementType} 추가
+          </Button>
         </div>
 
         <div className="flex gap-2 mt-4">
