@@ -1,5 +1,7 @@
 import { getLogs } from "@/api/logs";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import type { GroupedLogs, LogsResponse } from "@/interfaces/Log";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -8,6 +10,8 @@ export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [myLogsOnly, setMyLogsOnly] = useState(false);
+  const { currentMember } = useCurrentMember();
 
   // 페이지네이션 상태 추가
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,8 +24,10 @@ export default function LogPage() {
       try {
         setIsLoading(true);
 
-        // 페이지네이션 파라미터 추가
-        const response: LogsResponse = await getLogs(currentPage, pageSize);
+        // 페이지네이션 파라미터 추가 및 필요시 멤버 ID 추가 (숫자가 원래는 currentMember.member_id)
+        const memberId =
+          myLogsOnly && currentMember ? "00000000-0000-0000-0000-000000000001" : undefined;
+        const response: LogsResponse = await getLogs(currentPage, pageSize, memberId);
         const { content, slice_info } = response;
 
         // 페이지네이션 정보 업데이트
@@ -60,7 +66,13 @@ export default function LogPage() {
     };
 
     fetchLogs();
-  }, [currentPage, pageSize]); // 페이지 변경 시 데이터 다시 로드
+  }, [currentPage, pageSize, myLogsOnly, currentMember]); // 필터 변경 시에도 데이터 다시 로드
+
+  // 필터 토글 처리
+  const handleToggleMyLogs = () => {
+    setMyLogsOnly(!myLogsOnly);
+    setCurrentPage(1); // 필터 변경 시 첫 페이지로 돌아가기
+  };
 
   // 이전 페이지로 이동
   const goToPreviousPage = () => {
@@ -86,15 +98,30 @@ export default function LogPage() {
 
   // 날짜가 없는 경우
   if (Object.keys(groupedLogs).length === 0) {
-    return <div className="p-4 text-center">입출고 기록이 없습니다</div>;
+    return (
+      <div className="max-w-md mx-auto p-4">
+        {/* 내 로그만 보기 토글 */}
+        <div className="flex items-center justify-end mb-4">
+          <span className="text-sm mr-2">내 로그만 보기</span>
+          <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
+        </div>
+        <div className="p-4 text-center">입출고 기록이 없습니다</div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-md mx-auto p-4">
+      {/* 내 로그만 보기 토글 */}
+      <div className="flex items-center justify-end mb-4">
+        <span className="text-sm mr-2">내 로그만 보기</span>
+        <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
+      </div>
+
       {Object.entries(groupedLogs).map(([date, entries]) => (
         <div key={date} className="mb-6">
           {/* 페이지네이션 컨트롤 */}
-          <div className="flex justify-between items-center px-4">
+          <div className="flex justify-between items-center px-4 mb-4">
             <Button
               variant="outline"
               onClick={goToPreviousPage}
