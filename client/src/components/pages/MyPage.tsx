@@ -13,6 +13,16 @@ const MEASUREMENT_TYPES = ["질병", "알러지", "선호 음식", "비선호 �
 
 type MeasurementType = (typeof MEASUREMENT_TYPES)[number];
 
+// Interface for saved state
+interface SavedState {
+  name: string;
+  birth?: string;
+  preferred_foods: string[];
+  disliked_foods: string[];
+  allergies: string[];
+  diseases: string[];
+}
+
 export default function MyPage() {
   const { currentMember } = useCurrentMember();
   const { showDialog, hideDialog } = useDialog();
@@ -36,48 +46,65 @@ export default function MyPage() {
     currentMember && "diseases" in currentMember ? currentMember.diseases : []
   );
 
-  // Check if any changes were made
+  // Track the last saved state
+  const [savedState, setSavedState] = useState<SavedState>({
+    name: currentMember?.name || "",
+    birth: currentMember && "birth" in currentMember ? currentMember.birth : undefined,
+    preferred_foods:
+      currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
+    disliked_foods:
+      currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : [],
+    allergies: currentMember && "allergies" in currentMember ? currentMember.allergies : [],
+    diseases: currentMember && "diseases" in currentMember ? currentMember.diseases : [],
+  });
+
+  // Check if any changes were made compared to the saved state
   const isModified = useMemo(() => {
     if (!currentMember) return false;
 
-    const initialBirthday =
-      currentMember && "birth" in currentMember && currentMember.birth
-        ? new Date(currentMember.birth)
-        : undefined;
-
-    const memberPreferredFoods =
-      "preferred_foods" in currentMember ? currentMember.preferred_foods : [];
-    const memberDislikedFoods =
-      "disliked_foods" in currentMember ? currentMember.disliked_foods : [];
-    const memberAllergies = "allergies" in currentMember ? currentMember.allergies : [];
-    const memberDiseases = "diseases" in currentMember ? currentMember.diseases : [];
+    const birthdayString = birthday ? birthday.toISOString().split("T")[0] : undefined;
 
     return (
-      name !== currentMember.name ||
-      birthday?.getTime() !== initialBirthday?.getTime() ||
-      JSON.stringify(preferredFoods) !== JSON.stringify(memberPreferredFoods) ||
-      JSON.stringify(dislikedFoods) !== JSON.stringify(memberDislikedFoods) ||
-      JSON.stringify(allergies) !== JSON.stringify(memberAllergies) ||
-      JSON.stringify(diseases) !== JSON.stringify(memberDiseases)
+      name !== savedState.name ||
+      birthdayString !== savedState.birth ||
+      JSON.stringify(preferredFoods) !== JSON.stringify(savedState.preferred_foods) ||
+      JSON.stringify(dislikedFoods) !== JSON.stringify(savedState.disliked_foods) ||
+      JSON.stringify(allergies) !== JSON.stringify(savedState.allergies) ||
+      JSON.stringify(diseases) !== JSON.stringify(savedState.diseases)
     );
-  }, [currentMember, name, birthday, preferredFoods, dislikedFoods, allergies, diseases]);
+  }, [
+    currentMember,
+    name,
+    birthday,
+    preferredFoods,
+    dislikedFoods,
+    allergies,
+    diseases,
+    savedState,
+  ]);
 
   // Update state values when currentMember changes
   useEffect(() => {
-    setName(currentMember?.name || "");
+    if (!currentMember) return;
+
+    setName(currentMember.name || "");
     setBirthday(
-      currentMember && "birth" in currentMember && currentMember.birth
-        ? new Date(currentMember.birth)
-        : undefined
+      "birth" in currentMember && currentMember.birth ? new Date(currentMember.birth) : undefined
     );
-    setPreferredFoods(
-      currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : []
-    );
-    setDislikedFoods(
-      currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : []
-    );
-    setAllergies(currentMember && "allergies" in currentMember ? currentMember.allergies : []);
-    setDiseases(currentMember && "diseases" in currentMember ? currentMember.diseases : []);
+    setPreferredFoods("preferred_foods" in currentMember ? currentMember.preferred_foods : []);
+    setDislikedFoods("disliked_foods" in currentMember ? currentMember.disliked_foods : []);
+    setAllergies("allergies" in currentMember ? currentMember.allergies : []);
+    setDiseases("diseases" in currentMember ? currentMember.diseases : []);
+
+    // Update saved state when currentMember changes
+    setSavedState({
+      name: currentMember.name || "",
+      birth: "birth" in currentMember ? currentMember.birth : undefined,
+      preferred_foods: "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
+      disliked_foods: "disliked_foods" in currentMember ? currentMember.disliked_foods : [],
+      allergies: "allergies" in currentMember ? currentMember.allergies : [],
+      diseases: "diseases" in currentMember ? currentMember.diseases : [],
+    });
   }, [currentMember]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, setter: (value: string) => void) => {
@@ -291,10 +318,41 @@ export default function MyPage() {
                   diseases,
                 });
 
-                alert("사용자 정보가 성공적으로 업데이트되었습니다.");
+                // Update the saved state after successful save
+                setSavedState({
+                  name,
+                  birth: birthday ? birthday.toISOString().split("T")[0] : undefined,
+                  preferred_foods: [...preferredFoods],
+                  disliked_foods: [...dislikedFoods],
+                  allergies: [...allergies],
+                  diseases: [...diseases],
+                });
+
+                showDialog(
+                  <div className="p-4 space-y-4">
+                    <h2 className="text-lg font-medium">알림</h2>
+                    <p>사용자 정보가 성공적으로 업데이트되었습니다.</p>
+                    <div className="flex justify-end">
+                      <Button onClick={() => hideDialog()}>확인</Button>
+                    </div>
+                  </div>
+                );
               } catch (error) {
                 console.error("업데이트 실패:", error);
-                alert("사용자 정보 업데이트 중 오류가 발생했습니다.");
+                showDialog(
+                  <div className="p-4 space-y-4">
+                    <h2 className="text-lg font-medium">오류</h2>
+                    <p>사용자 정보 업데이트 중 오류가 발생했습니다.</p>
+                    <div className="flex justify-end">
+                      <Button
+                        className="bg-orange-500 text-white hover:bg-orange-600"
+                        onClick={() => hideDialog()}
+                      >
+                        확인
+                      </Button>
+                    </div>
+                  </div>
+                );
               }
             }}
           >
