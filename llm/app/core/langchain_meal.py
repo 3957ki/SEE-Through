@@ -29,6 +29,8 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 3. 사용자의 비선호 음식 목록: {disliked_foods}
 4. 사용자의 알러지 정보: {allergies}
 5. 식단 설명: "{description}"
+6. 사용자의 생일: {birthday}
+7. 사용자의 질병 정보: {diseases}
 
 ## 추가 제약 사항
 1. `menu`는 각 `meal_id`에 대해 5가지 음식으로 구성해야 합니다.
@@ -41,6 +43,8 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 8. 하루 혹은 연속된 날에 너무 유사한 메뉴가 반복되지 않도록 주의해야 합니다.
 9. 식단은 한식, 양식, 경식(가벼운 식사), 퓨전 등 다양한 스타일이 섞이도록 구성되어야 합니다.
 10. 반복적인 음식 구성을 피하고, 각 식사는 서로 다른 주재료를 중심으로 구성되어야 합니다.
+11. 질병 정보에 따라 제한이 있는 음식은 피해야 합니다. (예: 고혈압이면 짠 음식은 피합니다)
+12. 생일에는 특별하고 기분 좋은 식사를 추천해주세요. (ex. 생일인 경우엔 디저트나 좋아할만한 특별식 포함)
 
 또한, 각 식단이 추천된 이유를 `reason` 필드에 작성하세요.
 [작성 조건]
@@ -54,6 +58,9 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 4. **식사 시간대**에 알맞은 메뉴 (ex. “아침엔 속 편한 죽이 좋죠”)
 5. **최근 식단과의 차별화** 또는 변화를 준 점 (ex. “늘 먹던 국 대신 오늘은 볶음 요리를 준비했어요”)
 6. **계절/날씨/기분을 고려한 구성** (ex. “쌀쌀한 날씨엔 국물 요리가 제격이에요”)
+7. 사용자의 생일을 고려한 특별 메뉴 구성 (ex. “생일엔 달콤한 디저트가 빠질 수 없죠”)
+8. 질병 정보를 반영한 식단 (ex. “당뇨를 고려해 당분을 줄인 메뉴로 준비했어요”)
+
 [문체 스타일 가이드]
 - 다양한 문장 구조를 써주세요. 예:
   - “오늘은 담백한 재료로 속 편하게 시작할 수 있는 메뉴로 구성했어요.”
@@ -72,23 +79,23 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 
 """)
 
-def generate_meal_plan_from_llm(description, schedules, preferred_foods, disliked_foods, allergies, available_ingredients):
-    """
-    LLM을 이용하여 최적의 식단을 생성하는 함수
-    """
+def generate_meal_plan_from_llm(description, schedules, preferred_foods, disliked_foods, allergies, diseases, birthday, available_ingredients):
     response = llm.invoke(prompt_meal_plan.format(
-    description=description,
-    available_ingredients=", ".join(available_ingredients),
-    preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
-    disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
-    allergies=", ".join(allergies) if allergies else "없음",
-    meal_count=len(schedules), 
-    format_instructions=parser.get_format_instructions()
-))
+        description=description,
+        available_ingredients=", ".join(available_ingredients),
+        preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
+        disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
+        allergies=", ".join(allergies) if allergies else "없음",
+        diseases=", ".join(diseases) if diseases else "없음",
+        birthday=birthday.strftime("%Y-%m-%d") if birthday else "모름",
+        meal_count=len(schedules),
+        format_instructions=parser.get_format_instructions()
+    ))
 
     try:
         return parser.parse(response.content)
     except Exception as e:
         print(f"LLM 응답 파싱 오류: {e}")
         return MealPlanSchema(schedules=[], required_ingredients=[])
+
 
