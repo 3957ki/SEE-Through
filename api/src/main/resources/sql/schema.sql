@@ -101,56 +101,19 @@ CREATE TABLE alerts
     FOREIGN KEY (ingredient_id) REFERENCES ingredients (ingredient_id)
 );
 
+CREATE TYPE SERVING_TIME AS ENUM ('BREAKFAST', 'LUNCH', 'DINNER');
+
 -- 식단 테이블
-CREATE TABLE meal_plans
-(
-    meal_plan_id VARCHAR(36) NOT NULL,
-    name         TEXT        NOT NULL,
-    description  TEXT,
-    created_at   TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (meal_plan_id)
-);
-
--- 식단 참여자 테이블
-CREATE TABLE meal_plan_participations
-(
-    member_id    VARCHAR(36) NOT NULL,
-    meal_plan_id VARCHAR(36) NOT NULL,
-
-    PRIMARY KEY (member_id, meal_plan_id),
-    FOREIGN KEY (member_id) REFERENCES members (member_id),
-    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id)
-);
-
--- 요일 ENUM
-CREATE TYPE DAY_OF_WEEK AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
-
--- 식단 스케쥴 테이블
-CREATE TABLE meal_plan_schedules
-(
-    meal_plan_schedule_id BIGSERIAL                                                NOT NULL,
-    meal_plan_id          VARCHAR(36)                                              NOT NULL,
-    serving_day           DAY_OF_WEEK                                              NOT NULL,
-    serving_time          INTEGER CHECK (serving_time >= 0 AND serving_time <= 23) NOT NULL,
-
-    PRIMARY KEY (meal_plan_schedule_id),
-    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
-    UNIQUE (meal_plan_id, serving_day, serving_time)
-);
-
--- 식사 테이블
 CREATE TABLE meals
 (
-    meal_id               VARCHAR(36) NOT NULL,
-    meal_plan_id          VARCHAR(36) NOT NULL,
-    serving_date          DATE        NOT NULL,
-    meal_plan_schedule_id BIGINT      NOT NULL,
-    menu                  JSONB       NOT NULL DEFAULT '[]'::JSONB,
-    reason                TEXT,
+    meal_id      VARCHAR(36)  NOT NULL,
+    member_id    VARCHAR(36)  NOT NULL,
+    serving_date DATE         NOT NULL,
+    serving_time SERVING_TIME NOT NULL,
+    menu         JSONB        NOT NULL DEFAULT '[]'::JSONB,
+    reason       TEXT,
 
     PRIMARY KEY (meal_id),
-    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (meal_plan_id),
-    FOREIGN KEY (meal_plan_schedule_id) REFERENCES meal_plan_schedules (meal_plan_schedule_id),
-    UNIQUE (serving_date, meal_plan_schedule_id)
+    FOREIGN KEY (member_id) REFERENCES members (member_id),
+    UNIQUE (member_id, serving_date, serving_time)
 );

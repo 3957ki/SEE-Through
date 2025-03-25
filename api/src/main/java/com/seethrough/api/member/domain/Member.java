@@ -85,8 +85,6 @@ public class Member {
 	@Column(name = "deleted_at", columnDefinition = "TIMESTAMP")
 	private LocalDateTime deletedAt;
 
-	// TODO: 검증 로직
-
 	public void login(int age, String imagePath) {
 		if (!isRegistered) {
 			this.age = age;

@@ -47,8 +47,7 @@ public class IngredientLogService {
 
 		UUID memberIdObj = null;
 		if (memberId != null && !memberId.isEmpty()) {
-			memberIdObj = UUID.fromString(memberId);
-			memberService.checkMemberExists(memberIdObj);
+			memberIdObj = memberService.checkMemberExists(memberId);
 		}
 
 		SliceRequestDto sliceRequestDto = SliceRequestDto.builder()

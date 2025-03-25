@@ -1,4 +1,4 @@
-package com.seethrough.api.mealplan.presentation.dto.response;
+package com.seethrough.api.meal.presentation.dto.response;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,8 +12,9 @@ import lombok.ToString;
 @ToString
 public class MealDetailResponse {
 	private String mealId;
+	private String memberId;
 	private LocalDate servingDate;
-	private String servingDay;
-	private int servingTime;
+	private String servingTime;
 	private List<String> menu;
+	private String reason;
 }
