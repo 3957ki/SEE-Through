@@ -8,13 +8,13 @@ function ShowcaseScreen() {
   const [isShowingInfoScreen, setIsShowingInfoScreen] = useState(true);
 
   return (
-    <div className="bg-gray-900 min-h-screen flex items-center justify-center p-4 md:p-8">
-      <div className="relative w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1800px] h-[85vh] bg-gray-100 rounded-lg p-4 md:p-8 overflow-hidden shadow-2xl">
+    <div className="min-h-screen flex justify-center bg-gray-300 p-5">
+      <div className="relative w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1800px] h-[90vh]">
         <div className="flex h-full gap-4 md:gap-8">
           {/* Left side - Fridge with display */}
           <div className="w-2/3 h-full relative">
             <Fridge>
-              <div className="w-full h-full rounded-md overflow-hidden border border-gray-300 shadow-inner flex items-center justify-center bg-gray-50">
+              <div className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50">
                 {isShowingInfoScreen ? (
                   <div className="flex items-center justify-center">
                     <FridgeDisplay targetWidth={375} targetHeight={667} />
@@ -29,12 +29,10 @@ function ShowcaseScreen() {
           </div>
 
           {/* Right side - Controls and information */}
-          <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6">
+          <div className="w-1/4 h-full flex flex-col gap-4 md:gap-6">
             {/* Webcam view */}
             <div className="h-1/3">
-              <div className="h-full p-2 md:p-3 bg-gray-200 rounded-md shadow">
-                <WebcamView />
-              </div>
+              <WebcamView />
             </div>
 
             {/* User info */}
@@ -48,7 +46,6 @@ function ShowcaseScreen() {
 
               <div className="space-y-4 md:space-y-6">
                 <button
-                  type="button"
                   onClick={() => setIsShowingInfoScreen(!isShowingInfoScreen)}
                   className="w-full py-2 md:py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-sm md:text-base"
                 >
