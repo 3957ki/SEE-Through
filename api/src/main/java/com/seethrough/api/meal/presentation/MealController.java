@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,6 +54,34 @@ public class MealController {
 		DailyMealResponse response = mealService.getDailyMeal(memberId, servingDate);
 
 		log.debug("[Controller] 특정 날짜 식단 조회 응답: {}", response);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{memberId}")
+	@Operation(
+		summary = "오늘의 식단 조회 및 일주일 식단 생성",
+		description = "오늘의 식단 조회 및 일주일치의 새로운 식단을 생성합니다.<br>" +
+			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
+			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
+			"오늘 기준 일주일간 식단을 조회하여 비어있는 날짜의 경우, LLM API를 호출하여 식단을 생성하고 저장합니다.<br><br>" +
+			"응답으로는 오늘 날짜의 식단의 기본 정보(식단Id, 제공 날짜, 제공 시간, 메뉴, 선정 이유 등)가 포함됩니다."
+	)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "식단 생성 및 오늘 날짜 식단 조회 성공"),
+		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
+			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+	})
+	public ResponseEntity<DailyMealResponse> createMeals(@PathVariable String memberId) {
+		log.info("[Controller - POST /api/meals/{memberId}] 식단 생성 요청: memberId={}", memberId);
+
+		mealService.createMeals(memberId);
+
+		log.debug("[Controller] 일주일 식단 생성 성공");
+
+		DailyMealResponse response = mealService.getDailyMeal(memberId, LocalDate.now());
+
+		log.debug("[Controller] 오늘의 식단 조회 응답: {}", response);
 
 		return ResponseEntity.ok(response);
 	}

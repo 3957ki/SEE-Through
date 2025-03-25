@@ -19,7 +19,7 @@ public class LlmApiMealService {
 	private final LlmApiClient llmApiClient;
 
 	public ScheduleMealListResponse createMealList(ScheduleMealListRequest request) {
-		log.info("[LlmApiMealService] 식단 생성 요청 시작: request = {}", request);
+		log.info("[LlmApiMealService] 식단 생성 요청 시작: size={}, request={}", request.getSchedules().size(), request);
 
 		String uri = UriComponentsBuilder.fromPath("/llm/meal-plan")
 			.build()

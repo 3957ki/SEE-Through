@@ -6,5 +6,9 @@ import java.util.UUID;
 
 public interface MealRepository {
 
-	List<Meal> findMealsByMemberIdAndDate(UUID memberId, LocalDate servingDate);
+	List<Meal> findMealsByMemberIdAndServingDate(UUID memberId, LocalDate servingDate);
+
+	List<Meal> findMealsByMemberIdAndServingDateBetweenOrderByDateServingTime(UUID memberId, LocalDate startDate, LocalDate endDate);
+
+	void saveAll(List<Meal> meals);
 }

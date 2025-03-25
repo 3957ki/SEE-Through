@@ -11,4 +11,6 @@ import com.seethrough.api.meal.domain.Meal;
 public interface MealJpaRepository extends JpaRepository<Meal, UUID> {
 
 	List<Meal> findByMemberIdAndServingDate(UUID memberId, LocalDate servingDate);
+
+	List<Meal> findMealsByMemberIdAndServingDateBetweenOrderByServingDateAscServingTimeAsc(UUID memberId, LocalDate startDate, LocalDate endDate);
 }

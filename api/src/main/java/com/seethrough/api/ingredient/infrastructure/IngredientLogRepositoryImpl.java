@@ -44,8 +44,6 @@ public class IngredientLogRepositoryImpl implements IngredientLogRepository {
 	public void saveAll(List<IngredientLog> ingredientLogs) {
 		log.debug("[Repository] saveAll 호출: {} 개의 로그", ingredientLogs.size());
 
-		for (IngredientLog ingredientLog : ingredientLogs) {
-			entityManager.persist(ingredientLog);
-		}
+		ingredientLogs.forEach(entityManager::persist);
 	}
 }
