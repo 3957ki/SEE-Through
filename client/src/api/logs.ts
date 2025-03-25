@@ -11,7 +11,7 @@ export async function getLogs(page = 1, pageSize = 10, memberId?: string): Promi
 
     // memberId가 있는 경우에만 추가
     if (memberId) {
-      params.append("member_id", memberId);
+      params.append("memberId", memberId);
     }
 
     // 구성된 쿼리 파라미터를 URL에 추가

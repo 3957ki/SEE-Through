@@ -26,7 +26,7 @@ export default function LogPage() {
 
         // 페이지네이션 파라미터 추가 및 필요시 멤버 ID 추가 (숫자가 원래는 currentMember.member_id)
         const memberId =
-          myLogsOnly && currentMember ? "00000000-0000-0000-0000-000000000001" : undefined;
+          myLogsOnly && currentMember ? "00000000-0000-0000-0000-000000000002" : undefined;
         const response: LogsResponse = await getLogs(currentPage, pageSize, memberId);
         const { content, slice_info } = response;
 
