@@ -47,10 +47,10 @@ public class MealController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<DailyMealResponse> getDailyMeal(
-		@RequestParam("member-id") String memberId,
-		@RequestParam("serving-date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate servingDate
+		@RequestParam String memberId,
+		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate servingDate
 	) {
-		log.info("[Controller - GET /api/meals?member-id={memberId}&serving-date={servingDate}] 특정 날짜 식단 조회 요청: memberId={}, servingDate={}",
+		log.info("[Controller - GET /api/meals?memberId={memberId}&servingDate={servingDate}] 특정 날짜 식단 조회 요청: memberId={}, servingDate={}",
 			memberId, servingDate);
 
 		DailyMealResponse response = mealService.getDailyMeal(memberId, servingDate);
@@ -100,11 +100,11 @@ public class MealController {
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<DailyMealResponse> replaceDailyMeal(
-		@RequestParam("member-id") String memberId,
-		@RequestParam("serving-date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate servingDate
+		@RequestParam String memberId,
+		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate servingDate
 	) {
 		log.info(
-			"[Controller - POST /api/meals/replace?member-id={memberId}&serving-date={servingDate}] 특정 날짜의 식단 교체 요청: memberId={}, servingDate={}",
+			"[Controller - POST /api/meals/replace?memberId={memberId}&servingDate={servingDate}] 특정 날짜의 식단 교체 요청: memberId={}, servingDate={}",
 			memberId, servingDate);
 
 		DailyMealResponse response = mealService.replaceDailyMeal(memberId, servingDate);
