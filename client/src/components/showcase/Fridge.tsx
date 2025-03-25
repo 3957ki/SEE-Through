@@ -1,70 +1,116 @@
-import React, { useState } from "react";
+import React from "react";
+import { DroppedMaterial } from "@/interfaces/DroppedMaterial";
 
 interface FridgeComponentProps {
   children?: React.ReactNode;
+  leftDoorOpen: boolean;
+  toggleDoor: () => void;
+  handleDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  droppedIngredients: DroppedMaterial[];
+  removeIngredient: (id: string) => void;
 }
 
-function Fridge({ children }: FridgeComponentProps) {
-  // 좌측 문 열림 상태 (클릭 시 토글)
-  const [leftDoorOpen, setLeftDoorOpen] = useState(false);
-
+function Fridge({
+  children,
+  leftDoorOpen,
+  toggleDoor,
+  handleDrop,
+  droppedIngredients,
+  removeIngredient,
+}: FridgeComponentProps) {
   const leftDoorStyle: React.CSSProperties = {
     transition: "opacity 0.5s ease",
     opacity: leftDoorOpen ? 0 : 1,
   };
+  
   return (
     // 클릭하면 좌측 문이 토글됩니다.
     <div className="relative w-full h-full">
-      <svg width="100%" height="auto" viewBox="0 0 988 1038" style={{ overflow: "visible" }} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="100%" height="100%" viewBox="0 0 988 1038" style={{ overflow: "visible" }} fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_191_1501)">
-        <rect width="984" height="1828" rx="5" fill="#333333"/>
-        <rect x="0.5" y="0.5" width="983" height="1827" rx="4.5" stroke="black"/>
+          <rect width="984" height="1828" rx="5" fill="#333333"/>
+          <rect x="0.5" y="0.5" width="983" height="1827" rx="4.5" stroke="black"/>
         </g>
         {/* 왼쪽 도어 (애니메이션 적용) */}
-        <g id="left-door" style={leftDoorStyle} filter="url(#filter1_d_191_1501)" onClick={() => setLeftDoorOpen(!leftDoorOpen)}>
-        <mask id="path-3-inside-1_191_1501" fill="white">
-        <path d="M408 952H486V958H408V952Z"/>
-        </mask>
-        <path d="M408 952H486V958H408V952Z" fill="#222222"/>
-        <path d="M408 952H486V958H408V952Z" fill="url(#paint0_linear_191_1501)" fillOpacity="0.35"/>
-        <path d="M486 958V959H487V958H486ZM408 958H407V959H408V958ZM485 952V958H487V952H485ZM486 957H408V959H486V957ZM409 958V952H407V958H409Z" fill="black" mask="url(#path-3-inside-1_191_1501)"/>
+        <g id="left-door" style={leftDoorStyle} filter="url(#filter1_d_191_1501)" onClick={toggleDoor}>
+          <mask id="path-3-inside-1_191_1501" fill="white">
+            <path d="M408 952H486V958H408V952Z"/>
+          </mask>
+          <path d="M408 952H486V958H408V952Z" fill="#222222"/>
+          <path d="M408 952H486V958H408V952Z" fill="url(#paint0_linear_191_1501)" fillOpacity="0.35"/>
+          <path d="M486 958V959H487V958H486ZM408 958H407V959H408V958ZM485 952V958H487V952H485ZM486 957H408V959H486V957ZM409 958V952H407V958H409Z" fill="black" mask="url(#path-3-inside-1_191_1501)"/>
         </g>
-        <g id="left-door" style={leftDoorStyle} filter="url(#filter2_d_191_1501)" onClick={() => setLeftDoorOpen(!leftDoorOpen)}>
-        <mask id="path-5-inside-2_191_1501" fill="white">
-        <path d="M418 952H435V955H418V952Z"/>
-        </mask>
-        <path d="M418 952H435V955H418V952Z" fill="#222222"/>
-        <path d="M435 955V956H436V955H435ZM418 955H417V956H418V955ZM434 952V955H436V952H434ZM435 954H418V956H435V954ZM419 955V952H417V955H419Z" fill="black" mask="url(#path-5-inside-2_191_1501)"/>
+        <g id="left-door" style={leftDoorStyle} filter="url(#filter2_d_191_1501)" onClick={toggleDoor}>
+          <mask id="path-5-inside-2_191_1501" fill="white">
+            <path d="M418 952H435V955H418V952Z"/>
+          </mask>
+          <path d="M418 952H435V955H418V952Z" fill="#222222"/>
+          <path d="M435 955V956H436V955H435ZM418 955H417V956H418V955ZM434 952V955H436V952H434ZM435 954H418V956H435V954ZM419 955V952H417V955H419Z" fill="black" mask="url(#path-5-inside-2_191_1501)"/>
         </g>
-        <g id="left-door" style={leftDoorStyle} filter="url(#filter3_d_191_1501)" onClick={() => setLeftDoorOpen(!leftDoorOpen)}>
-        <mask id="path-7-inside-3_191_1501" fill="white">
-        <path d="M458 952H475V955H458V952Z"/>
-        </mask>
-        <path d="M458 952H475V955H458V952Z" fill="#222222"/>
-        <path d="M475 955V956H476V955H475ZM458 955H457V956H458V955ZM474 952V955H476V952H474ZM475 954H458V956H475V954ZM459 955V952H457V955H459Z" fill="black" mask="url(#path-7-inside-3_191_1501)"/>
+        <g id="left-door" style={leftDoorStyle} filter="url(#filter3_d_191_1501)" onClick={toggleDoor}>
+          <mask id="path-7-inside-3_191_1501" fill="white">
+            <path d="M458 952H475V955H458V952Z"/>
+          </mask>
+          <path d="M458 952H475V955H458V952Z" fill="#222222"/>
+          <path d="M475 955V956H476V955H475ZM458 955H457V956H458V955ZM474 952V955H476V952H474ZM475 954H458V956H475V954ZM459 955V952H457V955H459Z" fill="black" mask="url(#path-7-inside-3_191_1501)"/>
         </g>
         {/* 여기까지 왼쪽 도어 아래 버튼 */}
         {/* 이게 왼쪽 도어 */}
         <g id="left-door" style={leftDoorStyle} filter="url(#filter4_di_191_1501)">
-        <rect x="7" y="7" width="482" height="945" fill="white"/>
-        <rect x="7" y="7" width="482" height="945" fill="url(#paint1_linear_191_1501)"/>
-        <rect x="7.5" y="7.5" width="481" height="944" stroke="black"/>
+          <rect x="7" y="7" width="482" height="945" fill="white"/>
+          <rect x="7" y="7" width="482" height="945" fill="url(#paint1_linear_191_1501)"/>
+          <rect x="7.5" y="7.5" width="481" height="944" stroke="black"/>
         </g>
         <g id="open-door" 
+          style={{
+            transition: "opacity 0.5s ease",
+            opacity: leftDoorOpen ? 1 : 0,
+            pointerEvents: "none",
+          }}
+          transform="translate(489,952)">
+          <image
+            href="/src/assets/bespoke-opened-crop.png"
+            width="100%"
+            height="100%"
+            transform="translate(-870, -1040)"
+            preserveAspectRatio="xMidYMid meet"
+          />
+        </g>
+        {leftDoorOpen && (
+          <foreignObject
+          x="280"
+          y="300"
+          width="30%"
+          height="60%"
+          transform="translate(-100, -100)"
+          style={{ pointerEvents: "all" }}
+        >
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
             style={{
-              transition: "opacity 0.5s ease",
-              opacity: leftDoorOpen ? 1 : 0,
-              pointerEvents: "none",
+              width: "100%",
+              height: "100%",
+              position: "relative",
             }}
-            transform="translate(489,952)">
-            <image
-              href="/src/assets/bespoke-opened-crop.png"
-              width="100%"
-              height="100%"
-              transform="translate(-870, -1040)"
-              preserveAspectRatio="xMidYMid meet"
-            />
-          </g>
+          >
+            {droppedIngredients.map((item, index) => (
+              <div
+                key={`${item.material.id}-${index}`}
+                onClick={() => removeIngredient(item.material.id)}
+                style={{
+                  position: "absolute",
+                  left: item.x,
+                  top: item.y,
+                }}
+                className="p-2 bg-blue-300 rounded cursor-pointer"
+              >
+                {item.material.name}
+              </div>
+            ))}
+          </div>
+        </foreignObject>
+        )}
         {/* 왼쪽 도어 끝 */}
         <g filter="url(#filter5_d_191_1501)">
         <mask id="path-11-inside-4_191_1501" fill="white">
