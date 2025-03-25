@@ -22,7 +22,7 @@ export const updateMonitoring = async (request: UpdateMonitoringRequest): Promis
   try {
     const response = await APIServerFetcher.patch(`/members/${request.userId}/monitoring`);
 
-    if (response.status !== 204) {
+    if (response.status !== 200) {
       throw new Error("모니터링 설정 업데이트 실패");
     }
 
