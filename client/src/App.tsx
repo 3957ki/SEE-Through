@@ -15,7 +15,7 @@ function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: 
       variant="outline"
       size="icon"
       onClick={onClick}
-      className="fixed bottom-20 right-4 z-50 flex items-center justify-center"
+      className="fixed bottom-4 right-4 z-50 flex items-center justify-center"
       title={title}
     >
       <svg
