@@ -1,3 +1,4 @@
+import { updateMember } from "@/api/members";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -275,6 +276,26 @@ export default function MyPage() {
           <Button
             className="flex-1 bg-orange-500 text-white hover:bg-orange-600"
             disabled={!isModified}
+            onClick={async () => {
+              if (!currentMember) return;
+
+              try {
+                await updateMember({
+                  member_id: currentMember.member_id,
+                  name,
+                  birth: birthday ? birthday.toISOString().split("T")[0] : "",
+                  preferred_foods: preferredFoods,
+                  disliked_foods: dislikedFoods,
+                  allergies,
+                  diseases,
+                });
+
+                alert("사용자 정보가 성공적으로 업데이트되었습니다.");
+              } catch (error) {
+                console.error("업데이트 실패:", error);
+                alert("사용자 정보 업데이트 중 오류가 발생했습니다.");
+              }
+            }}
           >
             저장
           </Button>
