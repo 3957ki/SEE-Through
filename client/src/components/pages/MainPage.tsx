@@ -2,6 +2,7 @@ import { Section, SectionContent, SectionDivider, SectionTitle } from "@/compone
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import Material from "@/interfaces/Material";
 import { useEffect, useState } from "react";
+import { useMaterialContext } from "@/contexts/MaterialContext";
 import { BsCalendarEvent, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
 
 // Material Grid Section Components
@@ -9,7 +10,7 @@ function MaterialBlock({ material }: { material: Material }) {
   return (
     <div className="aspect-square bg-white rounded-md overflow-hidden border">
       <img
-        src={material.image ?? "/placeholder.svg"}
+        src={material.image_path ?? "/placeholder.svg"}
         alt={material.name ?? "Material image"}
         className="w-full h-full object-cover"
       />
@@ -19,15 +20,15 @@ function MaterialBlock({ material }: { material: Material }) {
 
 function MaterialsSection({ materials }: { materials: Material[] }) {
   const MAX_MATERIALS = 10;
-
+  
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {materials
-            ?.slice(0, MAX_MATERIALS)
-            .map((material) => <MaterialBlock key={material.id} material={material} />)}
+          {materials.slice(0, MAX_MATERIALS).map((material) => (
+            <MaterialBlock key={material.ingredient_id} material={material} />
+          ))}
         </div>
       </SectionContent>
     </Section>
@@ -115,29 +116,23 @@ function TodaysDietSection() {
 
 function MainPage() {
   const { currentMember } = useCurrentMember();
-  const [materials, setMaterials] = useState<Material[]>([]);
+  const { mainMaterials, fetchMainMaterials } = useMaterialContext();
 
   useEffect(() => {
-    setMaterials(
-      Array.from({ length: 10 }, (_, i) => ({
-        id: i.toString(),
-        image: "/placeholder.svg",
-        name: "Empty material",
-      }))
-    );
-  }, [currentMember]);
+    if (currentMember) {
+      fetchMainMaterials();
+    }
+  }, [currentMember, fetchMainMaterials]);
 
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
-
       <TodaysDietSection />
-
       <SectionDivider />
-
-      <MaterialsSection materials={materials} />
+      <MaterialsSection materials={mainMaterials} />
     </div>
   );
 }
+
 
 export default MainPage;
