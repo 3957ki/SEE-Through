@@ -32,11 +32,11 @@ function ShowcaseContent() {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
   // 재료 식탁에 표시되는 로컬 available 재료 목록
   const [availableIngredients, setAvailableIngredients] = useState<Material[]>([
-    { ingredient_id: "tomato", name: "토마토", image_path: "/src/assets/tomato.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "lettuce", name: "양상추", image_path: "/src/assets/lettuce.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "chicken", name: "치킨", image_path: "/src/assets/chicken.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "peanut", name: "땅콩", image_path: "/src/assets/peanut.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "corn", name: "옥수수", image_path: "/src/assets/corn.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "showcase1", name: "토마토", image_path: "/src/assets/tomato.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "showcase2", name: "양상추", image_path: "/src/assets/lettuce.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "showcase3", name: "치킨", image_path: "/src/assets/chicken.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "showcase4", name: "땅콩", image_path: "/src/assets/peanut.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "showcase5", name: "옥수수", image_path: "/src/assets/corn.jpg", inbound_at:"", expiration_at: "" },
   ]);
 
   // Context에서 draggedMaterials 및 액션 함수들을 가져옴
@@ -58,7 +58,8 @@ function ShowcaseContent() {
 
   // 재료 제거 시, dragged에서 제거하고 available에 추가하는 핸들러
   const handleRemoveFromDragged = async (material: Material) => {
-    await removeDraggedMaterial(material.ingredient_id);
+    const comment = await removeDraggedMaterial(material.ingredient_id); // llm 추천 comment
+    console.log(comment);
     setAvailableIngredients((prev) => [...prev, material]);
   };
 

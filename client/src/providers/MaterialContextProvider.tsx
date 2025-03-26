@@ -2,33 +2,38 @@ import React, { useState, useMemo, useEffect, ReactNode } from "react";
 import Material from "@/interfaces/Material";
 import { DroppedMaterial } from "@/interfaces/DroppedMaterial";
 import { MaterialContext, MaterialContextType } from "@/contexts/MaterialContext";
-import { APIServerFetcher } from "@/lib/fetchers";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { deleteMaterial, getMaterials, insertMaterial } from "@/api/material";
 
-
-const callInsertAPI = async (material: Material) => {
-  return APIServerFetcher.post("/ingredients", material);
-};
-
-const callDeleteAPI = async (materialId: string, memberId: string) => {
-  return APIServerFetcher.delete(`/ingredients`, {
-    data: {
-      member_id: memberId,
-      ingredient_id_list: [materialId],
-    },
-  });
-};
+// API 호출 함수는 insertMaterial, deleteMaterial, getMaterials를 그대로 사용합니다.
 
 export const MaterialProvider = ({ children }: { children: ReactNode }) => {
   const { currentMember } = useCurrentMember();
   const [mainMaterials, setMainMaterials] = useState<Material[]>([]);
   const [draggedMaterials, setDraggedMaterials] = useState<DroppedMaterial[]>([]);
 
+  // 재료 목록을 API에서 받아오는 함수 (Material 배열)
   const fetchMainMaterials = async () => {
     try {
-      const response = await APIServerFetcher.get("/ingredients?page=1&size=10&sortBy=inboundAt&sortDirection=ASC");
-      const materials = response.data.content;
+      const materials = await getMaterials();
       setMainMaterials(materials);
+      console.log("Fetched mainMaterials:", materials);
+      // draggedMaterials 업데이트: 이름이 동일하면 API에서 받아온 material로 덮어씀
+      setDraggedMaterials((prev) => {
+        const updated = prev.map((dm) => {
+          const draggedName = dm.material.name?.trim().toLowerCase() || "";
+          const match = materials.find(
+            (m) => (m.name?.trim().toLowerCase() || "") === draggedName
+          );
+          if (match) {
+            console.log("Overwriting dragged material:", dm.material.name, "with", match);
+            return { ...dm, material: match };
+          }
+          return dm;
+        });
+        console.log("Updated draggedMaterials:", updated);
+        return updated;
+      });
     } catch (error) {
       console.error("Failed to fetch main materials:", error);
     }
@@ -39,20 +44,26 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addDraggedMaterial = async (material: Material, x: number, y: number) => {
-    await callInsertAPI(material);
+    if (!currentMember) return;
+    console.log("멤버있음: " + currentMember);
+    await insertMaterial(material, currentMember.member_id);
+    console.log("insert 실행");
+    // draggedMaterials에 추가
     setDraggedMaterials((prev) => [...prev, { material, x, y }]);
+    console.log("재료갱신시작");
+    // API 호출 후 재료 목록을 갱신
     await fetchMainMaterials();
   };
-  
+
   const removeDraggedMaterial = async (materialId: string) => {
     if (!currentMember) return;
-    await callDeleteAPI(materialId, currentMember.member_id);
+    const comment = await deleteMaterial(materialId, currentMember.member_id);
     setDraggedMaterials((prev) =>
       prev.filter((item) => item.material.ingredient_id !== materialId)
     );
     await fetchMainMaterials();
+    return comment;
   };
-  
 
   const value: MaterialContextType = useMemo(
     () => ({
@@ -60,15 +71,15 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
       draggedMaterials,
       addDraggedMaterial,
       removeDraggedMaterial,
-      fetchMainMaterials,  // 추가
+      fetchMainMaterials,
     }),
     [mainMaterials, draggedMaterials]
   );
 
   return (
-    <MaterialContext value={value}>
+    <MaterialContext.Provider value={value}>
       {children}
-    </MaterialContext>
+    </MaterialContext.Provider>
   );
 };
 

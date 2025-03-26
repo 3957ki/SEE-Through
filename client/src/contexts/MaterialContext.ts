@@ -6,7 +6,7 @@ export interface MaterialContextType {
   mainMaterials: Material[];           // API로 받아온 재료 + 드래그로 추가된 재료
   draggedMaterials: DroppedMaterial[]; // Showcase에서 드래그된 재료들
   addDraggedMaterial: (material: Material, x: number, y: number) => Promise<void>;
-  removeDraggedMaterial: (materialId: string) => Promise<void>;
+  removeDraggedMaterial: (materialId: string) => Promise<string | undefined>;
   fetchMainMaterials: () => Promise<void>;  
 }
 
