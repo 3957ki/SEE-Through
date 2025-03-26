@@ -73,6 +73,7 @@ def find(
         "target_y",
         "target_w",
         "target_h",
+        "count",
     }
 
     # Ensure the proper pickle file exists
@@ -106,15 +107,6 @@ def find(
         expand_percentage=expand_percentage,
         anti_spoofing=anti_spoofing,
     )
-
-    # detect된 얼굴이 여러 개일 경우 가장 큰 얼굴만 사용
-    if source_objs:
-        source_objs = [
-            max(
-                source_objs,
-                key=lambda obj: obj["facial_area"]["w"] * obj["facial_area"]["h"],
-            )
-        ]
 
     # Should we have no representations bailout
     if len(representations) == 0:
@@ -220,15 +212,18 @@ def find(
                 None,
             )
 
-            if existing_rep:
+            # 인식된 횟수가 5번이 안됐다면 업데이트
+            if existing_rep and existing_rep["count"] != 5:
+                existing_rep["count"] += 1
+
                 alpha = 0.1  # 새로운 얼굴 반영 비율
                 existing_rep["embedding"] = (1 - alpha) * np.array(
                     existing_rep["embedding"]
                 ) + alpha * new_embedding
 
-            # 변경된 representations를 Pickle 파일에 저장
-            with open(datastore_path, "wb") as f:
-                pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
+                # 변경된 representations를 Pickle 파일에 저장
+                with open(datastore_path, "wb") as f:
+                    pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
 
     # -----------------------------------
 
@@ -285,6 +280,7 @@ def update(
         "target_y",
         "target_w",
         "target_h",
+        "count",
     }
 
     # Ensure the proper pickle file exists
@@ -404,6 +400,7 @@ def __find_bulk_embeddings(
                     "target_y": 0,
                     "target_w": 0,
                     "target_h": 0,
+                    "count": 0,
                 }
             )
         else:
@@ -429,6 +426,7 @@ def __find_bulk_embeddings(
                         "target_y": img_region["y"],
                         "target_w": img_region["w"],
                         "target_h": img_region["h"],
+                        "count": 0,
                     }
                 )
 

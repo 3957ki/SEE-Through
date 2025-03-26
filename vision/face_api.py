@@ -32,20 +32,22 @@ detector_backend = "retinaface"
 model = "Facenet"
 db_path = "users"
 
+
 # 앱 시작 시
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs(db_path, exist_ok=True)
-    
+
     logger.info("모델 로딩 시작")
     modeling.build_model(task="face_detector", model_name=detector_backend)
     modeling.build_model(task="facial_recognition", model_name=model)
     logger.info("모델 로딩 종료")
-    
+
     yield  # 앱이 동작하는 동안
 
     # 앱 종료 시 (필요 시 리소스 정리 가능)
     logger.info("애플리케이션 종료")
+
 
 vision_router = APIRouter(prefix="/vision")
 app = FastAPI(lifespan=lifespan)
@@ -58,6 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # 얼굴 인식 API (HTTP 버전)
 @vision_router.post("/find_faces/")
@@ -105,7 +108,7 @@ async def find_faces(file: UploadFile = File(...)):
 # 얼굴 인식 API (웹소켓 버전)
 @vision_router.websocket("/find_faces/")
 async def websocket_find_faces(websocket: WebSocket):
-    
+
     await websocket.accept()
     try:
         while True:
@@ -164,7 +167,12 @@ async def websocket_find_faces(websocket: WebSocket):
                 # 얼굴 이미지 자르기
                 try:
                     # 결과에서 얼굴 영역 좌표 가져오기
-                    face_region = df.iloc[0]["source_x"], df.iloc[0]["source_y"], df.iloc[0]["source_x"] + df.iloc[0]["source_w"], df.iloc[0]["source_y"] + df.iloc[0]["source_h"]
+                    face_region = (
+                        df.iloc[0]["source_x"],
+                        df.iloc[0]["source_y"],
+                        df.iloc[0]["source_x"] + df.iloc[0]["source_w"],
+                        df.iloc[0]["source_y"] + df.iloc[0]["source_h"],
+                    )
 
                     # 원본 이미지 열기
                     original_image = Image.open(temp_file_path)
@@ -176,7 +184,9 @@ async def websocket_find_faces(websocket: WebSocket):
                     cropped_face.save(user_image_path, format="JPEG")
 
                 except Exception as e:
-                    logger.warning(f"얼굴 이미지 자르기 실패: {e}, 원본 이미지로 저장합니다.")
+                    logger.warning(
+                        f"얼굴 이미지 자르기 실패: {e}, 원본 이미지로 저장합니다."
+                    )
                     shutil.move(temp_file_path, user_image_path)
 
                 logger.info(f"얼굴 인식 응답 결과: {result}")
@@ -277,5 +287,6 @@ async def analyze_user_endpoint(file: UploadFile = File(...)):
         return {"result": result, "processing_time": elapsed_time}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
 
 app.include_router(vision_router)

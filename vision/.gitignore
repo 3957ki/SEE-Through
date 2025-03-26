@@ -63,3 +63,5 @@ htmlcov/
 
 # 기타 캐시 파일
 .cache/
+dataset/
+register_dataset/
