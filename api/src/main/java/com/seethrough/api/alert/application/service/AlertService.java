@@ -13,6 +13,8 @@ import com.seethrough.api.alert.domain.AlertRepository;
 import com.seethrough.api.alert.infrastructure.external.llm.LlmApiAlertService;
 import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByIngredientListResponse;
 import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByIngredientResponse;
+import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByMemberListResponse;
+import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByMemberResponse;
 import com.seethrough.api.ingredient.domain.Ingredient;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,16 @@ public class AlertService {
 
 		List<Alert> alerts = createAlertByIngredientLLM(ingredients);
 
-		alertRepository.saveAll(alerts);
+		alertRepository.saveAllWithoutDuplicates(alerts);
+	}
+
+	@Transactional
+	public void createAlertByMember(UUID memberId) {
+		log.debug("[Service] createAlertByMember 호출");
+
+		List<Alert> alerts = createAlertByMemberLLM(memberId);
+
+		alertRepository.saveAllWithoutDuplicates(alerts);
 	}
 
 	private List<Alert> createAlertByIngredientLLM(List<Ingredient> ingredients) {
@@ -53,6 +64,26 @@ public class AlertService {
 
 				alerts.add(alert);
 			}
+		}
+
+		return alerts;
+	}
+
+	private List<Alert> createAlertByMemberLLM(UUID memberId) {
+		List<Alert> alerts = new ArrayList<>();
+
+		AlertByMemberListResponse listResponse = llmApiAlertService.createAlertByMember(memberId);
+
+		for (AlertByMemberResponse response : listResponse.getRiskIngredients()) {
+			Alert alert = Alert.builder()
+				.alertId(AlertId.builder()
+					.memberId(memberId)
+					.ingredientId(UUID.fromString(response.getIngredientId()))
+					.build())
+				.comment(response.getComment())
+				.build();
+
+			alerts.add(alert);
 		}
 
 		return alerts;

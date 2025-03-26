@@ -11,6 +11,7 @@ import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -21,6 +22,7 @@ import lombok.ToString;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
+@EqualsAndHashCode
 public class AlertId implements Serializable {
 	@Column(name = "member_id", columnDefinition = "VARCHAR(36)", nullable = false)
 	@JdbcTypeCode(SqlTypes.VARCHAR)
