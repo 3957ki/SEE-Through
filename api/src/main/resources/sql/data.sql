@@ -18,7 +18,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
           "당뇨병"
         ]'::JSONB,
         TRUE, FALSE, 35),
-       ('00000000-0000-0000-0000-000000000002', '아빠', '1982-01-01', 43, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/dad.jpgvv',
+       ('00000000-0000-0000-0000-000000000002', '아빠', '1982-01-01', 43, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/dad.jpg',
         '[
           "삼겹살",
           "냉면",
