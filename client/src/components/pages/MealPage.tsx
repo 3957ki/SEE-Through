@@ -1,4 +1,12 @@
-import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
+import {
+  addDislikedFood,
+  addPreferredFood,
+  getMealsByDate,
+  getTodayMeals,
+  refreshMeal,
+  removeDislikedFood,
+  removePreferredFood,
+} from "@/api/meals";
 import { SectionTitle } from "@/components/ui/section";
 import { Spinner } from "@/components/ui/spinner";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
@@ -36,7 +44,7 @@ function DateSelector({
   };
 
   const handleNext = () => {
-    if (offset + 1 <= 0) return; // Prevent future shifting if needed
+    if (offset + 1 <= 0) return;
     setOffset(offset + 1);
   };
 
@@ -71,19 +79,73 @@ function DateSelector({
   );
 }
 
-function MealItem({ name }: { name: string }) {
-  const [feedback, setFeedback] = useState<"like" | "dislike" | null>(null);
+function MealItem({
+  name,
+  feedback,
+  setFeedbackMap,
+  memberId,
+}: {
+  name: string;
+  feedback: "like" | "dislike" | null;
+  setFeedbackMap: React.Dispatch<React.SetStateAction<Record<string, "like" | "dislike" | null>>>;
+  memberId: string;
+}) {
+  const handleLike = async () => {
+    try {
+      if (feedback === "like") {
+        await removePreferredFood(memberId, name);
+        setFeedbackMap((prev) => ({ ...prev, [name]: null }));
+      } else {
+        if (feedback === "dislike") await removeDislikedFood(memberId, name);
+        await addPreferredFood(memberId, name);
+        setFeedbackMap((prev) => ({ ...prev, [name]: "like" }));
+      }
+    } catch (err) {
+      console.error("선호 처리 실패", err);
+    }
+  };
+
+  const handleDislike = async () => {
+    try {
+      if (feedback === "dislike") {
+        await removeDislikedFood(memberId, name);
+        setFeedbackMap((prev) => ({ ...prev, [name]: null }));
+      } else {
+        if (feedback === "like") await removePreferredFood(memberId, name);
+        await addDislikedFood(memberId, name);
+        setFeedbackMap((prev) => ({ ...prev, [name]: "dislike" }));
+      }
+    } catch (err) {
+      console.error("비선호 처리 실패", err);
+    }
+  };
 
   return (
-    <div className="flex items-center justify-start px-4 py-1 gap-2">
-      <span className="text-sm">{name}</span>
+    <div
+      className={`flex items-center justify-start px-4 py-1 gap-2 rounded-md transition ${
+        feedback === "like"
+          ? "bg-orange-50 border-l-4 border-orange-400"
+          : feedback === "dislike"
+            ? "bg-gray-100 border-l-4 border-gray-400"
+            : ""
+      }`}
+    >
+      <span className="text-sm font-medium">{name}</span>
+
       <BsHandThumbsUp
-        className={`w-4 h-4 cursor-pointer ${feedback === "like" ? "text-orange-500" : "text-gray-400"}`}
-        onClick={() => setFeedback("like")}
+        className={`w-4 h-4 ${
+          feedback === "like" ? "text-orange-500" : "text-gray-400"
+        } cursor-pointer`}
+        onClick={handleLike}
+        title="선호 토글"
       />
+
       <BsHandThumbsDown
-        className={`w-4 h-4 cursor-pointer ${feedback === "dislike" ? "text-orange-500" : "text-gray-400"}`}
-        onClick={() => setFeedback("dislike")}
+        className={`w-4 h-4 ${
+          feedback === "dislike" ? "text-gray-700" : "text-gray-400"
+        } cursor-pointer`}
+        onClick={handleDislike}
+        title="비선호 토글"
       />
     </div>
   );
@@ -96,6 +158,9 @@ function MealSection({
   mealId,
   onRefresh,
   isRefreshing,
+  feedbackMap,
+  setFeedbackMap,
+  memberId,
 }: {
   title: string;
   items: string[];
@@ -103,6 +168,9 @@ function MealSection({
   mealId: string;
   onRefresh: (mealId: string) => void;
   isRefreshing: boolean;
+  feedbackMap: Record<string, "like" | "dislike" | null>;
+  setFeedbackMap: React.Dispatch<React.SetStateAction<Record<string, "like" | "dislike" | null>>>;
+  memberId: string;
 }) {
   return (
     <div className="py-4">
@@ -111,7 +179,13 @@ function MealSection({
           <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
           <div className="mt-2 space-y-1">
             {items.map((item, index) => (
-              <MealItem key={index} name={item} />
+              <MealItem
+                key={index}
+                name={item}
+                feedback={feedbackMap[item] ?? null}
+                setFeedbackMap={setFeedbackMap}
+                memberId={memberId}
+              />
             ))}
           </div>
           {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
@@ -136,6 +210,7 @@ export default function MealPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meals, setMeals] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
@@ -147,11 +222,8 @@ export default function MealPage() {
     try {
       setRefreshingMealId(mealId);
       const refreshedMeal = await refreshMeal(mealId);
-
-      // Update the meals state with the refreshed meal
       if (meals) {
         const updatedMeals = { ...meals };
-
         if (refreshedMeal.serving_time === "아침") {
           updatedMeals.breakfast = refreshedMeal;
         } else if (refreshedMeal.serving_time === "점심") {
@@ -159,7 +231,6 @@ export default function MealPage() {
         } else if (refreshedMeal.serving_time === "저녁") {
           updatedMeals.dinner = refreshedMeal;
         }
-
         setMeals(updatedMeals);
       }
     } catch (err) {
@@ -178,7 +249,6 @@ export default function MealPage() {
         const data = isSameDay(selectedDate, today)
           ? await getTodayMeals(currentMember.member_id)
           : await getMealsByDate(currentMember.member_id, selectedDate);
-
         setMeals(data);
       } catch (err) {
         console.error("식단 불러오기 실패", err);
@@ -188,10 +258,12 @@ export default function MealPage() {
     fetchMeals();
   }, [currentMember, selectedDate]);
 
+  if (!currentMember) return null;
+
   return (
     <div className="pb-24 relative">
       <div className="flex justify-between items-center px-4 mt-4">
-        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
+        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캔리더</SectionTitle>
         <button
           onClick={handleGoToday}
           className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
@@ -211,6 +283,9 @@ export default function MealPage() {
             mealId={meals.breakfast.meal_id}
             onRefresh={handleRefreshMeal}
             isRefreshing={refreshingMealId === meals.breakfast.meal_id}
+            feedbackMap={feedbackMap}
+            setFeedbackMap={setFeedbackMap}
+            memberId={currentMember.member_id}
           />
           <MealSection
             title="점심"
@@ -219,6 +294,9 @@ export default function MealPage() {
             mealId={meals.lunch.meal_id}
             onRefresh={handleRefreshMeal}
             isRefreshing={refreshingMealId === meals.lunch.meal_id}
+            feedbackMap={feedbackMap}
+            setFeedbackMap={setFeedbackMap}
+            memberId={currentMember.member_id}
           />
           <MealSection
             title="저녁"
@@ -227,6 +305,9 @@ export default function MealPage() {
             mealId={meals.dinner.meal_id}
             onRefresh={handleRefreshMeal}
             isRefreshing={refreshingMealId === meals.dinner.meal_id}
+            feedbackMap={feedbackMap}
+            setFeedbackMap={setFeedbackMap}
+            memberId={currentMember.member_id}
           />
         </>
       ) : (
