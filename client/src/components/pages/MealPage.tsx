@@ -1,4 +1,4 @@
-import { getTodayMeals } from "@/api/meals";
+import { getMealsByDate, getTodayMeals } from "@/api/meals";
 import { SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import type { MealPlanResponse } from "@/interfaces/Meal";
@@ -133,10 +133,22 @@ export default function MealPage() {
 
   useEffect(() => {
     if (!currentMember) return;
-    getTodayMeals(currentMember.member_id)
-      .then(setMeals)
-      .catch((err) => console.error("식단 불러오기 실패", err));
-  }, [currentMember]);
+
+    const fetchMeals = async () => {
+      try {
+        const today = new Date();
+        const data = isSameDay(selectedDate, today)
+          ? await getTodayMeals(currentMember.member_id)
+          : await getMealsByDate(currentMember.member_id, selectedDate);
+
+        setMeals(data);
+      } catch (err) {
+        console.error("식단 불러오기 실패", err);
+      }
+    };
+
+    fetchMeals();
+  }, [currentMember, selectedDate]);
 
   return (
     <div className="pb-24 relative">
