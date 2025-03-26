@@ -22,6 +22,7 @@ function DraggableIngredient({ material }: DraggableIngredientProps) {
       onDragStart={handleDragStart}
       className="p-2 bg-blue-300 rounded cursor-grab"
     >
+      <img src={material.image_path} />
       {material.name}
     </div>
   );

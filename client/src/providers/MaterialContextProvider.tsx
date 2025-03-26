@@ -18,30 +18,33 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
       const materials = await getMaterials();
       setMainMaterials(materials);
       console.log("Fetched mainMaterials:", materials);
-      // draggedMaterials 업데이트: 이름이 동일하면 API에서 받아온 material로 덮어씀
-      setDraggedMaterials((prev) => {
-        const updated = prev.map((dm) => {
-          const draggedName = dm.material.name?.trim().toLowerCase() || "";
-          const match = materials.find(
-            (m) => (m.name?.trim().toLowerCase() || "") === draggedName
-          );
-          if (match) {
-            console.log("Overwriting dragged material:", dm.material.name, "with", match);
-            return { ...dm, material: match };
-          }
-          return dm;
-        });
-        console.log("Updated draggedMaterials:", updated);
-        return updated;
-      });
     } catch (error) {
       console.error("Failed to fetch main materials:", error);
     }
   };
 
   useEffect(() => {
+    console.log("실행");
     fetchMainMaterials();
   }, []);
+
+  const updateDraggedMaterials = async () => {
+    setDraggedMaterials((prev) => {
+      const updated = prev.map((dm) => {
+        const draggedName = dm.material.name?.trim().toLowerCase() || "";
+        const match = mainMaterials.find(
+          (m) => (m.name?.trim().toLowerCase() || "") === draggedName
+        );
+        if (match) {
+          console.log("Overwriting dragged material:", dm.material.name, "with", match);
+          return { ...dm, material: match };
+        }
+        return dm;
+      });
+      console.log("Updated draggedMaterials:", updated);
+      return updated;
+    });
+  }
 
   const addDraggedMaterial = async (material: Material, x: number, y: number) => {
     if (!currentMember) return;
@@ -53,6 +56,7 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
     console.log("재료갱신시작");
     // API 호출 후 재료 목록을 갱신
     await fetchMainMaterials();
+    await updateDraggedMaterials();
   };
 
   const removeDraggedMaterial = async (materialId: string) => {
