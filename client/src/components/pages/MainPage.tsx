@@ -20,14 +20,13 @@ function MaterialBlock({ material }: { material: Material }) {
 
 function MaterialsSection({ materials }: { materials: Material[] }) {
   const MAX_MATERIALS = 10;
-  const safeMaterials = Array.isArray(materials) ? materials : [];
   
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {safeMaterials.slice(0, MAX_MATERIALS).map((material) => (
+          {materials.slice(0, MAX_MATERIALS).map((material) => (
             <MaterialBlock key={material.ingredient_id} material={material} />
           ))}
         </div>
