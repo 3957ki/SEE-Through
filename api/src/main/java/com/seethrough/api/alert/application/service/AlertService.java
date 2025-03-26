@@ -2,6 +2,7 @@ package com.seethrough.api.alert.application.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -45,6 +46,17 @@ public class AlertService {
 		List<Alert> alerts = createAlertByMemberLLM(memberId);
 
 		alertRepository.saveAllWithoutDuplicates(alerts);
+	}
+
+	public Optional<Alert> getAlert(UUID memberId, UUID ingredientId) {
+		log.debug("[Service] getAlert 호출");
+
+		AlertId alertId = AlertId.builder()
+			.memberId(memberId)
+			.ingredientId(ingredientId)
+			.build();
+
+		return alertRepository.findByAlertId(alertId);
 	}
 
 	private List<Alert> createAlertByIngredientLLM(List<Ingredient> ingredients) {

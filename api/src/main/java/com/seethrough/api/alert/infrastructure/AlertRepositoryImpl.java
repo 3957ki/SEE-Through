@@ -1,6 +1,7 @@
 package com.seethrough.api.alert.infrastructure;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,5 +45,16 @@ public class AlertRepositoryImpl implements AlertRepository {
 		log.debug("[Repository] 중복 검사 후 저장할 경고의 수: {}", saveAlerts.size());
 
 		saveAlerts.forEach(entityManager::persist);
+	}
+
+	@Override
+	public Optional<Alert> findByAlertId(AlertId alertId) {
+		log.debug("[Repository] findByAlertId 호출");
+
+		Optional<Alert> entity = alertJpaRepository.findByAlertId(alertId);
+
+		log.debug("[Repository] 조회된 경고: {}", entity);
+
+		return entity;
 	}
 }
