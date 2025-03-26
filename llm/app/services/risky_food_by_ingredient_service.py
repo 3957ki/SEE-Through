@@ -4,21 +4,27 @@ from app.db.models import Member
 import json
 
 def check_risky_food_by_ingredient(ingredient: str, db: Session):
-    """
-    특정 음식(ingredient)이 모든 사용자(member_id)의 알러지 정보를 고려했을 때 위험할 가능성이 있는지 확인하는 함수
-    """
     members = db.query(Member).all()
     
     if not members:
         return None
 
-    # 사용자별 알레르기 정보를 JSON 문자열로 변환
-    allergy_data = json.dumps({member.member_id: member.allergies for member in members if member.allergies})
+    # 사용자별 알레르기 + 질병 정보 함께 JSON으로 구성
+    health_data = {
+        member.member_id: {
+            "allergies": member.allergies or [],
+            "diseases": member.diseases or []
+        }
+        for member in members
+        if member.allergies or member.diseases
+    }
 
-    # LLM을 활용하여 위험 가능성이 있는 사용자 분석
-    risky_members = analyze_risky_food_for_members(ingredient, allergy_data)
+    health_data_json = json.dumps(health_data, ensure_ascii=False)
+
+    risky_members = analyze_risky_food_for_members(ingredient, health_data_json)
 
     return {
         "ingredient": ingredient,
         "risky_members": risky_members if risky_members else [],
     }
+

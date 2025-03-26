@@ -15,12 +15,18 @@ def get_risky_ingredients(member_id: str, db: Session):
     if not user:
         return []
 
-    user_allergies = user.allergies or []  # JSON 필드이므로 기본값 리스트로 설정
+    user_allergies = user.allergies or []
+    user_diseases = user.diseases or []
+
     # 모든 재료를 한 번에 LLM으로 전달하여 위험 여부 + 경고 메시지 분석
     food_names = [ingredient.name for ingredient in ingredients]
     print("DEBUG: food_names ->", food_names)
     
-    risky_foods = analyze_risky_foods_with_comments(food_names, user_allergies)
+    risky_foods = analyze_risky_foods_with_comments(
+        food_names=food_names,
+        allergies=user_allergies,
+        diseases=user_diseases  
+    )
 
     # 위험한 음식(코멘트가 있는 음식)만 필터링하여 응답 반환
     risky_ingredients = []
