@@ -21,6 +21,8 @@ export async function getLogs(page = 1, pageSize = 10, memberId?: string): Promi
       throw new Error("로그 데이터를 가져오는데 실패했습니다");
     }
 
+    console.log(response.data);
+
     return response.data;
   } catch (error) {
     console.error("로그 데이터 가져오기 오류:", error);

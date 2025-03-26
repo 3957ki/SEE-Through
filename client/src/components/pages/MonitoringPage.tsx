@@ -2,8 +2,8 @@ import { fetchMonitoringUsers, updateMonitoring } from "@/api/monitoring";
 import ChangePinModal from "@/components/modal/ChangePinModal";
 import { useDialog } from "@/contexts/DialogContext";
 import type { MonitoringUser } from "@/interfaces/Monitoring";
-import { Lock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Button } from "../ui/button";
 
 type MonitoringPageProps = {
   currentPin: string;
@@ -75,15 +75,14 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">모니터링</h1>
-        <button
+      <div className="flex justify-center items-center mb-6">
+        <Button
           onClick={handleLockClick}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="PIN 변경"
+          variant="outline"
+          className="px-4 py-2 rounded-md font-medium hover:bg-primary/10 border-primary/20 text-primary"
         >
-          <Lock className="w-6 h-6" />
-        </button>
+          PIN 번호 변경
+        </Button>
       </div>
 
       {loading ? (

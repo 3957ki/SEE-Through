@@ -90,15 +90,6 @@ function BottomNavigation({
           className={`w-6 h-6 ${currentPage === "monitoring" ? "text-orange-500" : "text-gray-600"}`}
         />
       </button>
-      <button
-        type="button"
-        className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("example")}
-      >
-        <BsEyeglasses
-          className={`w-6 h-6 ${currentPage === "example" ? "text-orange-500" : "text-gray-600"}`}
-        />
-      </button>
     </nav>
   );
 }

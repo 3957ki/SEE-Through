@@ -178,22 +178,6 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({ currentPin, onPinChange
         >
           취소
         </button>
-        {step !== PinChangeStep.VERIFY_CURRENT && (
-          <button
-            className="bg-gray-300 text-gray-800 border-none rounded-lg px-6 py-2.5 text-base cursor-pointer hover:bg-gray-400 transition-colors"
-            onClick={() => {
-              setEnteredPin("");
-              setStep(
-                step === PinChangeStep.CONFIRM_NEW
-                  ? PinChangeStep.ENTER_NEW
-                  : PinChangeStep.VERIFY_CURRENT
-              );
-            }}
-            disabled={isProcessing}
-          >
-            이전
-          </button>
-        )}
       </div>
     </div>
   );
