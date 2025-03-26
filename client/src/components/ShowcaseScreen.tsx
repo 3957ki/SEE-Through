@@ -32,11 +32,11 @@ function ShowcaseContent() {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
   // 재료 식탁에 표시되는 로컬 available 재료 목록
   const [availableIngredients, setAvailableIngredients] = useState<Material[]>([
-    { ingredient_id: "tomato", name: "토마토", image_path: "/src/assets/tomato.jpg" },
-    { ingredient_id: "lettuce", name: "양상추", image_path: "/src/assets/lettuce.jpg" },
-    { ingredient_id: "chicken", name: "치킨", image_path: "/src/assets/chicken.jpg" },
-    { ingredient_id: "peanut", name: "땅콩", image_path: "/src/assets/peanut.jpg" },
-    { ingredient_id: "corn", name: "옥수수", image_path: "/src/assets/corn.jpg" },
+    { ingredient_id: "tomato", name: "토마토", image_path: "/src/assets/tomato.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "lettuce", name: "양상추", image_path: "/src/assets/lettuce.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "chicken", name: "치킨", image_path: "/src/assets/chicken.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "peanut", name: "땅콩", image_path: "/src/assets/peanut.jpg", inbound_at:"", expiration_at: "" },
+    { ingredient_id: "corn", name: "옥수수", image_path: "/src/assets/corn.jpg", inbound_at:"", expiration_at: "" },
   ]);
 
   // Context에서 draggedMaterials 및 액션 함수들을 가져옴
@@ -75,7 +75,9 @@ function ShowcaseContent() {
             droppedIngredients={draggedMaterials}
             removeIngredient={handleRemoveFromDragged}
           >
-            <div className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50">
+            <div className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50"
+            style={{ background: "none", fill: "none" }}
+            >
               {isShowingInfoScreen ? (
                 <div className="flex items-center justify-center">
                   <FridgeDisplay targetWidth={375} targetHeight={667} />
