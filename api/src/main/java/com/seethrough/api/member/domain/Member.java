@@ -79,6 +79,10 @@ public class Member {
 	private int recognitionTimes = 0;
 
 	@Builder.Default
+	@Column(name = "last_login_at", columnDefinition = "TIMESTAMP")
+	private LocalDateTime lastLoginAt = LocalDateTime.now();
+
+	@Builder.Default
 	@Column(name = "created_at", columnDefinition = "TIMESTAMP", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -93,6 +97,7 @@ public class Member {
 		this.imagePath = imagePath;
 
 		this.recognitionTimes++;
+		this.lastLoginAt = LocalDateTime.now();
 	}
 
 	public void update(
