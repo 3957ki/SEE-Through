@@ -1,8 +1,11 @@
+import { getTodayMeals } from "@/api/meals";
 import { SectionTitle } from "@/components/ui/section";
+import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import type { MealPlanResponse } from "@/interfaces/Meal";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BsArrowClockwise,
   BsCalendarEvent,
@@ -10,12 +13,8 @@ import {
   BsHandThumbsUp,
 } from "react-icons/bs";
 
-function generateDateRange(center: Date): Date[] {
-  const range: Date[] = [];
-  for (let i = -7; i <= 7; i++) {
-    range.push(addDays(center, i));
-  }
-  return range;
+function generateDateRange(start: Date): Date[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
 
 function DateSelector({
@@ -26,25 +25,30 @@ function DateSelector({
   onSelect: (date: Date) => void;
 }) {
   const today = new Date();
-  const [offset, setOffset] = useState(0); // -7 ~ +7 중 어떤 범위 볼지
+  const [offset, setOffset] = useState(0);
 
-  const visibleDates = generateDateRange(addDays(today, offset)).slice(5, 12); // 7일만 보이게
+  const currentStartDate = addDays(today, offset);
+  const visibleDates = generateDateRange(currentStartDate);
 
-  const handlePrev = () => setOffset(offset - 1);
-  const handleNext = () => setOffset(offset + 1);
+  const handlePrev = () => {
+    if (offset > 0) setOffset(offset - 1);
+  };
+
+  const handleNext = () => {
+    if (offset + 1 <= 0) return; // Prevent future shifting if needed
+    setOffset(offset + 1);
+  };
 
   return (
     <div className="flex items-center px-4 py-2 border-b gap-2">
-      <button onClick={handlePrev} className="p-1">
-        <ChevronLeft className="w-5 h-5 text-gray-500" />
+      <button onClick={handlePrev} className="p-1" disabled={offset === 0}>
+        <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
-
       <div className="flex-1 flex justify-around">
         {visibleDates.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
           const day = format(date, "d");
-
           return (
             <div
               key={index}
@@ -59,9 +63,8 @@ function DateSelector({
           );
         })}
       </div>
-
-      <button onClick={handleNext} className="p-1">
-        <ChevronRight className="w-5 h-5 text-gray-500" />
+      <button onClick={handleNext} className="p-1" disabled>
+        <ChevronRight className="w-5 h-5 text-gray-300" />
       </button>
     </div>
   );
@@ -89,7 +92,15 @@ function MealItem({ name }: { name: string }) {
   );
 }
 
-function MealSection({ title, items }: { title: string; items: string[] }) {
+function MealSection({
+  title,
+  items,
+  reason,
+}: {
+  title: string;
+  items: string[];
+  reason?: string;
+}) {
   return (
     <div className="py-4">
       <div className="flex justify-between items-stretch px-4">
@@ -100,26 +111,32 @@ function MealSection({ title, items }: { title: string; items: string[] }) {
               <MealItem key={index} name={item} />
             ))}
           </div>
-          <div className="mt-2 text-sm text-gray-400">💡 여기다 추천 이유?</div>
+          {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
         </div>
-
         <button className="self-center pl-4">
           <BsArrowClockwise className="text-4xl text-gray-600 cursor-pointer" />
         </button>
       </div>
-
-      {/* 진한 구분선 + 여백 있는 스타일 */}
       <div className="mt-4 border-t-2 border-orange-500 mx-4" />
     </div>
   );
 }
 
-function MealPage() {
+export default function MealPage() {
+  const { currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [meals, setMeals] = useState<MealPlanResponse | null>(null);
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
   };
+
+  useEffect(() => {
+    if (!currentMember) return;
+    getTodayMeals(currentMember.member_id)
+      .then(setMeals)
+      .catch((err) => console.error("식단 불러오기 실패", err));
+  }, [currentMember]);
 
   return (
     <div className="pb-24 relative">
@@ -135,10 +152,15 @@ function MealPage() {
 
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
 
-      <MealSection title="아침" items={["삼각김밥", "바나나"]} />
-      <MealSection title="점심" items={["닭가슴살볶음밥", "토마토", "오렌지주스 150ml"]} />
+      {meals ? (
+        <>
+          <MealSection title="아침" items={meals.breakfast.menu} reason={meals.breakfast.reason} />
+          <MealSection title="점심" items={meals.lunch.menu} reason={meals.lunch.reason} />
+          <MealSection title="저녁" items={meals.dinner.menu} reason={meals.dinner.reason} />
+        </>
+      ) : (
+        <div className="p-4 text-gray-500 text-center">식단을 불러오는 중입니다...</div>
+      )}
     </div>
   );
 }
-
-export default MealPage;

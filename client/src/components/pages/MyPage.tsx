@@ -28,6 +28,7 @@ export default function MyPage() {
   const { showDialog, hideDialog } = useDialog();
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
   const [name, setName] = useState(currentMember?.name || "");
+
   const [birthday, setBirthday] = useState<Date | undefined>(
     currentMember && "birth" in currentMember && currentMember.birth
       ? new Date(currentMember.birth)
