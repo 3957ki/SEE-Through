@@ -36,3 +36,11 @@ export async function updateMember(data: {
 }): Promise<void> {
   await APIServerFetcher.put(`/members`, data);
 }
+
+export async function createMember(data: {
+  member_id: string;
+  age: number;
+  image_path: string;
+}): Promise<void> {
+  await APIServerFetcher.post("/members", data);
+}
