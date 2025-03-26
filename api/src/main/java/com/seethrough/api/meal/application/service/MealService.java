@@ -54,7 +54,7 @@ public class MealService {
 	}
 
 	@Transactional
-	public void createMeals(String memberId) {
+	public boolean createMeals(String memberId) {
 		log.debug("[Service] createMeals 호출");
 
 		UUID memberIdObj = memberService.checkMemberExists(memberId);
@@ -67,8 +67,14 @@ public class MealService {
 		List<LocalDate> missingDateList = findMissingDates(dailyMealList, today, endDate);
 
 		if (!missingDateList.isEmpty()) {
+			log.debug("[Service] 식단 생성 호출");
 			saveMeals(memberIdObj, missingDateList);
+
+			return true;
 		}
+
+		log.debug("[Service] 식단 생성 필요 없음");
+		return false;
 	}
 
 	@Transactional
@@ -164,7 +170,6 @@ public class MealService {
 			.orElse(null);
 	}
 
-	// TODO: 5일에 한 번씩 요청 보내도록 수정
 	private List<Meal> createMeals(UUID memberIdObj, List<LocalDate> dateList) {
 		Map<UUID, ScheduleMealRequest> requestMap = new HashMap<>();
 
