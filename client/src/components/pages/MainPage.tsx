@@ -120,7 +120,7 @@ function MainPage() {
 
   useEffect(() => {
     if (currentMember) {
-      fetchMainMaterials();
+      console.log(currentMember);
     }
   }, [currentMember, fetchMainMaterials]);
 
