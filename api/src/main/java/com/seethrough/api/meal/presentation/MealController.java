@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.seethrough.api.common.exception.ErrorResponse;
 import com.seethrough.api.meal.application.service.MealService;
 import com.seethrough.api.meal.presentation.dto.response.DailyMealResponse;
+import com.seethrough.api.meal.presentation.dto.response.MealDetailResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -89,8 +90,8 @@ public class MealController {
 
 	@PatchMapping("/refresh")
 	@Operation(
-		summary = "특정 날짜의 식단 새로고침",
-		description = "특정 날짜의 식단을 새로운 식단으로 교체합니다.<br>" +
+		summary = "특정 식단 새로고침",
+		description = "특정 식단을 새로운 식단으로 교체합니다.<br>" +
 			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br><br>" +
 			"응답으로는 새로 생성한 식단의 기본 정보(식단Id, 제공 날짜, 제공 시간, 메뉴, 선정 이유 등)가 포함됩니다."
 	)
@@ -99,15 +100,10 @@ public class MealController {
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<DailyMealResponse> replaceDailyMeal(
-		@RequestParam String memberId,
-		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate servingDate
-	) {
-		log.info(
-			"[Controller - POST /api/meals/replace?memberId={memberId}&servingDate={servingDate}] 특정 날짜의 식단 교체 요청: memberId={}, servingDate={}",
-			memberId, servingDate);
+	public ResponseEntity<MealDetailResponse> replaceDailyMeal(@RequestParam String mealId) {
+		log.info("[Controller - POST /api/meals/replace?mealId={mealId}] 특정 날짜의 식단 교체 요청: mealId={}", mealId);
 
-		DailyMealResponse response = mealService.replaceDailyMeal(memberId, servingDate);
+		MealDetailResponse response = mealService.refreshMeal(mealId);
 
 		log.debug("[Controller] 특정 날짜의 식단 교체 응답: {}", response);
 

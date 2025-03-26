@@ -15,14 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.meal.application.mapper.DailyMealDtoMapper;
+import com.seethrough.api.meal.application.mapper.MealDtoMapper;
 import com.seethrough.api.meal.domain.DailyMeal;
 import com.seethrough.api.meal.domain.Meal;
 import com.seethrough.api.meal.domain.MealRepository;
 import com.seethrough.api.meal.domain.ServingTime;
+import com.seethrough.api.meal.exception.MealNotFoundException;
 import com.seethrough.api.meal.infrastructure.external.llm.LlmApiMealService;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealListRequest;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealRequest;
 import com.seethrough.api.meal.presentation.dto.response.DailyMealResponse;
+import com.seethrough.api.meal.presentation.dto.response.MealDetailResponse;
 import com.seethrough.api.member.application.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ public class MealService {
 	private final DailyMealDtoMapper dailyMealDtoMapper;
 	private final MemberService memberService;
 	private final LlmApiMealService llmApiMealService;
+	private final MealDtoMapper mealDtoMapper;
 
 	public DailyMealResponse getDailyMeal(String memberId, LocalDate servingDate) {
 		log.debug("[Service] getDailyMeal 호출");
@@ -68,31 +72,27 @@ public class MealService {
 	}
 
 	@Transactional
-	public DailyMealResponse replaceDailyMeal(String memberId, LocalDate servingDate) {
-		log.debug("[Service] replaceDailyMeal 호출");
+	public MealDetailResponse refreshMeal(String mealId) {
+		log.debug("[Service] refreshMeal 호출");
 
-		UUID memberIdObj = memberService.checkMemberExists(memberId);
+		UUID mealIdObj = UUID.fromString(mealId);
 
-		DailyMeal dailyMeal = findDailyMeal(memberIdObj, servingDate);
+		Meal meal = findMeal(mealIdObj);
 
-		System.out.println("!!!!" + dailyMeal);
+		Meal newMeal = createMeal(mealIdObj, meal.getMemberId(), meal.getServingDate(), meal.getServingTime());
 
-		List<Meal> newMeals = createMeals(memberIdObj, List.of(servingDate));
+		meal.update(newMeal.getMenu(), newMeal.getReason());
 
-		newMeals.forEach(newMeal -> {
-			switch (newMeal.getServingTime()) {
-				case BREAKFAST:
-					dailyMeal.getBreakfast().update(newMeal.getMenu(), newMeal.getReason());
-				case LUNCH:
-					dailyMeal.getLunch().update(newMeal.getMenu(), newMeal.getReason());
-				case DINNER:
-					dailyMeal.getDinner().update(newMeal.getMenu(), newMeal.getReason());
-			}
-		});
+		return mealDtoMapper.toDetailResponse(meal);
+	}
 
-		System.out.println("!!!!" + dailyMeal);
+	private Meal findMeal(UUID mealIdObj) {
+		log.debug("[Service] findMeal 호출");
 
-		return dailyMealDtoMapper.toDailyResponse(dailyMeal);
+		return mealRepository.findByMealId(mealIdObj)
+			.orElseThrow(() ->
+				new MealNotFoundException("식사를 찾을 수 없습니다.")
+			);
 	}
 
 	private DailyMeal findDailyMeal(UUID memberIdObj, LocalDate servingDate) {
@@ -136,6 +136,32 @@ public class MealService {
 		List<Meal> meals = createMeals(memberIdObj, dateList);
 
 		mealRepository.saveAll(meals);
+	}
+
+	private Meal createMeal(UUID mealIdObj, UUID memberIdObj, LocalDate servingDate, ServingTime servingTime) {
+		ScheduleMealListRequest request = ScheduleMealListRequest.builder()
+			.memberId(memberIdObj.toString())
+			.schedules(
+				List.of(ScheduleMealRequest.builder()
+					.mealId(mealIdObj.toString())
+					.servingDate(servingDate)
+					.servingTime(servingTime.getName())
+					.build()))
+			.build();
+
+		return llmApiMealService.createMealList(request)
+			.getSchedules()
+			.stream()
+			.map(schedule -> Meal.builder()
+				.mealId(mealIdObj)
+				.memberId(memberIdObj)
+				.servingDate(servingDate)
+				.servingTime(servingTime)
+				.menu(schedule.getMenu())
+				.reason(schedule.getReason())
+				.build())
+			.findFirst()
+			.orElse(null);
 	}
 
 	// TODO: 5일에 한 번씩 요청 보내도록 수정

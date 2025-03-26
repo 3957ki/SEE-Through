@@ -8,7 +8,7 @@ import com.seethrough.api.meal.presentation.dto.response.MealDetailResponse;
 @Component
 public class MealDtoMapper {
 
-	MealDetailResponse toDetailResponse(Meal meal) {
+	public MealDetailResponse toDetailResponse(Meal meal) {
 		return MealDetailResponse.builder()
 			.mealId(meal.getMealId().toString())
 			.memberId(meal.getMemberId().toString())

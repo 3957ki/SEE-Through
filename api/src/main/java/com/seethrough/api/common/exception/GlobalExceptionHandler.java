@@ -8,6 +8,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 import com.seethrough.api.ingredient.exception.IngredientNotFoundException;
 import com.seethrough.api.meal.exception.InvalidDailyMealException;
+import com.seethrough.api.meal.exception.MealNotFoundException;
 import com.seethrough.api.member.exception.MemberNotFoundException;
 
 @RestControllerAdvice
@@ -50,6 +51,23 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvalidDailyMealException.class)
 	public ResponseEntity<ErrorResponse> handleInvalidException(
 		InvalidDailyMealException e,
+		ServletWebRequest request) {
+
+		String path = request.getRequest().getRequestURI();
+
+		ErrorResponse errorResponse = new ErrorResponse(
+			HttpStatus.NOT_FOUND.value(),
+			HttpStatus.NOT_FOUND.getReasonPhrase(),
+			e.getMessage(),
+			path
+		);
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	}
+
+	@ExceptionHandler(MealNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidException(
+		MealNotFoundException e,
 		ServletWebRequest request) {
 
 		String path = request.getRequest().getRequestURI();

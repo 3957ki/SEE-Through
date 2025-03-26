@@ -2,6 +2,7 @@ package com.seethrough.api.meal.infrastructure;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,6 @@ public interface MealJpaRepository extends JpaRepository<Meal, UUID> {
 	List<Meal> findByMemberIdAndServingDate(UUID memberId, LocalDate servingDate);
 
 	List<Meal> findMealsByMemberIdAndServingDateBetweenOrderByServingDateAscServingTimeAsc(UUID memberId, LocalDate startDate, LocalDate endDate);
+
+	Optional<Meal> findByMealId(UUID mealIdObj);
 }
