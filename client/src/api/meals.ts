@@ -19,3 +19,15 @@ export async function refreshMeal(mealId: string): Promise<Meal> {
   const response = await APIServerFetcher.patch<Meal>(`/meals/refresh?mealId=${mealId}`);
   return response.data;
 }
+
+export async function addPreferredFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.post(`/api/members/${memberId}/preferred-foods`, {
+    preferred_foods: [food],
+  });
+}
+
+export async function addDislikedFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.post(`/api/members/${memberId}/disliked-foods`, {
+    disliked_foods: [food],
+  });
+}
