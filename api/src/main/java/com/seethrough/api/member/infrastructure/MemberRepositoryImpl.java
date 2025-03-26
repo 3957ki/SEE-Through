@@ -1,5 +1,7 @@
 package com.seethrough.api.member.infrastructure;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,6 +66,17 @@ public class MemberRepositoryImpl implements MemberRepository {
 		boolean result = memberJpaRepository.existsById(memberIdObj);
 
 		log.debug("[Repository] 구성원 존재 여부: {}", result);
+
+		return result;
+	}
+
+	@Override
+	public List<Member> findMembersByLastLoginAtAfter(LocalDateTime date) {
+		log.debug("[Repository] findMembersByLastLoginAtAfter 호출");
+
+		List<Member> result = memberJpaRepository.findMembersByLastLoginAtAfter(date);
+
+		log.debug("[Repository] 구성원 수: {}", result.size());
 
 		return result;
 	}
