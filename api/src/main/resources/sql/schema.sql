@@ -46,6 +46,7 @@ CREATE TABLE members
     is_registered     BOOLEAN     NOT NULL DEFAULT FALSE,
     is_monitored      BOOLEAN     NOT NULL DEFAULT FALSE,
     recognition_times INTEGER     NOT NULL DEFAULT 0,
+    last_login_at     TIMESTAMP,
     created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at        TIMESTAMP,
 

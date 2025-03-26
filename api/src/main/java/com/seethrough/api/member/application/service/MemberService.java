@@ -1,5 +1,7 @@
 package com.seethrough.api.member.application.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Slice;
@@ -223,6 +225,10 @@ public class MemberService {
 		member.changeMonitoring();
 
 		return member.isMonitored();
+	}
+
+	public List<Member> findMembersByLastLoginAtAfter(LocalDateTime date) {
+		return memberRepository.findMembersByLastLoginAtAfter(date);
 	}
 
 	private Member findMember(UUID memberId) {
