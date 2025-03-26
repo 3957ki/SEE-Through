@@ -65,5 +65,6 @@ public class IngredientLog {
 	@Setter
 	@Column(name = "embedding_vector", columnDefinition = "VECTOR(1536)")
 	@Type(JsonType.class)
+	@ToString.Exclude
 	private List<Float> embeddingVector;
 }
