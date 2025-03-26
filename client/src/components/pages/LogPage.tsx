@@ -1,9 +1,10 @@
 import { getLogs } from "@/api/logs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import type { GroupedLogs, LogsResponse } from "@/interfaces/Log";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function LogPage() {
@@ -25,8 +26,7 @@ export default function LogPage() {
         setIsLoading(true);
 
         // 페이지네이션 파라미터 추가 및 필요시 멤버 ID 추가 (숫자가 원래는 currentMember.member_id)
-        const memberId =
-          myLogsOnly && currentMember ? "00000000-0000-0000-0000-000000000002" : undefined;
+        const memberId = myLogsOnly && currentMember ? currentMember.member_id : undefined;
         const response: LogsResponse = await getLogs(currentPage, pageSize, memberId);
         const { content, slice_info } = response;
 
@@ -42,16 +42,17 @@ export default function LogPage() {
             acc[date] = [];
           }
 
-          // 로그 데이터 형식 변환
+          // 로그 데이터 형식 변환 - 이미지 경로 추가
           acc[date].push({
             material: log.ingredient_name,
+            material_image: log.ingredient_image_path,
             user_name: log.member_name,
+            user_image: log.member_image_path,
             type: log.movement_name,
             time: new Date(log.created_at).toLocaleTimeString("ko-KR", {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            // 추가 필드가 필요하면 여기에 매핑
           });
 
           return acc;
@@ -118,61 +119,82 @@ export default function LogPage() {
         <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
       </div>
 
+      {/* 페이지네이션 컨트롤 */}
+      <div className="flex justify-between items-center px-4 mb-4">
+        <Button
+          variant="outline"
+          onClick={goToPreviousPage}
+          disabled={currentPage === 1}
+          className="flex items-center gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          이전
+        </Button>
+
+        <span className="text-sm font-medium">페이지 {currentPage}</span>
+
+        <Button
+          variant="outline"
+          onClick={goToNextPage}
+          disabled={!hasNextPage}
+          className="flex items-center gap-1"
+        >
+          다음
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
       {Object.entries(groupedLogs).map(([date, entries]) => (
         <div key={date} className="mb-6">
-          {/* 페이지네이션 컨트롤 */}
-          <div className="flex justify-between items-center px-4 mb-4">
-            <Button
-              variant="outline"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              className="flex items-center gap-1"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              이전
-            </Button>
-
-            <span className="text-sm font-medium">페이지 {currentPage}</span>
-
-            <Button
-              variant="outline"
-              onClick={goToNextPage}
-              disabled={!hasNextPage}
-              className="flex items-center gap-1"
-            >
-              다음
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
           {/* 날짜 헤더 */}
           <h2 className="text-xl font-bold text-center mb-4">{date}</h2>
 
           {/* 로그 항목들 */}
           <div className="space-y-4">
             {entries.map((entry, index) => (
-              <div key={index}>
+              <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
-                  {/* 재료 이름과 시간 */}
-                  <span className="text-base font-medium">
-                    {entry.material} {entry.time}
-                  </span>
+                  {/* 재료 이미지 */}
+                  <Avatar className="h-10 w-10 mr-3">
+                    <AvatarImage src={entry.material_image} alt={entry.material} />
+                    <AvatarFallback>
+                      <Package className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
 
-                  {/* 사용자 이름 */}
-                  <span className="ml-2"> {entry.user_name}</span>
+                  <div className="flex-1">
+                    {/* 재료 이름과 시간 */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-base font-medium">{entry.material}</span>
+                      <span className="text-sm text-gray-500">{entry.time}</span>
+                    </div>
 
-                  {/* 구분자 */}
-                  <span className="mx-2">•</span>
+                    <div className="flex items-center mt-1">
+                      {/* 사용자 이미지와 이름 */}
+                      <div className="flex items-center">
+                        <Avatar className="h-5 w-5 mr-1">
+                          <AvatarImage src={entry.user_image} alt={entry.user_name} />
+                          <AvatarFallback>
+                            <User className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm text-gray-600">{entry.user_name}</span>
+                      </div>
 
-                  {/* 입고/출고 표시 (색상 구분) */}
-                  <span
-                    className={`font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
-                  >
-                    {entry.type}
-                  </span>
+                      {/* 구분자 */}
+                      <span className="mx-2 text-gray-400">•</span>
+
+                      {/* 입고/출고 표시 (색상 구분) */}
+                      <span
+                        className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
+                      >
+                        {entry.type}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 구분선 (마지막 항목이 아닌 경우에만) */}
-                {index < entries.length - 1 && <hr className="border-gray-200 my-2" />}
+                {/* 구분선 제거하고 카드 스타일로 변경 */}
               </div>
             ))}
           </div>

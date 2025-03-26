@@ -14,7 +14,9 @@ export interface Log {
 export interface GroupedLogs {
   [date: string]: {
     material: string;
+    material_image: string;
     user_name: string;
+    user_image: string;
     type: string;
     time: string;
   }[];
