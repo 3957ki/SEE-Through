@@ -1,4 +1,4 @@
-import type { MealPlanResponse } from "@/interfaces/Meal";
+import type { Meal, MealPlanResponse } from "@/interfaces/Meal";
 import { APIServerFetcher } from "@/lib/fetchers";
 import { format } from "date-fns";
 
@@ -12,5 +12,10 @@ export async function getMealsByDate(memberId: string, date: Date): Promise<Meal
   const response = await APIServerFetcher.get<MealPlanResponse>(
     `/meals?memberId=${memberId}&servingDate=${servingDate}`
   );
+  return response.data;
+}
+
+export async function refreshMeal(mealId: string): Promise<Meal> {
+  const response = await APIServerFetcher.patch<Meal>(`/meals/refresh?mealId=${mealId}`);
   return response.data;
 }

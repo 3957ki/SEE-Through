@@ -1,5 +1,6 @@
-import { getMealsByDate, getTodayMeals } from "@/api/meals";
+import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import { SectionTitle } from "@/components/ui/section";
+import { Spinner } from "@/components/ui/spinner";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { addDays, format, isSameDay } from "date-fns";
@@ -77,15 +78,11 @@ function MealItem({ name }: { name: string }) {
     <div className="flex items-center justify-start px-4 py-1 gap-2">
       <span className="text-sm">{name}</span>
       <BsHandThumbsUp
-        className={`w-4 h-4 cursor-pointer ${
-          feedback === "like" ? "text-orange-500" : "text-gray-400"
-        }`}
+        className={`w-4 h-4 cursor-pointer ${feedback === "like" ? "text-orange-500" : "text-gray-400"}`}
         onClick={() => setFeedback("like")}
       />
       <BsHandThumbsDown
-        className={`w-4 h-4 cursor-pointer ${
-          feedback === "dislike" ? "text-orange-500" : "text-gray-400"
-        }`}
+        className={`w-4 h-4 cursor-pointer ${feedback === "dislike" ? "text-orange-500" : "text-gray-400"}`}
         onClick={() => setFeedback("dislike")}
       />
     </div>
@@ -96,10 +93,16 @@ function MealSection({
   title,
   items,
   reason,
+  mealId,
+  onRefresh,
+  isRefreshing,
 }: {
   title: string;
   items: string[];
   reason?: string;
+  mealId: string;
+  onRefresh: (mealId: string) => void;
+  isRefreshing: boolean;
 }) {
   return (
     <div className="py-4">
@@ -113,8 +116,14 @@ function MealSection({
           </div>
           {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
         </div>
-        <button className="self-center pl-4">
-          <BsArrowClockwise className="text-4xl text-gray-600 cursor-pointer" />
+        <button
+          className="self-center pl-4"
+          onClick={() => onRefresh(mealId)}
+          disabled={isRefreshing}
+        >
+          <BsArrowClockwise
+            className={`text-4xl ${isRefreshing ? "animate-spin text-orange-400" : "text-gray-600"} cursor-pointer`}
+          />
         </button>
       </div>
       <div className="mt-4 border-t-2 border-orange-500 mx-4" />
@@ -126,9 +135,38 @@ export default function MealPage() {
   const { currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meals, setMeals] = useState<MealPlanResponse | null>(null);
+  const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
+  };
+
+  const handleRefreshMeal = async (mealId: string) => {
+    if (!currentMember || refreshingMealId) return;
+
+    try {
+      setRefreshingMealId(mealId);
+      const refreshedMeal = await refreshMeal(mealId);
+
+      // Update the meals state with the refreshed meal
+      if (meals) {
+        const updatedMeals = { ...meals };
+
+        if (refreshedMeal.serving_time === "아침") {
+          updatedMeals.breakfast = refreshedMeal;
+        } else if (refreshedMeal.serving_time === "점심") {
+          updatedMeals.lunch = refreshedMeal;
+        } else if (refreshedMeal.serving_time === "저녁") {
+          updatedMeals.dinner = refreshedMeal;
+        }
+
+        setMeals(updatedMeals);
+      }
+    } catch (err) {
+      console.error("식단 새로고침 실패", err);
+    } finally {
+      setRefreshingMealId(null);
+    }
   };
 
   useEffect(() => {
@@ -166,12 +204,36 @@ export default function MealPage() {
 
       {meals ? (
         <>
-          <MealSection title="아침" items={meals.breakfast.menu} reason={meals.breakfast.reason} />
-          <MealSection title="점심" items={meals.lunch.menu} reason={meals.lunch.reason} />
-          <MealSection title="저녁" items={meals.dinner.menu} reason={meals.dinner.reason} />
+          <MealSection
+            title="아침"
+            items={meals.breakfast.menu}
+            reason={meals.breakfast.reason}
+            mealId={meals.breakfast.meal_id}
+            onRefresh={handleRefreshMeal}
+            isRefreshing={refreshingMealId === meals.breakfast.meal_id}
+          />
+          <MealSection
+            title="점심"
+            items={meals.lunch.menu}
+            reason={meals.lunch.reason}
+            mealId={meals.lunch.meal_id}
+            onRefresh={handleRefreshMeal}
+            isRefreshing={refreshingMealId === meals.lunch.meal_id}
+          />
+          <MealSection
+            title="저녁"
+            items={meals.dinner.menu}
+            reason={meals.dinner.reason}
+            mealId={meals.dinner.meal_id}
+            onRefresh={handleRefreshMeal}
+            isRefreshing={refreshingMealId === meals.dinner.meal_id}
+          />
         </>
       ) : (
-        <div className="p-4 text-gray-500 text-center">식단을 불러오는 중입니다...</div>
+        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+          <Spinner size={36} />
+          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+        </div>
       )}
     </div>
   );
