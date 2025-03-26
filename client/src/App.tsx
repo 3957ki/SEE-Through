@@ -3,6 +3,7 @@ import { PageType } from "@/components/layout/BottomNavigation";
 import ShowcaseScreen from "@/components/ShowcaseScreen";
 import { Button } from "@/components/ui/button";
 import MemberContextsProvider from "@/providers/MemberContextsProvider";
+import { disconnectLocalServer, initLocalServerWebSocket } from "@/services/websocketService";
 import { useEffect, useState } from "react";
 
 // Extend PageType to include a showcase option
@@ -42,6 +43,16 @@ function App() {
   // Set showcase mode as default
   const [showShowcase, setShowShowcase] = useState(true);
   const [scale, setScale] = useState(1);
+
+  // Initialize WebSocket connection when the app starts
+  useEffect(() => {
+    initLocalServerWebSocket();
+
+    // Cleanup function to disconnect when the app unmounts
+    return () => {
+      disconnectLocalServer();
+    };
+  }, []);
 
   const handleToggleShowcase = () => {
     setShowShowcase((prev) => !prev);
