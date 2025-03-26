@@ -2,6 +2,7 @@ package com.seethrough.api.meal.infrastructure;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -56,5 +57,16 @@ public class MealRepositoryImpl implements MealRepository {
 		log.debug("[Repository] saveAll 호출: {} 개의 로그", meals.size());
 
 		meals.forEach(entityManager::persist);
+	}
+
+	@Override
+	public Optional<Meal> findByMealId(UUID mealIdObj) {
+		log.debug("[Repository] findByMealId 호출");
+
+		Optional<Meal> entity = mealJpaRepository.findByMealId(mealIdObj);
+
+		log.debug("[Repository] 조회된 식사: {}", entity);
+
+		return entity;
 	}
 }
