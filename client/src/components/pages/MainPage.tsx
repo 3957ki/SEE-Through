@@ -1,9 +1,16 @@
+import { getMealsByDate, refreshMeal } from "@/api/meals";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import Material from "@/interfaces/Material";
-import { useEffect, useState } from "react";
 import { useMaterialContext } from "@/contexts/MaterialContext";
-import { BsCalendarEvent, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
+import Material from "@/interfaces/Material";
+import type { MealPlanResponse } from "@/interfaces/Meal";
+import { useEffect, useState } from "react";
+import {
+  BsArrowClockwise,
+  BsCalendarEvent,
+  BsHandThumbsDown,
+  BsHandThumbsUp,
+} from "react-icons/bs";
 
 // Material Grid Section Components
 function MaterialBlock({ material }: { material: Material }) {
@@ -20,7 +27,7 @@ function MaterialBlock({ material }: { material: Material }) {
 
 function MaterialsSection({ materials }: { materials: Material[] }) {
   const MAX_MATERIALS = 10;
-  
+
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
@@ -35,10 +42,29 @@ function MaterialsSection({ materials }: { materials: Material[] }) {
   );
 }
 
-function MealCard({ title, color, items }: { title: string; color: string; items: string[] }) {
+function MealCard({
+  title,
+  color,
+  items,
+  onRefresh,
+  isRefreshing,
+}: {
+  title: string;
+  color: string;
+  items: string[];
+  onRefresh: () => void;
+  isRefreshing: boolean;
+}) {
   return (
-    <div className={`${color} rounded-xl p-4 w-full text-white`}>
-      <h3 className="font-medium mb-2 text-lg">{title}</h3>
+    <div className={`${color} rounded-xl p-4 w-64 min-w-64 text-white relative`}>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-medium text-lg">{title}</h3>
+        <button onClick={onRefresh} disabled={isRefreshing}>
+          <BsArrowClockwise
+            className={`w-5 h-5 ${isRefreshing ? "animate-spin text-white/70" : "text-white"}`}
+          />
+        </button>
+      </div>
       {items.map((item, index) => (
         <p key={index} className="text-sm">
           {item}
@@ -77,17 +103,110 @@ function FeedbackButtons() {
 }
 
 function Meals() {
+  const { currentMember } = useCurrentMember();
+  const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
+  const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
+  const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMeals = async () => {
+      if (!currentMember) return;
+
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+
+      const [todayMeals, tomorrowMeals] = await Promise.all([
+        getMealsByDate(currentMember.member_id, today),
+        getMealsByDate(currentMember.member_id, tomorrow),
+      ]);
+
+      setMealsToday(todayMeals);
+      setMealsTomorrow(tomorrowMeals);
+    };
+
+    fetchMeals();
+  }, [currentMember]);
+
+  const handleRefresh = async (mealId: string) => {
+    if (!currentMember || refreshingMealId) return;
+
+    setRefreshingMealId(mealId);
+    try {
+      const updated = await refreshMeal(mealId);
+
+      // 업데이트 대상이 오늘 식단인지 내일 식단인지 판단
+      const setMealsFn =
+        [mealsToday, mealsTomorrow].find(
+          (meals) =>
+            meals?.breakfast.meal_id === mealId ||
+            meals?.lunch.meal_id === mealId ||
+            meals?.dinner.meal_id === mealId
+        ) === mealsToday
+          ? setMealsToday
+          : setMealsTomorrow;
+
+      setMealsFn((prev) => {
+        if (!prev) return prev;
+        const updatedMeals = { ...prev };
+        if (updated.serving_time === "아침") updatedMeals.breakfast = updated;
+        else if (updated.serving_time === "점심") updatedMeals.lunch = updated;
+        else if (updated.serving_time === "저녁") updatedMeals.dinner = updated;
+        return updatedMeals;
+      });
+    } catch (err) {
+      console.error("식단 새로고침 실패", err);
+    } finally {
+      setRefreshingMealId(null);
+    }
+  };
+
+  if (!mealsToday || !mealsTomorrow) return null;
+
+  const hour = new Date().getHours();
+
+  // 조건에 따라 어떤 식단 보여줄지 결정
+  const selectedMeals = (() => {
+    if (hour >= 5 && hour < 11) {
+      return [
+        { title: "아침", data: mealsToday.breakfast, color: "bg-orange-400" },
+        { title: "점심", data: mealsToday.lunch, color: "bg-gray-700" },
+      ];
+    } else if (hour >= 11 && hour < 16) {
+      return [
+        { title: "점심", data: mealsToday.lunch, color: "bg-gray-700" },
+        { title: "저녁", data: mealsToday.dinner, color: "bg-orange-400" },
+      ];
+    } else {
+      return [
+        { title: "저녁", data: mealsToday.dinner, color: "bg-gray-700" },
+        { title: "아침", data: mealsTomorrow.breakfast, color: "bg-orange-400" },
+      ];
+    }
+  })();
+
   return (
-    <div className="mt-2">
-      <div className="px-4 flex gap-3">
-        <MealCard title="아침" color="bg-orange-400" items={["삼각김밥", "바나나"]} />
-        <MealCard
-          title="점심"
-          color="bg-gray-600"
-          items={["닭가슴살볶음밥", "토마토", "오렌지주스 150ml"]}
-        />
-      </div>
-      <FeedbackButtons />
+    <div className="mt-2 px-4 flex gap-4">
+      {selectedMeals.map(({ title, data, color }) => (
+        <div key={data.meal_id} className={`rounded-xl p-4 w-full text-white relative ${color}`}>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium text-lg">{title}</h3>
+            <button
+              onClick={() => handleRefresh(data.meal_id)}
+              disabled={refreshingMealId === data.meal_id}
+            >
+              <BsArrowClockwise
+                className={`w-5 h-5 ${refreshingMealId === data.meal_id ? "animate-spin text-white/70" : "text-white"}`}
+              />
+            </button>
+          </div>
+          {data.menu.map((item, index) => (
+            <p key={index} className="text-sm">
+              {item}
+            </p>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -133,6 +252,5 @@ function MainPage() {
     </div>
   );
 }
-
 
 export default MainPage;
