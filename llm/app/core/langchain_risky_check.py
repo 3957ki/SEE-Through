@@ -71,16 +71,6 @@ def analyze_risky_foods_with_comments(food_names: list, allergies: list, disease
     allergy_list_str = "\n".join([f"- {allergy}" for allergy in allergies])
     disease_list_str = "\n".join([f"- {disease}" for disease in diseases])
 
-    # DEBUG: format_instructions 확인
-    format_instructions = parser.get_format_instructions()
-    print("DEBUG: format_instructions ->", format_instructions)
-
-    final_prompt = prompt_risky.format(
-    food_names=food_list_str,
-    allergies_name=allergy_list_str,
-    disease_name=disease_list_str,
-    format_instructions=format_instructions
-)
     # LLM 호출 및 JSON 응답 강제
     response = llm.invoke(prompt_risky.format(
         food_names=food_list_str,
@@ -88,13 +78,6 @@ def analyze_risky_foods_with_comments(food_names: list, allergies: list, disease
         disease_name=disease_list_str,
         format_instructions=parser.get_format_instructions()
     ))
-
-    print("🟡 DEBUG: 최종 LLM 프롬프트 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n")
-    print(final_prompt)
-    print("\n🟡 DEBUG: ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑")
-
-    # DEBUG: GPT 응답 확인
-    print("DEBUG: LLM Response ->", response.content)
     
     try:
         # LLM 응답을 OutputFixingParser로 보정하여 JSON 형식 강제
