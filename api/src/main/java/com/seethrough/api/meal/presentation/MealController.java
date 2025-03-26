@@ -77,9 +77,12 @@ public class MealController {
 	public ResponseEntity<DailyMealResponse> createMeals(@PathVariable String memberId) {
 		log.info("[Controller - POST /api/meals/{memberId}] 식단 생성 요청: memberId={}", memberId);
 
-		mealService.createMeals(memberId);
+		boolean result = mealService.createMeals(memberId);
 
-		log.debug("[Controller] 일주일 식단 생성 성공");
+		if (result)
+			log.debug("[Controller] 일주일 식단 생성 성공");
+		else
+			log.debug("[Controller] 일주일 식단 생성 필요 없음");
 
 		DailyMealResponse response = mealService.getDailyMeal(memberId, LocalDate.now());
 
