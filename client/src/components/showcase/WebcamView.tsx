@@ -1,5 +1,6 @@
-import { createMember, getMember, getMembers } from "@/api/members";
+import { createAndGetMember, getMembers } from "@/api/members";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useMembers } from "@/contexts/MembersContext";
 import FaceDetectionResult from "@/interfaces/FaceRecognitionResult";
 import {
   disconnectLocalServer,
@@ -8,86 +9,110 @@ import {
   onLocalServerMessage,
   sendToLocalServer,
 } from "@/services/websocketService";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const VIDEO_WIDTH = 640;
+const VIDEO_HEIGHT = 480;
 
 function WebcamView() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoCanvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const lastProcessedFrameRef = useRef<ImageData | null>(null);
+  const isInitializedRef = useRef(false);
+
+  // 웹캠 관련 에러 메시지
   const [error, setError] = useState<string | null>(null);
+
+  // 멤버 관련 상태
+  const { setMembers } = useMembers();
   const { currentMember, setCurrentMember } = useCurrentMember();
+
+  // Member refs for callbacks
+  const currentMemberRef = useRef(currentMember);
+  const setMembersRef = useRef(setMembers);
+  const setCurrentMemberRef = useRef(setCurrentMember);
+
+  // Frame sending control
   const isProcessingRef = useRef<boolean>(false);
   const processingTimeoutRef = useRef<number | null>(null);
-  const connectionCheckInterval = useRef<number | null>(null);
-  const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const connectionCheckIntervalRef = useRef<number | null>(null);
 
-  // Move member update logic to a stable callback
-  const updateMember = useCallback(
-    async (identity: string) => {
-      try {
-        // 1. Create new member
-        await createMember({
-          member_id: identity,
-          age: 0,
-          image_path: "null",
-        });
-
-        // 2. Fetch updated members list
-        await getMembers();
-
-        // 3. Fetch the specific member details
-        await getMember(identity);
-
-        // Only update if the member changed
-        if (currentMember?.member_id !== identity) {
-          setCurrentMember(identity);
-        }
-      } catch (error) {
-        console.error("Failed to create or update member:", error);
-      }
-    },
-    [currentMember, setCurrentMember]
-  );
-
+  // Update refs when values change
   useEffect(() => {
-    // Create a temporary canvas for image resizing
-    tempCanvasRef.current = document.createElement("canvas");
-    tempCanvasRef.current.width = 320; // Half size
-    tempCanvasRef.current.height = 240; // Half size
+    currentMemberRef.current = currentMember;
+    setMembersRef.current = setMembers;
+    setCurrentMemberRef.current = setCurrentMember;
+  }, [currentMember, setMembers, setCurrentMember]);
 
-    return () => {
-      tempCanvasRef.current = null;
-    };
-  }, []);
+  const init = async () => {
+    if (isInitializedRef.current) return;
 
-  useEffect(() => {
-    // Start webcam
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        setError("웹캠을 시작할 수 없습니다: " + err.message);
-        console.error("Failed to start webcam:", err);
+    try {
+      // Start webcam
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: VIDEO_WIDTH,
+          height: VIDEO_HEIGHT,
+        },
       });
 
-    // Capture ref value for cleanup
-    const videoElement = videoRef.current;
-
-    // Cleanup function
-    return () => {
-      if (videoElement?.srcObject) {
-        const stream = videoElement.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
-    };
+
+      // Setup canvases
+      const videoCanvas = videoCanvasRef.current;
+      const overlayCanvas = overlayCanvasRef.current;
+      if (videoCanvas && overlayCanvas) {
+        const ctx = videoCanvas.getContext("2d");
+        const overlayCtx = overlayCanvas.getContext("2d");
+        if (ctx && overlayCtx) {
+          // Set canvas dimensions to match video
+          videoCanvas.width = VIDEO_WIDTH;
+          videoCanvas.height = VIDEO_HEIGHT;
+          overlayCanvas.width = VIDEO_WIDTH;
+          overlayCanvas.height = VIDEO_HEIGHT;
+
+          // Configure contexts for crisp rendering
+          ctx.imageSmoothingEnabled = false;
+          overlayCtx.imageSmoothingEnabled = false;
+          console.log("[Canvas] Canvas dimensions set:", {
+            width: videoCanvas.width,
+            height: videoCanvas.height,
+          });
+        }
+      }
+
+      isInitializedRef.current = true;
+    } catch (err) {
+      setError("웹캠을 시작할 수 없습니다: " + (err as Error).message);
+      console.error("Failed to start webcam:", err);
+    }
+  };
+
+  const cleanup = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    if (connectionCheckIntervalRef.current) {
+      window.clearInterval(connectionCheckIntervalRef.current);
+    }
+    if (processingTimeoutRef.current) {
+      window.clearTimeout(processingTimeoutRef.current);
+    }
+    disconnectLocalServer();
+  };
+
+  useEffect(() => {
+    init();
+    return cleanup;
   }, []);
 
   useEffect(() => {
-    // Handle face recognition results
-    const handleFaceRecognition = async (result: FaceDetectionResult) => {
+    async function handleFaceRecognition(result: FaceDetectionResult) {
       // Clear the processing timeout since we got a response
       if (processingTimeoutRef.current) {
         window.clearTimeout(processingTimeoutRef.current);
@@ -95,93 +120,112 @@ function WebcamView() {
       }
 
       console.log("[WebSocket] Received face recognition response:", new Date().toISOString());
+      console.log("[Face Detection] Result:", result);
 
-      if (result.result.length > 0) {
-        const { identity } = result.result[0];
+      // Draw the frame that was processed
+      if (lastProcessedFrameRef.current && videoCanvasRef.current) {
+        const ctx = videoCanvasRef.current.getContext("2d");
+        if (ctx) {
+          // Clear and put the new frame data directly
+          ctx.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+          ctx.putImageData(lastProcessedFrameRef.current, 0, 0);
 
-        // Update member only if different
-        if (currentMember?.member_id !== identity) {
-          await updateMember(identity);
-        }
+          // Draw face box if face detected
+          if (result.result && result.result.length > 0) {
+            const { identity: memberId } = result.result[0];
+            console.log("[Face Detection] Detected member:", memberId);
 
-        // Always draw face box if coordinates are available
-        const canvas = canvasRef.current;
-        const video = videoRef.current;
-        const face = result.result[0];
-        if (
-          canvas &&
-          video &&
-          typeof face.target_x === "number" &&
-          typeof face.target_y === "number" &&
-          typeof face.target_w === "number" &&
-          typeof face.target_h === "number"
-        ) {
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            // Clear previous drawing
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 현재 멤버랑 다른 경우에만 업데이트하기
+            if (currentMemberRef.current?.member_id !== memberId) {
+              (async () => {
+                try {
+                  // 1. Create new member
+                  const newMember = await createAndGetMember({
+                    member_id: memberId,
+                    age: 0,
+                    image_path: "null",
+                  });
 
-            // Draw the current video frame
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  // 2. Update members
+                  const members = await getMembers();
+                  setMembers(members);
 
-            // Draw face box
-            ctx.strokeStyle = "#00ff00";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(
-              face.target_x * (canvas.width / 320), // Scale back up
-              face.target_y * (canvas.height / 240),
-              face.target_w * (canvas.width / 320),
-              face.target_h * (canvas.height / 240)
-            );
+                  // 3. Set current member
+                  setCurrentMember(newMember);
+                } catch (error) {
+                  console.error("Failed to create or update member:", error);
+                }
+              })();
+            }
 
-            // Optional: Add debug info
-            console.log("[Face Box] Updated position:", {
-              x: face.target_x,
-              y: face.target_y,
-              w: face.target_w,
-              h: face.target_h,
+            // 박스 그리기
+            const face = result.result[0];
+            console.log("[Face Box] Drawing box with coordinates:", {
+              x: face.source_x,
+              y: face.source_y,
+              w: face.source_w,
+              h: face.source_h,
             });
+
+            if (
+              typeof face.source_x === "number" &&
+              typeof face.source_y === "number" &&
+              typeof face.source_w === "number" &&
+              typeof face.source_h === "number"
+            ) {
+              // Draw face box with yellow color
+              ctx.beginPath();
+              ctx.strokeStyle = "#ffff00"; // Yellow box
+              ctx.lineWidth = 3;
+              ctx.strokeRect(face.source_x, face.source_y, face.source_w, face.source_h);
+
+              console.log("[Face Box] Box drawn successfully");
+            }
           }
+
+          // Clear the stored frame after drawing
+          lastProcessedFrameRef.current = null;
+
+          // Mark processing as complete and send next frame
+          isProcessingRef.current = false;
+          sendNextFrame();
         }
       } else {
-        // No face detected, clear the box
-        const canvas = canvasRef.current;
-        const video = videoRef.current;
-        if (canvas && video) {
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          }
-        }
+        // If no frame was stored, just send next frame
+        isProcessingRef.current = false;
+        sendNextFrame();
       }
+    }
 
-      // Mark processing as complete and send next frame
-      isProcessingRef.current = false;
-
-      // Small delay before sending next frame to prevent overwhelming
-      setTimeout(sendNextFrame, 100);
-    };
-
-    // Function to send the next frame
-    const sendNextFrame = () => {
+    function sendNextFrame() {
       // Don't send if already processing
-      if (isProcessingRef.current) return;
+      if (isProcessingRef.current) {
+        console.log("[Frame] Skipping send - already processing");
+        return;
+      }
 
       // Don't send if not connected
       if (!isLocalServerConnected()) {
+        console.log("[Frame] Skipping send - not connected");
         return;
       }
 
       const video = videoRef.current;
-      const tempCanvas = tempCanvasRef.current;
-      if (video && tempCanvas && video.readyState === video.HAVE_ENOUGH_DATA) {
-        const ctx = tempCanvas.getContext("2d");
-        if (ctx) {
-          // Draw current video frame at reduced size
-          ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+      if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+        // Create a temporary canvas for frame extraction
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = VIDEO_WIDTH;
+        tempCanvas.height = VIDEO_HEIGHT;
+        const tempCtx = tempCanvas.getContext("2d");
 
-          // Get frame data as base64 with reduced quality
+        if (tempCtx) {
+          // Draw current video frame to temporary canvas
+          tempCtx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+          // Store the frame data as ImageData
+          lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+          // Convert ImageData to base64 for sending
           const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
           // Mark as processing and send frame
@@ -200,8 +244,10 @@ function WebcamView() {
           console.log("[WebSocket] Sending frame to server:", new Date().toISOString());
           sendToLocalServer(frameData);
         }
+      } else {
+        console.log("[Frame] Skipping send - video not ready");
       }
-    };
+    }
 
     // Function to check connection and start sending frames
     const checkConnectionAndStart = () => {
@@ -215,13 +261,13 @@ function WebcamView() {
 
     // Start checking for connection and periodically check
     checkConnectionAndStart();
-    connectionCheckInterval.current = window.setInterval(checkConnectionAndStart, 500);
+    connectionCheckIntervalRef.current = window.setInterval(checkConnectionAndStart, 500);
 
     // Cleanup
     return () => {
       offLocalServerMessage(handleFaceRecognition);
-      if (connectionCheckInterval.current) {
-        window.clearInterval(connectionCheckInterval.current);
+      if (connectionCheckIntervalRef.current) {
+        window.clearInterval(connectionCheckIntervalRef.current);
       }
       if (processingTimeoutRef.current) {
         window.clearTimeout(processingTimeoutRef.current);
@@ -248,7 +294,20 @@ function WebcamView() {
         className="absolute inset-0 w-full h-full object-cover"
         style={{ opacity: 0 }}
       />
-      <canvas ref={canvasRef} width={640} height={480} className="w-full h-full object-cover" />
+      <canvas
+        ref={videoCanvasRef}
+        width={VIDEO_WIDTH}
+        height={VIDEO_HEIGHT}
+        className="w-full h-full object-cover"
+        style={{ position: "absolute", top: 0, left: 0 }}
+      />
+      <canvas
+        ref={overlayCanvasRef}
+        width={VIDEO_WIDTH}
+        height={VIDEO_HEIGHT}
+        className="w-full h-full object-cover"
+        style={{ position: "absolute", top: 0, left: 0 }}
+      />
     </div>
   );
 }

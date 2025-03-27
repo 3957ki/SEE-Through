@@ -1,9 +1,9 @@
-import Member from "@/interfaces/Member";
+import { DetailedMember } from "@/interfaces/Member";
 import { createContext, use } from "react";
 
 interface CurrentMemberContextType {
-  currentMember: Member | null;
-  setCurrentMember: (uuid: string) => void;
+  currentMember: DetailedMember | null;
+  setCurrentMember: (member: DetailedMember | null) => void;
 }
 
 export const CurrentMemberContext = createContext<CurrentMemberContextType | null>(null);
