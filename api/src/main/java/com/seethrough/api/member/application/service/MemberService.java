@@ -127,7 +127,7 @@ public class MemberService {
 			request.getDiseases()
 		);
 
-		alertService.createAlertByMember(memberIdObj);
+		alertService.createAlertByMember(member);
 	}
 
 	@Transactional
