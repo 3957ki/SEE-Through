@@ -75,12 +75,15 @@ def register_users(register_dataset_path, db_path):
                 print(f"Registered {user_id} with {file_path}")
 
 
-def test_recognition_performance(dataset_path, db_path):
+def test_recognition_performance(
+    dataset_path, db_path, failed_log_path="failed_images.txt"
+):
     detector_backend = "retinaface"
     model = "Facenet"
     total_images = 0
     correct_matches = 0
     processing_times = []
+    failed_images = []
 
     for person_folder in os.listdir(dataset_path):
         person_path = os.path.join(dataset_path, person_folder)
@@ -121,16 +124,29 @@ def test_recognition_performance(dataset_path, db_path):
                             )
                         else:
                             print(f"Failed to identify {file_path} correctly")
+                            failed_images.append(file_path)
                     else:
                         print(f"No match found for {file_path}")
+                        failed_images.append(file_path)
                 except Exception as e:
                     print(f"Error processing {file_path}: {str(e)}")
+                    failed_images.append(file_path)
 
+    # 결과 요약 출력
     accuracy = (correct_matches / total_images) * 100 if total_images > 0 else 0
     avg_time = np.mean(processing_times) if processing_times else 0
 
     print(f"Recognition Accuracy: {accuracy:.2f}%")
     print(f"Average Processing Time: {avg_time:.4f} seconds per image")
+
+    # 실패 이미지 저장
+    if failed_images:
+        with open(failed_log_path, "w") as f:
+            for path in failed_images:
+                f.write(path + "\n")
+        print(f"Failed image paths written to {failed_log_path}")
+    else:
+        print("All images were successfully recognized.")
 
 
 def test(img_path, db_path):
@@ -156,7 +172,7 @@ dataset_path = "dataset"
 register_dataset_path = "register_dataset"
 db_path = "users"
 
-# delete_small_folders(dataset_path)
-# move_first_image(dataset_path, register_dataset_path)
+delete_small_folders(dataset_path)
+move_first_image(dataset_path, register_dataset_path)
 # register_users(register_dataset_path, db_path)
 test_recognition_performance(dataset_path=register_dataset_path, db_path=dataset_path)
