@@ -11,20 +11,6 @@ export async function getMember(memberId: string): Promise<DetailedMember> {
   return response.data;
 }
 
-export async function getMembersAndCurrentMember(
-  memberId: string
-): Promise<{ members: Member[]; currentMember: DetailedMember | null }> {
-  const [members, currentMember] = await Promise.all([
-    getMembers(),
-    getMember(memberId).catch(() => null),
-  ]);
-
-  return {
-    members,
-    currentMember,
-  };
-}
-
 export async function updateMember(data: {
   member_id: string;
   name: string;
@@ -35,4 +21,13 @@ export async function updateMember(data: {
   diseases: string[];
 }): Promise<void> {
   await APIServerFetcher.put(`/members`, data);
+}
+
+export async function createAndGetMember(data: {
+  member_id: string;
+  age: number;
+  image_path: string;
+}): Promise<DetailedMember> {
+  const response = await APIServerFetcher.post<DetailedMember>("/members", data);
+  return response.data;
 }

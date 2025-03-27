@@ -3,7 +3,7 @@ import { createContext, use } from "react";
 
 interface MembersContextType {
   members: Member[];
-  fetchMembers: () => Promise<void>;
+  setMembers: (members: Member[]) => void;
 }
 
 export const MembersContext = createContext<MembersContextType | null>(null);

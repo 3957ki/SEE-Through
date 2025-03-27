@@ -1,3 +1,4 @@
+import { getMember } from "@/api/members";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
 import { useMembers } from "@/contexts/MembersContext";
@@ -10,35 +11,37 @@ interface MemberItemProps {
   onSelect: (id: string) => void;
 }
 
-const MemberItem = ({ member, isSelected, onSelect }: MemberItemProps) => {
+function MemberItem({ member, isSelected, onSelect }: MemberItemProps) {
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer ${isSelected ? "bg-orange-100" : "hover:bg-gray-100"}`}
+      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+        isSelected ? "bg-orange-100" : "hover:bg-gray-100"
+      }`}
       onClick={() => onSelect(member.member_id)}
     >
-      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-        {member.image_path ? (
-          <img src={member.image_path} alt={member.name} className="w-full h-full object-cover" />
-        ) : (
-          <BsPersonCircle className="w-6 h-6 text-gray-400" />
-        )}
-      </div>
+      <BsPersonCircle className="w-10 h-10 text-gray-400" />
       <div className="flex-1">
         <h3 className="font-medium">{member.name}</h3>
+        <p className="text-sm text-gray-500">{member.member_id}</p>
       </div>
-      {isSelected && <div className="w-3 h-3 bg-orange-400 rounded-full"></div>}
     </div>
   );
-};
+}
 
 export function MemberSwitcherDialog() {
   const { members } = useMembers();
   const { currentMember, setCurrentMember } = useCurrentMember();
   const { hideDialog } = useDialog();
 
-  const handleSelectMember = (id: string) => {
-    setCurrentMember(id);
-    hideDialog();
+  const handleSelectMember = async (id: string) => {
+    try {
+      const member = await getMember(id);
+      setCurrentMember(member);
+      hideDialog();
+    } catch (error) {
+      console.error("Failed to fetch member:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
