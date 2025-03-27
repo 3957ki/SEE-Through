@@ -133,6 +133,7 @@ public class MemberController {
 		summary = "구성원 수정",
 		description = "UUID로 식별되는 구성원의 정보를 수정합니다.<br>" +
 			"해당 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
+			"구성원 수정 후, LLM API를 이용하여 해당 구성원의 경고 대상 식재료를 캐싱합니다. <br><br>" +
 			"응답으로는 204 No Content 상태 코드가 반환됩니다."
 	)
 	@ApiResponses(value = {

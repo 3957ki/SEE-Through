@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import com.seethrough.api.alert.application.service.AlertService;
+import com.seethrough.api.alert.domain.Alert;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.ingredient.application.mapper.IngredientDtoMapper;
@@ -41,6 +43,7 @@ public class IngredientService {
 	private final IngredientDtoMapper ingredientDtoMapper;
 	private final MemberService memberService;
 	private final IngredientLogService ingredientLogService;
+	private final AlertService alertService;
 	private final LlmApiIngredientService llmApiIngredientService;
 
 	public SliceResponseDto<IngredientListResponse> getIngredientList(
@@ -101,7 +104,7 @@ public class IngredientService {
 
 		ingredientLogService.saveInboundLog(ingredients);
 
-		// TODO: llm 통해 경고 테이블 생성하기
+		alertService.createAlertByIngredient(ingredients);
 	}
 
 	@Transactional
@@ -120,8 +123,11 @@ public class IngredientService {
 
 		// TODO: steram으로 수정 예정(호출 위치도 마지막으로 수정되어야 함)
 		String response = null;
-		if (ingredients.size() == 1)
-			response = llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId());
+		if (ingredients.size() == 1) {
+			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
+				.map(Alert::getComment)
+				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
+		}
 
 		ingredientRepository.deleteAll(ingredients);
 

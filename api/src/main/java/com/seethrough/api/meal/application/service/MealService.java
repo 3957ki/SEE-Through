@@ -66,15 +66,17 @@ public class MealService {
 
 		List<LocalDate> missingDateList = findMissingDates(dailyMealList, today, endDate);
 
-		if (!missingDateList.isEmpty()) {
-			log.debug("[Service] 식단 생성 호출");
-			saveMeals(memberIdObj, missingDateList);
+		if (missingDateList.isEmpty()) {
+			log.debug("[Service] 식단 생성 필요 없음");
 
-			return true;
+			return false;
 		}
 
-		log.debug("[Service] 식단 생성 필요 없음");
-		return false;
+		log.debug("[Service] 식단 생성 호출");
+
+		saveMeals(memberIdObj, missingDateList);
+
+		return true;
 	}
 
 	@Transactional

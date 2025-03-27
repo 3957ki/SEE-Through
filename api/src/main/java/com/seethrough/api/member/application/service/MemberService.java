@@ -8,6 +8,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.seethrough.api.alert.application.service.AlertService;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
@@ -35,6 +36,7 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final MemberDtoMapper memberDtoMapper;
+	private final AlertService alertService;
 	private final NicknameApiService nicknameApiService;
 
 	@Transactional
@@ -125,7 +127,7 @@ public class MemberService {
 			request.getDiseases()
 		);
 
-		// TODO: 질병이나 알러지 수정 여부를 파악하여 llm 통해 경고 테이블 생성하기
+		alertService.createAlertByMember(memberIdObj);
 	}
 
 	@Transactional
