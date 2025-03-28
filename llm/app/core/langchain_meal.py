@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.95, openai_api_key=OPENAI_API_KEY)
 
 class MealScheduleSchema(BaseModel):
     menu: List[str] = Field(..., description="해당 식사에 포함될 음식 5가지")
@@ -34,6 +34,19 @@ prompt_meal_plan = ChatPromptTemplate.from_template("""
 5. 비선호 음식 목록: {disliked_foods}
 6. 알러지 정보: {allergies}
 7. 질병 정보: {diseases}
+
+                                                    ## 한 끼 식단 구성 기준
+- 아래 5가지 구성 중 **최소 3개 이상**이 포함되어야 합니다:
+    1. **주식**: 밥, 죽, 면 등
+    2. **국/탕/찌개**: 미역국, 된장찌개, 김치찌개 등
+    3. **단백질 요리**: 고기, 생선, 달걀 요리 (예: 불고기, 오므라이스, 계란찜 등)
+    4. **채소/반찬**: 나물, 김치류, 볶음 반찬 등
+    5. **디저트/음료**: 과일, 주스, 푸딩, 스무디 등
+
+## 제한 사항
+- **샐러드 계열 음식은 한 끼당 1개 이하만 포함**될 수 있습니다.
+- **모든 음식이 샐러드/주스류로만 구성되는 식단은 피해야 합니다.**
+
 
 ## 추가 제약 사항
 - `menu`는 5가지 음식으로 구성해야 합니다.
