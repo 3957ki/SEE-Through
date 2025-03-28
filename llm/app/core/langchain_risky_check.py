@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 from app.core.config import OPENAI_API_KEY
 
 ### 위험 음식 코멘트 생성
-# LangChain LLM 객체 생성 (GPT-4 Turbo 사용)
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+
 
 # JSON 응답을 강제할 스키마 정의
 class RiskyFoodSchema(BaseModel):
@@ -18,13 +18,15 @@ class RiskyFoodSchema(BaseModel):
 class RiskyFoodList(BaseModel):
     foods: list[RiskyFoodSchema]
 
+
 # LangChain OutputParser 적용 (LLM의 응답을 JSON으로 강제)
 parser = PydanticOutputParser(pydantic_object=RiskyFoodList)
 
 fixing_parser = OutputFixingParser.from_llm(parser=parser, llm=llm)
 
 # LLM 프롬프트 템플릿 정의 (JSON 출력 강제)
-prompt_risky = ChatPromptTemplate.from_template("""
+prompt_risky = ChatPromptTemplate.from_template(
+    """
 당신은 의료 및 식품 안전 전문가 역할을 수행하는 AI입니다.
 
 아래의 음식 목록을 분석하여 **사용자의 알레르기 정보 및 질병 정보에 따라 섭취 시 위험할 수 있는 음식**에 대해  
@@ -59,10 +61,13 @@ prompt_risky = ChatPromptTemplate.from_template("""
 
 - 음식이 위험하지 않으면 해당 항목은 포함하지 마세요.
 - 여러 음식이 위험한 경우, 모두 포함된 리스트 형태로 출력하세요.
-""")
+"""
+)
 
 
-def analyze_risky_foods_with_comments(food_names: list, allergies: list, diseases: list) -> list:
+def analyze_risky_foods_with_comments(
+    food_names: list, allergies: list, diseases: list
+) -> list:
     """
     LLM을 이용하여 음식의 위험성을 분석하고, 필요한 경우 경고 메시지를 제공하는 함수
     """
@@ -72,13 +77,15 @@ def analyze_risky_foods_with_comments(food_names: list, allergies: list, disease
     disease_list_str = "\n".join([f"- {disease}" for disease in diseases])
 
     # LLM 호출 및 JSON 응답 강제
-    response = llm.invoke(prompt_risky.format(
-        food_names=food_list_str,
-        allergies_name=allergy_list_str,
-        disease_name=disease_list_str,
-        format_instructions=parser.get_format_instructions()
-    ))
-    
+    response = llm.invoke(
+        prompt_risky.format(
+            food_names=food_list_str,
+            allergies_name=allergy_list_str,
+            disease_name=disease_list_str,
+            format_instructions=parser.get_format_instructions(),
+        )
+    )
+
     try:
         # LLM 응답을 OutputFixingParser로 보정하여 JSON 형식 강제
         parsed_data = fixing_parser.parse(response.content)

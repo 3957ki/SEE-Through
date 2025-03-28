@@ -4,24 +4,27 @@ from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from app.core.config import OPENAI_API_KEY
 
-# LangChain LLM 객체 생성 (GPT-4 Turbo 사용)
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+
 
 # JSON 응답을 강제할 스키마 정의
 class RiskyMemberSchema(BaseModel):
     member_id: str = Field(..., description="위험 가능성이 있는 사용자 ID")
     comment: str = Field(..., description="사용자에게 제공할 경고 메시지")
 
+
 class RiskyFoodResult(BaseModel):
     ingredient: str = Field(..., description="확인한 음식 재료")
     risky_members: list[RiskyMemberSchema]
+
 
 # LangChain OutputParser 적용 (LLM의 응답을 JSON으로 변환)
 parser = PydanticOutputParser(pydantic_object=RiskyFoodResult)
 fixing_parser = OutputFixingParser.from_llm(parser=parser, llm=llm)
 
 # LLM 프롬프트 템플릿 정의
-prompt_risky = ChatPromptTemplate.from_template("""
+prompt_risky = ChatPromptTemplate.from_template(
+    """
 당신은 식품 안전 및 의료 전문가 역할을 수행하는 AI입니다.
 
 "{ingredient}"이라는 재료가 아래 사용자들의 알레르기 정보 및 질병 정보를 기반으로 **섭취 시 위험할 수 있는지** 평가하고,  
@@ -52,15 +55,15 @@ prompt_risky = ChatPromptTemplate.from_template("""
 
 📄 응답 형식 (JSON):
 {format_instructions}
-""")
-
+"""
+)
 
 
 def analyze_risky_food_for_members(ingredient: str, health_data: str) -> list:
     formatted_prompt = prompt_risky.format(
         ingredient=ingredient,
         health_data=health_data,
-        format_instructions=parser.get_format_instructions()
+        format_instructions=parser.get_format_instructions(),
     )
 
     # ✅ 프롬프트 출력 (print 또는 logger 사용)
@@ -74,5 +77,3 @@ def analyze_risky_food_for_members(ingredient: str, health_data: str) -> list:
     except Exception as e:
         print(f"LLM JSON 파싱 오류: {e}")
         return []
-
-
