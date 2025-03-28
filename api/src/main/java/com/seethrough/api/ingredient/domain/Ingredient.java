@@ -1,7 +1,6 @@
 package com.seethrough.api.ingredient.domain;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,5 +71,5 @@ public class Ingredient {
 	private List<Float> embeddingVector;
 
 	@OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<Alert> alerts = new ArrayList<>();
+	private List<Alert> alerts;
 }
