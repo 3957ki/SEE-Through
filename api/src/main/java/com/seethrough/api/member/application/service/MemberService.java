@@ -124,6 +124,8 @@ public class MemberService {
 		member.update(
 			request.getName(),
 			request.getBirth(),
+			request.getColor(),
+			request.getFontSize(),
 			request.getPreferredFoods(),
 			request.getDislikedFoods(),
 			request.getAllergies(),
