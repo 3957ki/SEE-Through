@@ -93,7 +93,12 @@ public class IngredientService {
 
 		List<Ingredient> ingredients = request.getInboundIngredientRequestList()
 			.stream()
-			.map(obj -> IngredientFactory.create(UuidCreator.getTimeOrderedEpoch(), obj.getName(), obj.getImagePath(), memberIdObj, now,
+			.map(obj -> IngredientFactory.create(
+				obj.getIngredientId() == null ? UuidCreator.getTimeOrderedEpoch() : UUID.fromString(obj.getIngredientId()),
+				obj.getName(),
+				obj.getImagePath(),
+				memberIdObj,
+				now,
 				obj.getExpirationAt()))
 			.toList();
 
