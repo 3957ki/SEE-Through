@@ -4,8 +4,8 @@ from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from app.core.config import OPENAI_API_KEY
 
-# LangChain LLM 객체 생성 (GPT-4 Turbo 사용)
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+# LangChain LLM 객체 생성
+llm = ChatOpenAI(model="gpt-4-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
 
 ### 음식 분류 매핑
 FOOD_CATEGORY_MAPPING = {
