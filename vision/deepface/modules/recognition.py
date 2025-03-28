@@ -326,6 +326,8 @@ def update(
             logger.info(f"find function duration {toc - tic} seconds")
         return []
 
+    return new_rep
+
 
 def __find_bulk_embeddings(
     user_id: str,
