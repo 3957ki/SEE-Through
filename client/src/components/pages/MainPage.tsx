@@ -1,104 +1,38 @@
 import { getMealsByDate, refreshMeal } from "@/api/meals";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import { useMaterialContext } from "@/contexts/MaterialContext";
-import Material from "@/interfaces/Material";
+import { useIngredientsContext } from "@/contexts/IngredientsContext";
+import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useEffect, useState } from "react";
-import {
-  BsArrowClockwise,
-  BsCalendarEvent,
-  BsHandThumbsDown,
-  BsHandThumbsUp,
-} from "react-icons/bs";
+import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
-// Material Grid Section Components
-function MaterialBlock({ material }: { material: Material }) {
+function IngredientBlock({ ingredient }: { ingredient: Ingredient }) {
   return (
     <div className="aspect-square bg-white rounded-md overflow-hidden border">
       <img
-        src={material.image_path ?? "/placeholder.svg"}
-        alt={material.name ?? "Material image"}
+        src={ingredient.image_path ?? "/placeholder.svg"}
+        alt={ingredient.name ?? "Ingredient image"}
         className="w-full h-full object-cover"
       />
     </div>
   );
 }
 
-function MaterialsSection({ materials }: { materials: Material[] }) {
-  const MAX_MATERIALS = 10;
+function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
+  const MAX_COUNT = 10;
 
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {materials.slice(0, MAX_MATERIALS).map((material) => (
-            <MaterialBlock key={material.ingredient_id} material={material} />
+          {ingredients.slice(0, MAX_COUNT).map((ingredient) => (
+            <IngredientBlock key={ingredient.ingredient_id} ingredient={ingredient} />
           ))}
         </div>
       </SectionContent>
     </Section>
-  );
-}
-
-function MealCard({
-  title,
-  color,
-  items,
-  onRefresh,
-  isRefreshing,
-}: {
-  title: string;
-  color: string;
-  items: string[];
-  onRefresh: () => void;
-  isRefreshing: boolean;
-}) {
-  return (
-    <div className={`${color} rounded-xl p-4 w-64 min-w-64 text-white relative`}>
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-medium text-lg">{title}</h3>
-        <button onClick={onRefresh} disabled={isRefreshing}>
-          <BsArrowClockwise
-            className={`w-5 h-5 ${isRefreshing ? "animate-spin text-white/70" : "text-white"}`}
-          />
-        </button>
-      </div>
-      {items.map((item, index) => (
-        <p key={index} className="text-sm">
-          {item}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-function FeedbackButtons() {
-  const [feedback, setFeedback] = useState<"like" | "dislike" | null>(null);
-
-  return (
-    <div className="px-4 py-4 text-center">
-      <p className="text-sm mb-2">이 식단은 도움이 되나요?</p>
-      <div className="flex justify-center gap-6">
-        <button
-          className={`p-2 transition-all ${feedback === "like" ? "bg-orange-100 rounded-full scale-110" : ""}`}
-          onClick={() => setFeedback("like")}
-        >
-          <BsHandThumbsUp
-            className={`w-6 h-6 ${feedback === "like" ? "text-orange-500" : "text-gray-700"}`}
-          />
-        </button>
-        <button
-          className={`p-2 transition-all ${feedback === "dislike" ? "bg-orange-100 rounded-full scale-110" : ""}`}
-          onClick={() => setFeedback("dislike")}
-        >
-          <BsHandThumbsDown
-            className={`w-6 h-6 ${feedback === "dislike" ? "text-orange-500" : "text-gray-700"}`}
-          />
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -235,20 +169,20 @@ function TodaysDietSection() {
 
 function MainPage() {
   const { currentMember } = useCurrentMember();
-  const { mainMaterials, fetchMainMaterials } = useMaterialContext();
+  const { ingredients } = useIngredientsContext();
 
   useEffect(() => {
     if (currentMember) {
       console.log(currentMember);
     }
-  }, [currentMember, fetchMainMaterials]);
+  }, [currentMember]);
 
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
       <TodaysDietSection />
       <SectionDivider />
-      <MaterialsSection materials={mainMaterials} />
+      <IngredientsSection ingredients={ingredients} />
     </div>
   );
 }

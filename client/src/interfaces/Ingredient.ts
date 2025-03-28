@@ -1,4 +1,4 @@
-interface Material {
+interface Ingredient {
   ingredient_id: string;
   name?: string;
   image_path?: string;
@@ -6,4 +6,4 @@ interface Material {
   expiration_at?: string;
 }
 
-export default Material;
+export default Ingredient;

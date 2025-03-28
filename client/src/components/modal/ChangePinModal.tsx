@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 
 interface ChangePinModalProps {
   currentPin: string;
@@ -12,7 +12,7 @@ enum PinChangeStep {
   CONFIRM_NEW = 2,
 }
 
-const ChangePinModal: React.FC<ChangePinModalProps> = ({ currentPin, onPinChange, onClose }) => {
+const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onClose }) => {
   const [step, setStep] = useState<PinChangeStep>(PinChangeStep.VERIFY_CURRENT);
   const [enteredPin, setEnteredPin] = useState<string>("");
   const [newPin, setNewPin] = useState<string>("");
@@ -102,7 +102,9 @@ const ChangePinModal: React.FC<ChangePinModalProps> = ({ currentPin, onPinChange
         setNewPin("");
       }
     } catch (error) {
-      setError("PIN 변경 중 오류가 발생했습니다.");
+      setError(
+        `PIN 변경 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`
+      );
     } finally {
       setIsProcessing(false);
     }

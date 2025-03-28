@@ -1,67 +1,89 @@
-import Fridge from "@/components/showcase/Fridge";
 import FridgeDisplay from "@/components/FridgeDisplay";
+import Fridge from "@/components/showcase/Fridge";
+import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
 import WebcamView from "@/components/showcase/WebcamView";
-import React, { useState } from "react";
-import Material from "@/interfaces/Material";
-import MaterialProvider from "@/providers/MaterialContextProvider";
-import { useMaterialContext } from "@/contexts/MaterialContext";
+import { useIngredientsContext } from "@/contexts/IngredientsContext";
+import Ingredient from "@/interfaces/Ingredient";
+import { useEffect, useState, type DragEvent } from "react";
 
-// 드래그 가능한 재료 컴포넌트 (Material 객체 기반)
-interface DraggableIngredientProps {
-  material: Material;
-}
-function DraggableIngredient({ material }: DraggableIngredientProps) {
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    // Material 객체를 JSON 문자열로 dataTransfer에 저장 (키: "material")
-    e.dataTransfer.setData("material", JSON.stringify(material));
-  };
-  return (
-    <div
-      draggable
-      onDragStart={handleDragStart}
-      className="p-2 bg-blue-300 rounded cursor-grab"
-    >
-      <img src={material.image_path} />
-      {material.name}
-    </div>
-  );
-}
+const showcaseIngredients = [
+  {
+    ingredient_id: "showcase1",
+    name: "showcase1",
+    image_path: "showcase1",
+  },
+  {
+    ingredient_id: "showcase2",
+    name: "showcase2",
+    image_path: "showcase2",
+  },
+  {
+    ingredient_id: "showcase3",
+    name: "showcase3",
+    image_path: "showcase3",
+  },
+  {
+    ingredient_id: "showcase4",
+    name: "showcase4",
+    image_path: "showcase4",
+  },
+  {
+    ingredient_id: "showcase5",
+    name: "showcase5",
+    image_path: "showcase5",
+  },
+];
 
-function ShowcaseContent() {
-  const [isShowingInfoScreen, setIsShowingInfoScreen] = useState(true);
-  const [leftDoorOpen, setLeftDoorOpen] = useState(false);
-  // 재료 식탁에 표시되는 로컬 available 재료 목록
-  const [availableIngredients, setAvailableIngredients] = useState<Material[]>([
-    { ingredient_id: "showcase1", name: "토마토", image_path: "/src/assets/tomato.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "showcase2", name: "양상추", image_path: "/src/assets/lettuce.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "showcase3", name: "치킨", image_path: "/src/assets/chicken.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "showcase4", name: "땅콩", image_path: "/src/assets/peanut.jpg", inbound_at:"", expiration_at: "" },
-    { ingredient_id: "showcase5", name: "옥수수", image_path: "/src/assets/corn.jpg", inbound_at:"", expiration_at: "" },
-  ]);
+function ShowcaseScreen() {
+  const { ingredients } = useIngredientsContext();
 
-  // Context에서 draggedMaterials 및 액션 함수들을 가져옴
-  const { draggedMaterials, addDraggedMaterial, removeDraggedMaterial } = useMaterialContext();
+  const [insideIngredients, setInsideIngredients] = useState<Ingredient[]>([]);
+  const [outsideIngredients, setOutsideIngredients] = useState<Ingredient[]>([]);
 
-  // 드롭 이벤트 핸들러
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    const newInsideIngredients: Ingredient[] = [];
+    const newOutsideIngredients: Ingredient[] = [];
+
+    for (const showcaseIngredient of showcaseIngredients) {
+      const ingredient = ingredients.find(
+        (ingredient) => ingredient.ingredient_id === showcaseIngredient.ingredient_id
+      );
+      if (ingredient) {
+        newInsideIngredients.push(ingredient);
+      } else {
+        newOutsideIngredients.push(showcaseIngredient);
+      }
+    }
+
+    setInsideIngredients(newInsideIngredients);
+    setOutsideIngredients(newOutsideIngredients);
+  }, [ingredients]);
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const data = e.dataTransfer.getData("material");
-    if (!data) return;
-    const material: Material = JSON.parse(data);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-    await addDraggedMaterial(material, offsetX, offsetY);
-    // 식탁 available에서 제거
-    setAvailableIngredients((prev) => prev.filter((item) => item.ingredient_id !== material.ingredient_id));
+    try {
+      const ingredientData = e.dataTransfer.getData("application/x-ingredient");
+      if (!ingredientData) return;
+
+      const ingredient: Ingredient = JSON.parse(ingredientData);
+
+      // Move ingredient from outside to inside
+      setOutsideIngredients((prev) =>
+        prev.filter((item) => item.ingredient_id !== ingredient.ingredient_id)
+      );
+      setInsideIngredients((prev) => [...prev, ingredient]);
+    } catch (error) {
+      console.error("Failed to handle drop:", error);
+    }
   };
 
-  // 재료 제거 시, dragged에서 제거하고 available에 추가하는 핸들러
-  const handleRemoveFromDragged = async (material: Material) => {
-    const comment = await removeDraggedMaterial(material.ingredient_id); // llm 추천 comment
-    console.log(comment);
-    setAvailableIngredients((prev) => [...prev, material]);
+  const takeoutIngredient = (ingredient: Ingredient): void => {
+    // Move ingredient from inside to outside
+    setInsideIngredients((prev) =>
+      prev.filter((item) => item.ingredient_id !== ingredient.ingredient_id)
+    );
+    setOutsideIngredients((prev) => [...prev, ingredient]);
   };
 
   return (
@@ -70,67 +92,34 @@ function ShowcaseContent() {
         {/* 왼쪽 영역 - 냉장고와 드롭존 */}
         <div className="w-2/3 h-full relative">
           <Fridge
-            leftDoorOpen={leftDoorOpen}
-            toggleDoor={() => setLeftDoorOpen(!leftDoorOpen)}
             handleDrop={handleDrop}
-            // Fridge에서는 draggedMaterials를 표시합니다.
-            droppedIngredients={draggedMaterials}
-            removeIngredient={handleRemoveFromDragged}
+            insideIngredients={insideIngredients}
+            removeIngredient={takeoutIngredient}
           >
-            <div className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50"
-            style={{ background: "none", fill: "none" }}
+            <div
+              className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50"
+              style={{ background: "none", fill: "none" }}
             >
-              {isShowingInfoScreen ? (
-                <div className="flex items-center justify-center">
-                  <FridgeDisplay targetWidth={375} targetHeight={667} />
-                </div>
-              ) : (
-                <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-                  냉장고 내부 카메라 화면
-                </div>
-              )}
+              <div className="flex items-center justify-center">
+                <FridgeDisplay targetWidth={375} targetHeight={667} />
+              </div>
             </div>
           </Fridge>
         </div>
+
         {/* 오른쪽 영역 - 컨트롤 및 재료 식탁 */}
-        <div className="w-1/4 h-full flex flex-col gap-4 md:gap-6 relative">
+        <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
           <div className="h-1/3">
             <WebcamView />
           </div>
-          <button
-            onClick={() => setIsShowingInfoScreen(!isShowingInfoScreen)}
-            className="w-full py-2 md:py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-sm md:text-base"
-          >
-            {isShowingInfoScreen ? "내부 카메라 화면 보기" : "정보 화면 보기"}
-          </button>
-          <div className="h-1/5">
+          <div className="h-1/3">
             <UserInfoCard />
           </div>
         </div>
-        {/* 재료 식탁: availableIngredients를 표시 */}
-        <div
-            className="absolute bottom-0 right-0 w-2/5 flex-1 p-4 md:p-6 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('/src/assets/table.jpg')",
-              clipPath: "polygon(20% 0, 100% 0, 100% 100%, 10% 100%)",
-            }}
-          >
-            <div className="flex flex-wrap flex-row-reverse gap-2 w-3/4 ml-auto mr-auto">
-              {availableIngredients.map((material) => (
-                <DraggableIngredient key={material.ingredient_id} material={material} />
-              ))}
-            </div>
-          </div>
+
+        <Table outsideIngredients={outsideIngredients} />
       </div>
     </div>
-  );
-}
-
-function ShowcaseScreen() {
-  return (
-    <MaterialProvider>
-      <ShowcaseContent />
-    </MaterialProvider>
   );
 }
 

@@ -44,8 +44,8 @@ export default function LogPage() {
 
           // 로그 데이터 형식 변환 - 이미지 경로 추가
           acc[date].push({
-            material: log.ingredient_name,
-            material_image: log.ingredient_image_path,
+            ingredient: log.ingredient_name,
+            ingredient_image: log.ingredient_image_path,
             user_name: log.member_name,
             user_image: log.member_image_path,
             type: log.movement_name,
@@ -156,7 +156,7 @@ export default function LogPage() {
                 <div className="flex items-center mb-2">
                   {/* 재료 이미지 */}
                   <Avatar className="h-10 w-10 mr-3">
-                    <AvatarImage src={entry.material_image} alt={entry.material} />
+                    <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
                     <AvatarFallback>
                       <Package className="h-5 w-5" />
                     </AvatarFallback>
@@ -165,7 +165,7 @@ export default function LogPage() {
                   <div className="flex-1">
                     {/* 재료 이름과 시간 */}
                     <div className="flex justify-between items-center">
-                      <span className="text-base font-medium">{entry.material}</span>
+                      <span className="text-base font-medium">{entry.ingredient}</span>
                       <span className="text-sm text-gray-500">{entry.time}</span>
                     </div>
 
