@@ -17,5 +17,7 @@ public class InboundIngredientRequest {
 	@NotNull(message = "이미지 경로는 필수 입력값입니다")
 	private String imagePath;
 
+	private String ingredientId;
+
 	private LocalDateTime expirationAt;
 }

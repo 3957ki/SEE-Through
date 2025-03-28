@@ -55,7 +55,7 @@ public class IngredientRepositoryImpl implements IngredientRepository {
 	public void saveAll(List<Ingredient> ingredients) {
 		log.debug("[Repository] saveAll 호출: {} 개의 식재료", ingredients.size());
 
-		ingredients.forEach(entityManager::persist);
+		ingredientJpaRepository.saveAll(ingredients);
 	}
 
 	@Override

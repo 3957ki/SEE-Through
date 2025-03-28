@@ -102,6 +102,7 @@ public class IngredientController {
 	@Operation(
 		summary = "식재료 입고",
 		description = "새로운 식재료를 입고합니다.<br>" +
+			"ingredient_id는 선택사항으로 있으면 해당 UUID를 id로 설정하고, 없다면 랜덤 UUID를 생성합니다.<br>" +
 			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br>" +
 			"입고 처리 시 시스템에 자동으로 입출고 로그가 기록됩니다. 로그에는 입출고 일시, 담당자, 식재료 이름, 입출고 형태가 포함됩니다.<br>" +
 			"입고 요청 후 백그라운드에서 LLM API를 비동기적으로 호출하여 식재료에 입고 이벤트를 처리합니다.<br><br>" +
