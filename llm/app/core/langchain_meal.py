@@ -10,7 +10,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 llm = ChatOpenAI(
-    model="gpt-4-turbo", temperature=0.95, top_p=1.0, openai_api_key=OPENAI_API_KEY
+    model="gpt-4o-mini", temperature=0.95, top_p=1.0, openai_api_key=OPENAI_API_KEY
 )
 
 
