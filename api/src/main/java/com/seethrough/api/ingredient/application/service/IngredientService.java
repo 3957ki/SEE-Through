@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.alert.application.service.AlertService;
 import com.seethrough.api.alert.domain.Alert;
+import com.seethrough.api.alert.domain.event.CreateAlertByIngredientEvent;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.ingredient.application.mapper.IngredientDtoMapper;
@@ -39,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class IngredientService {
 
+	private final ApplicationEventPublisher applicationEventPublisher;
 	private final IngredientRepository ingredientRepository;
 	private final IngredientDtoMapper ingredientDtoMapper;
 	private final MemberService memberService;
@@ -104,7 +107,9 @@ public class IngredientService {
 
 		ingredientLogService.saveInboundLog(ingredients);
 
-		alertService.createAlertByIngredient(ingredients);
+		applicationEventPublisher.publishEvent(CreateAlertByIngredientEvent.builder()
+			.ingredients(ingredients)
+			.build());
 	}
 
 	@Transactional

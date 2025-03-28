@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.seethrough.api.alert.application.service.AlertService;
+import com.seethrough.api.alert.domain.event.CreateAlertByMemberEvent;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
 import com.seethrough.api.member.application.dto.LoginMemberResult;
@@ -34,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MemberService {
 
+	private final ApplicationEventPublisher applicationEventPublisher;
 	private final MemberRepository memberRepository;
 	private final MemberDtoMapper memberDtoMapper;
 	private final AlertService alertService;
@@ -127,7 +130,9 @@ public class MemberService {
 			request.getDiseases()
 		);
 
-		alertService.createAlertByMember(member);
+		applicationEventPublisher.publishEvent(CreateAlertByMemberEvent.builder()
+			.memberId(memberIdObj)
+			.build());
 	}
 
 	@Transactional
