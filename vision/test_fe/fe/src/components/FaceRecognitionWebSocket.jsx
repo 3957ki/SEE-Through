@@ -47,7 +47,6 @@ export default function FaceRecognition() {
   const capture = () => {
     const imageSrc = webcamRef.current.getScreenshot();
 
-    // 좌우 반전 적용
     const img = new Image();
     img.src = imageSrc;
     img.onload = () => {
@@ -64,9 +63,14 @@ export default function FaceRecognition() {
       const base64Image = canvas.toDataURL("image/jpeg").split(",")[1];
       setImage(base64Image);
 
-      // WebSocket을 통해 서버에 이미지 전송
+      // WebSocket을 통해 JSON 형태로 이미지 전송
       if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(base64Image);
+        const payload = {
+          image: base64Image,
+          level: 1,
+          uuid: null, // 필요 시 uuid를 여기에 추가 가능
+        };
+        ws.send(JSON.stringify(payload));
       }
     };
   };
