@@ -168,9 +168,9 @@ def find(
     storage_images = set(image_utils.yield_images(path=db_path))
 
     if len(storage_images) == 0 and refresh_database is True:
-        raise ValueError(f"No item found in {db_path}")
+        return []
     if len(representations) == 0 and refresh_database is False:
-        raise ValueError(f"Nothing is found in {datastore_path}")
+        return []
 
     must_save_pickle = False
     new_images, old_images, replaced_images = set(), set(), set()
@@ -199,10 +199,14 @@ def find(
             alpha_hash = current_representation["hash"]
             beta_hash = image_utils.find_image_hash(identity)
             if alpha_hash != beta_hash:
-                logger.debug(f"Even though {identity} represented before, it's replaced later.")
+                logger.debug(
+                    f"Even though {identity} represented before, it's replaced later."
+                )
                 replaced_images.add(identity)
 
-    if not silent and (len(new_images) > 0 or len(old_images) > 0 or len(replaced_images) > 0):
+    if not silent and (
+        len(new_images) > 0 or len(old_images) > 0 or len(replaced_images) > 0
+    ):
         logger.info(
             f"Found {len(new_images)} newly added image(s)"
             f", {len(old_images)} removed image(s)"
@@ -215,7 +219,9 @@ def find(
 
     # remove old images first
     if len(old_images) > 0:
-        representations = [rep for rep in representations if rep["identity"] not in old_images]
+        representations = [
+            rep for rep in representations if rep["identity"] not in old_images
+        ]
         must_save_pickle = True
 
     # find representations for new images
@@ -236,7 +242,9 @@ def find(
         with open(datastore_path, "wb") as f:
             pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
         if not silent:
-            logger.info(f"There are now {len(representations)} representations in {file_name}")
+            logger.info(
+                f"There are now {len(representations)} representations in {file_name}"
+            )
 
     # Should we have no representations bailout
     if len(representations) == 0:
@@ -324,7 +332,9 @@ def find(
             distances.append(distance)
 
             # ---------------------------
-        target_threshold = threshold or verification.find_threshold(model_name, distance_metric)
+        target_threshold = threshold or verification.find_threshold(
+            model_name, distance_metric
+        )
 
         result_df["threshold"] = target_threshold
         result_df["distance"] = distances
@@ -332,7 +342,9 @@ def find(
         result_df = result_df.drop(columns=["embedding"])
         # pylint: disable=unsubscriptable-object
         result_df = result_df[result_df["distance"] <= target_threshold]
-        result_df = result_df.sort_values(by=["distance"], ascending=True).reset_index(drop=True)
+        result_df = result_df.sort_values(by=["distance"], ascending=True).reset_index(
+            drop=True
+        )
 
         resp_obj.append(result_df)
 
@@ -398,17 +410,19 @@ def __find_bulk_embeddings(
                 enforce_detection=enforce_detection,
                 align=align,
                 expand_percentage=expand_percentage,
-                color_face='bgr'  # `represent` expects images in bgr format.
+                color_face="bgr",  # `represent` expects images in bgr format.
             )
 
         except ValueError as err:
-            logger.error(f"Exception while extracting faces from {employee}: {str(err)}")
+            logger.error(
+                f"Exception while extracting faces from {employee}: {str(err)}"
+            )
             img_objs = []
 
         if len(img_objs) == 0:
             representations.append(
                 {
-                    "identity": employee,
+                    "identity": employee[3:-4],
                     "hash": file_hash,
                     "embedding": None,
                     "target_x": 0,
@@ -433,7 +447,7 @@ def __find_bulk_embeddings(
                 img_representation = embedding_obj[0]["embedding"]
                 representations.append(
                     {
-                        "identity": employee,
+                        "identity": employee[3:-4],
                         "hash": file_hash,
                         "embedding": img_representation,
                         "target_x": img_region["x"],
@@ -531,7 +545,10 @@ def find_batched(
     embeddings = np.array(embeddings_list)  # (N, D)
     valid_mask = np.array(valid_mask)  # (N,)
 
-    data = {key: np.array([item.get(key, None) for item in representations]) for key in metadata}
+    data = {
+        key: np.array([item.get(key, None) for item in representations])
+        for key in metadata
+    }
 
     target_embeddings = []
     source_regions = []
@@ -558,7 +575,9 @@ def find_batched(
         target_embeddings.append(target_representation)
         source_regions.append(source_region)
 
-        target_threshold = threshold or verification.find_threshold(model_name, distance_metric)
+        target_threshold = threshold or verification.find_threshold(
+            model_name, distance_metric
+        )
         target_thresholds.append(target_threshold)
 
     target_embeddings = np.array(target_embeddings)  # (M, D)
@@ -570,7 +589,9 @@ def find_batched(
         "source_h": np.array([region["h"] for region in source_regions]),
     }
 
-    distances = verification.find_distance(embeddings, target_embeddings, distance_metric)  # (M, N)
+    distances = verification.find_distance(
+        embeddings, target_embeddings, distance_metric
+    )  # (M, N)
     distances[:, ~valid_mask] = np.inf
 
     resp_obj = []
@@ -596,11 +617,14 @@ def find_batched(
         filtered_data = {key: value[mask] for key, value in result_data.items()}
 
         sorted_indices = np.argsort(filtered_data["distance"])
-        sorted_data = {key: value[sorted_indices] for key, value in filtered_data.items()}
+        sorted_data = {
+            key: value[sorted_indices] for key, value in filtered_data.items()
+        }
 
         num_results = len(sorted_data["distance"])
         result_dicts = [
-            {key: sorted_data[key][i] for key in sorted_data} for i in range(num_results)
+            {key: sorted_data[key][i] for key in sorted_data}
+            for i in range(num_results)
         ]
         resp_obj.append(result_dicts)
     return resp_obj

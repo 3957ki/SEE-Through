@@ -166,7 +166,9 @@ def verify(
 
 
 def analyze(
-    img_path: Union[str, np.ndarray, IO[bytes], List[str], List[np.ndarray], List[IO[bytes]]],
+    img_path: Union[
+        str, np.ndarray, IO[bytes], List[str], List[np.ndarray], List[IO[bytes]]
+    ],
     actions: Union[tuple, list] = ("emotion", "age", "gender", "race"),
     enforce_detection: bool = True,
     detector_backend: str = "opencv",
@@ -376,7 +378,9 @@ def find(
 
 
 def represent(
-    img_path: Union[str, np.ndarray, IO[bytes], Sequence[Union[str, np.ndarray, IO[bytes]]]],
+    img_path: Union[
+        str, np.ndarray, IO[bytes], Sequence[Union[str, np.ndarray, IO[bytes]]]
+    ],
     model_name: str = "VGG-Face",
     enforce_detection: bool = True,
     detector_backend: str = "opencv",
@@ -642,5 +646,7 @@ def detectFace(
     extracted_face = None
     if len(face_objs) > 0:
         extracted_face = face_objs[0]["face"]
-        extracted_face = preprocessing.resize_image(img=extracted_face, target_size=target_size)
+        extracted_face = preprocessing.resize_image(
+            img=extracted_face, target_size=target_size
+        )
     return extracted_face
