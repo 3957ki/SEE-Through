@@ -1,3 +1,4 @@
+import tableImage from "@/assets/table.png";
 import Ingredient from "@/interfaces/Ingredient";
 import { DragEvent } from "react";
 
@@ -65,17 +66,16 @@ function DraggableIngredient({ ingredient }: DraggableIngredientProps) {
 
 export default function Table({ outsideIngredients }: { outsideIngredients: Ingredient[] }) {
   return (
-    <div className="absolute bottom-0 right-0 w-2/5 h-1/3 flex items-center justify-center">
-      {/* Table background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/src/assets/table.jpg')",
-        }}
+    <div className="absolute bottom-0 right-0 w-2/5 h-1/3 overflow-hidden pointer-events-auto">
+      {/* Table image */}
+      <img
+        src={tableImage}
+        alt="Table surface"
+        className="absolute bottom-0 left-0 h-full w-auto min-w-full object-cover object-left"
       />
 
       {/* Ingredients container */}
-      <div className="relative w-full h-full flex flex-wrap justify-center items-center gap-4 p-8">
+      <div className="absolute inset-0 flex flex-wrap justify-center items-center gap-4 p-4">
         {outsideIngredients.map((ingredient) => (
           <DraggableIngredient key={ingredient.ingredient_id} ingredient={ingredient} />
         ))}
