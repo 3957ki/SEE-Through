@@ -14,7 +14,7 @@ import type { MealPlanResponse } from "@/interfaces/Meal";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import {
   BsArrowClockwise,
   BsCalendarEvent,
@@ -87,7 +87,7 @@ function MealItem({
 }: {
   name: string;
   feedback: "like" | "dislike" | null;
-  setFeedbackMap: React.Dispatch<React.SetStateAction<Record<string, "like" | "dislike" | null>>>;
+  setFeedbackMap: Dispatch<SetStateAction<Record<string, "like" | "dislike" | null>>>;
   memberId: string;
 }) {
   const handleLike = async () => {
@@ -169,7 +169,7 @@ function MealSection({
   onRefresh: (mealId: string) => void;
   isRefreshing: boolean;
   feedbackMap: Record<string, "like" | "dislike" | null>;
-  setFeedbackMap: React.Dispatch<React.SetStateAction<Record<string, "like" | "dislike" | null>>>;
+  setFeedbackMap: Dispatch<SetStateAction<Record<string, "like" | "dislike" | null>>>;
   memberId: string;
 }) {
   return (

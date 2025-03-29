@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 
 interface PinModalProps {
   correctPin: string;
@@ -6,7 +6,7 @@ interface PinModalProps {
   onClose?: () => void;
 }
 
-const PinModal: React.FC<PinModalProps> = ({ correctPin, onSuccess, onClose }) => {
+const PinModal: FC<PinModalProps> = ({ correctPin, onSuccess, onClose }) => {
   const [pin, setPin] = useState<string>("");
 
   // Handle number button click

@@ -274,7 +274,8 @@ function WebcamView() {
       }
       disconnectLocalServer();
     };
-  }, []); // Remove dependencies that cause re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Dependencies handled via refs
 
   if (error) {
     return (
