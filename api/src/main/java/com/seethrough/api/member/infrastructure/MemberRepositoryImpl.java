@@ -80,4 +80,15 @@ public class MemberRepositoryImpl implements MemberRepository {
 
 		return result;
 	}
+
+	@Override
+	public List<Member> findAllMembers() {
+		log.debug("[Repository] findAllMembers 호출");
+
+		List<Member> result = memberJpaRepository.findAll();
+
+		log.debug("[Repository] 구성원 수: {}", result.size());
+
+		return result;
+	}
 }

@@ -133,6 +133,22 @@ public class Member {
 		this.diseases = diseases;
 	}
 
+	public void calculateAge() {
+		if (birth == null)
+			return;
+
+		LocalDate today = LocalDate.now();
+
+		int age = today.getYear() - birth.getYear();
+
+		if ((today.getMonthValue() < birth.getMonthValue()) ||
+			(today.getMonthValue() == birth.getMonthValue() && today.getDayOfMonth() < birth.getDayOfMonth())
+		)
+			age--;
+
+		this.age = age;
+	}
+
 	public void delete() {
 		validateDeletion();
 		this.deletedAt = LocalDateTime.now();
@@ -154,14 +170,6 @@ public class Member {
 		this.dislikedFoods.removeAll(dislikedFoods);
 	}
 
-	public void addAllergies(Set<String> allergies) {
-		this.allergies.addAll(allergies);
-	}
-
-	public void removeAllergies(Set<String> allergies) {
-		this.allergies.removeAll(allergies);
-	}
-
 	public void changeMonitoring() {
 		this.isMonitored = !this.isMonitored;
 	}
@@ -170,21 +178,5 @@ public class Member {
 		if (this.deletedAt != null) {
 			throw new IllegalStateException("이미 삭제된 회원입니다.");
 		}
-	}
-
-	private void calculateAge() {
-		if (birth == null)
-			return;
-
-		LocalDate today = LocalDate.now();
-
-		int age = today.getYear() - birth.getYear();
-
-		if ((today.getMonthValue() < birth.getMonthValue()) ||
-			(today.getMonthValue() == birth.getMonthValue() && today.getDayOfMonth() < birth.getDayOfMonth())
-		)
-			age--;
-
-		this.age = age;
 	}
 }
