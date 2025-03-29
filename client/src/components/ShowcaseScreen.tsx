@@ -94,7 +94,7 @@ function ShowcaseScreen() {
           <Fridge
             handleDrop={handleDrop}
             insideIngredients={insideIngredients}
-            removeIngredient={takeoutIngredient}
+            ingredientOnClick={takeoutIngredient}
           >
             <div
               className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50"

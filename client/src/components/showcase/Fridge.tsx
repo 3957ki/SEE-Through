@@ -5,10 +5,10 @@ interface FridgeProps {
   children?: ReactNode;
   handleDrop: (e: DragEvent<HTMLDivElement>) => void;
   insideIngredients: Ingredient[];
-  removeIngredient: (ingredient: Ingredient) => void;
+  ingredientOnClick: (ingredient: Ingredient) => void;
 }
 
-function Fridge({ children, handleDrop, insideIngredients, removeIngredient }: FridgeProps) {
+function Fridge({ children, handleDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
 
   // Grid layout constants
@@ -141,7 +141,7 @@ function Fridge({ children, handleDrop, insideIngredients, removeIngredient }: F
               {insideIngredients.map((item) => (
                 <div
                   key={`${item.ingredient_id}`}
-                  onClick={() => removeIngredient(item)}
+                  onClick={() => ingredientOnClick(item)}
                   style={{
                     width: `${GRID_CELL_WIDTH}px`,
                     height: `${GRID_CELL_HEIGHT}px`,
