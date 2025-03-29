@@ -29,4 +29,36 @@ public class SliceRequestDto {
 		Sort.Direction direction = Sort.Direction.fromString(sortDirection);
 		return PageRequest.of(page - 1, size, Sort.by(direction, sortBy));
 	}
+
+	public Pageable toPageableForNative() {
+		Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+		String snakeSortBy = camelToSnake(sortBy);
+		return PageRequest.of(page - 1, size, Sort.by(direction, snakeSortBy));
+	}
+
+	private String camelToSnake(String str) {
+		// 빈 문자열이나 null 체크
+		if (str == null || str.isEmpty()) {
+			return str;
+		}
+
+		StringBuilder result = new StringBuilder();
+		// 첫 번째 문자는 그대로 추가
+		result.append(Character.toLowerCase(str.charAt(0)));
+
+		// 두 번째 문자부터 대문자를 언더스코어와 소문자로 변환
+		for (int i = 1; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			if (Character.isUpperCase(ch)) {
+				result.append('_');
+				result.append(Character.toLowerCase(ch));
+			}
+			else {
+				result.append(ch);
+			}
+		}
+
+		return result.toString();
+	}
 }

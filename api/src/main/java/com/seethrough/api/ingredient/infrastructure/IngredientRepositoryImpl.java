@@ -29,7 +29,23 @@ public class IngredientRepositoryImpl implements IngredientRepository {
 	public Slice<Ingredient> findIngredients(Pageable pageable) {
 		log.debug("[Repository] findIngredients 호출: page={}, size={}, sort={}", pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
-		Slice<Ingredient> entities = ingredientJpaRepository.findAllBy(pageable);
+		Slice<Ingredient> entities = ingredientJpaRepository.findAll(pageable);
+
+		log.debug("[Repository] 조회된 식재료 수: {}, 남은 데이터 여부: {}", entities.getNumberOfElements(), entities.hasNext());
+
+		if (!entities.getContent().isEmpty()) {
+			log.debug("[Repository] 첫 번째 식재료 상세 정보:{}", entities.getContent().get(0));
+		}
+
+		return entities;
+	}
+
+	@Override
+	public Slice<Ingredient> findIngredientsOrderedByPreference(UUID memberId, Pageable pageable) {
+		log.debug("[Repository] findIngredients 호출: memberId={}, page={}, size={}, sort={}", memberId, pageable.getPageNumber(),
+			pageable.getPageSize(), pageable.getSort());
+
+		Slice<Ingredient> entities = ingredientJpaRepository.findAllByCustomOrder(memberId, pageable);
 
 		log.debug("[Repository] 조회된 식재료 수: {}, 남은 데이터 여부: {}", entities.getNumberOfElements(), entities.hasNext());
 
