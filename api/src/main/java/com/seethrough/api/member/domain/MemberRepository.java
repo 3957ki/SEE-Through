@@ -21,4 +21,6 @@ public interface MemberRepository {
 	List<Member> findMembersByLastLoginAtAfter(LocalDateTime date);
 
 	List<Member> findAllMembers();
+
+	Integer findMaxNewMemberNumber();
 }
