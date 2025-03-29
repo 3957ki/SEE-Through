@@ -16,7 +16,6 @@ import sys
 from contextlib import asynccontextmanager
 import traceback
 
-
 # 로그 설정
 logger = logging.getLogger("face_api")
 logger.setLevel(logging.DEBUG)
@@ -73,7 +72,7 @@ def save_image(face_region, temp_file_path, user_image_path):
 
 
 # 얼굴 인식 API
-@vision_router.websocket("/find_faces/")
+@vision_router.websocket("/find-faces")
 async def websocket_find_faces(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -214,7 +213,6 @@ async def websocket_find_faces(websocket: WebSocket):
 
                         result = [{"identity": user_id}]
 
-                logger.info(f"응답 결과: {result}")
                 await websocket.send_json({"result": result, "is_new": is_new})
 
             except Exception as e:
@@ -227,7 +225,7 @@ async def websocket_find_faces(websocket: WebSocket):
 
 
 # 사용자 얼굴 이미지 Get
-@vision_router.get("/get_faces/")
+@vision_router.get("/get-faces")
 async def get_faces(user_id: str):
     # 사용자 이미지 경로 설정
     user_image_path = os.path.join(db_path, f"{user_id}.jpg")

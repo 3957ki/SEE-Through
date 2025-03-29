@@ -108,6 +108,10 @@ def find(
         anti_spoofing=anti_spoofing,
     )
 
+    # 인식된 얼굴이 없을 때
+    if len(source_objs) == 0:
+        return []
+
     # Should we have no representations bailout
     if len(representations) == 0:
         if not silent:

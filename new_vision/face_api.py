@@ -84,7 +84,7 @@ def save_db_image(temp_file_path, db_image_path):
 
 
 # 얼굴 인식 API
-@vision_router.websocket("/find_faces/")
+@vision_router.websocket("/find-faces")
 async def websocket_find_faces(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -242,7 +242,7 @@ async def websocket_find_faces(websocket: WebSocket):
 
 
 # 사용자 얼굴 이미지 Get
-@vision_router.get("/get_faces/")
+@vision_router.get("/get-faces")
 async def get_faces(user_id: str):
     # 사용자 이미지 경로 설정
     user_image_path = os.path.join(profile_path, f"{user_id}.jpg")

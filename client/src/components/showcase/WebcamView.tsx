@@ -1,18 +1,13 @@
-import { createAndGetMember, getMembers } from "@/api/members";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useMembers } from "@/contexts/MembersContext";
-import FaceDetectionResult from "@/interfaces/FaceRecognitionResult";
-import {
-  disconnectLocalServer,
-  isLocalServerConnected,
-  offLocalServerMessage,
-  onLocalServerMessage,
-  sendToLocalServer,
-} from "@/services/websocketService";
+import { disconnectLocalServer } from "@/services/websocketService";
+import { BoundingBox, FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
 
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
+const SMALL_FACE_CUT = 20000;
+const LARGE_FACE_CUT = 40000;
 
 function WebcamView() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -23,6 +18,7 @@ function WebcamView() {
 
   // 웹캠 관련 에러 메시지
   const [error, setError] = useState<string | null>(null);
+  const [isMediaPipeReady, setIsMediaPipeReady] = useState<boolean>(false);
 
   // 멤버 관련 상태
   const { setMembers } = useMembers();
@@ -37,6 +33,196 @@ function WebcamView() {
   const isProcessingRef = useRef<boolean>(false);
   const processingTimeoutRef = useRef<number | null>(null);
   const connectionCheckIntervalRef = useRef<number | null>(null);
+
+  // mediapipe 관련
+  const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null);
+  const requestRef = useRef<number>(0);
+  const prevBoundingBoxRef = useRef<BoundingBox | null>(null);
+
+  // 현재 얼굴 레벨
+  const [faceLevel, setFaceLevel] = useState<{ level: number; cut: number }>({
+    level: 0,
+    cut: SMALL_FACE_CUT,
+  });
+  const faceLevelRef = useRef<{ level: number; cut: number }>({
+    level: 0,
+    cut: SMALL_FACE_CUT,
+  });
+  const updateFaceLevel = (newLevel: { level: number; cut: number }) => {
+    faceLevelRef.current = newLevel;
+    setFaceLevel(newLevel);
+  };
+
+  // 얼굴 레벨 변경에 따른 Ref
+  const level1LogIntervalRef = useRef<number | null>(null);
+  const hasLoggedLevel2Ref = useRef(false);
+
+  // IOU 계산 함수
+  const calculateIOU = (boxA: BoundingBox, boxB: BoundingBox): number => {
+    const xA = Math.max(boxA.originX, boxB.originX);
+    const yA = Math.max(boxA.originY, boxB.originY);
+    const xB = Math.min(boxA.originX + boxA.width, boxB.originX + boxB.width);
+    const yB = Math.min(boxA.originY + boxA.height, boxB.originY + boxB.height);
+
+    const interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+    const boxAArea = boxA.width * boxA.height;
+    const boxBArea = boxB.width * boxB.height;
+
+    return interArea / (boxAArea + boxBArea - interArea);
+  };
+
+  // 얼굴 레벨 상태 변경 시 로직
+  const handleFaceLevelChange = (newLevel: number) => {
+    // 레벨 0: 로그, 타이머 정리, 2 로그 상태 초기화
+    if (newLevel === 0) {
+      console.log("[레벨 0] 얼굴 없음");
+
+      if (level1LogIntervalRef.current) {
+        clearInterval(level1LogIntervalRef.current);
+        level1LogIntervalRef.current = null;
+      }
+      hasLoggedLevel2Ref.current = false;
+    }
+
+    // 레벨 1: interval 로 주기적 로그, 2 로그 상태 초기화
+    else if (newLevel === 1) {
+      if (!level1LogIntervalRef.current) {
+        console.log("[레벨 1] 얼굴이 작게 인식됨 (첫 시작)");
+        level1LogIntervalRef.current = window.setInterval(() => {
+          console.log("[레벨 1] 얼굴이 작게 인식됨 (지속)");
+        }, 1000);
+      }
+      hasLoggedLevel2Ref.current = false;
+    }
+
+    // 레벨 2: 로그는 딱 한 번만 출력, 타이머 정리
+    else if (newLevel === 2) {
+      if (!hasLoggedLevel2Ref.current) {
+        console.log("[레벨 2] 얼굴이 충분히 큼");
+        hasLoggedLevel2Ref.current = true;
+      }
+
+      if (level1LogIntervalRef.current) {
+        clearInterval(level1LogIntervalRef.current);
+        level1LogIntervalRef.current = null;
+      }
+    }
+  };
+
+  // 웹캠 인식 시작
+  useEffect(() => {
+    const detectLoop = async () => {
+      try {
+        if (!faceDetector || !videoRef.current || !overlayCanvasRef.current) {
+          requestRef.current = requestAnimationFrame(detectLoop);
+          return;
+        }
+
+        // 미디어파이프 인식 결과
+        const detections = faceDetector.detectForVideo(videoRef.current, performance.now());
+
+        let currentBox: BoundingBox | null = null;
+        let iouText = "";
+        // 현재 상태를 지역 변수로 가져오기
+        const currentLevel = faceLevelRef.current.level;
+        const currentCut = currentLevel === 1 ? LARGE_FACE_CUT : SMALL_FACE_CUT;
+        let nextFaceLevel = faceLevel;
+
+        // 인식된 얼굴이 있다면
+        if (detections.detections.length > 0) {
+          const largestDetection = detections.detections.reduce((largest, current) => {
+            const largestBox = largest.boundingBox;
+            const currentBox = current.boundingBox;
+            if (!largestBox || !currentBox) return largest;
+            const largestArea = largestBox.width * largestBox.height;
+            const currentArea = currentBox.width * currentBox.height;
+            return currentArea > largestArea ? current : largest;
+          }, detections.detections[0]);
+
+          currentBox = largestDetection.boundingBox ?? null;
+
+          if (currentBox) {
+            const area = currentBox.width * currentBox.height;
+
+            // 동기적으로 cut 판단
+            if (area >= currentCut) {
+              nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
+            } else {
+              nextFaceLevel = { level: 1, cut: LARGE_FACE_CUT };
+            }
+          }
+
+          const prevBox = prevBoundingBoxRef.current;
+          if (currentBox && prevBox) {
+            const iou = calculateIOU(currentBox, prevBox);
+            iouText = `IOU: ${iou.toFixed(2)}`;
+
+            if (iou < 0.5) {
+              console.log("[IOU] 낮은 IOU 감지됨:", iou.toFixed(2));
+            }
+          }
+
+          prevBoundingBoxRef.current = currentBox;
+        } else {
+          nextFaceLevel = { level: 0, cut: SMALL_FACE_CUT };
+          prevBoundingBoxRef.current = null;
+        }
+
+        if (nextFaceLevel.level !== faceLevelRef.current.level) {
+          updateFaceLevel(nextFaceLevel);
+          handleFaceLevelChange(nextFaceLevel.level);
+        }
+
+        // 캔버스에 그리기
+        const ctx = overlayCanvasRef.current.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+          // 배경 비디오 프레임 그리기
+          if (videoRef.current) {
+            ctx.drawImage(videoRef.current, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+          }
+
+          // 얼굴 박스 및 IOU 텍스트 그리기
+          if (currentBox) {
+            const { originX, originY, width, height } = currentBox;
+
+            let boxColor = "#cccccc"; // 기본
+            if (nextFaceLevel.level === 1)
+              boxColor = "#ff0000"; // 빨강
+            else if (nextFaceLevel.level === 2) boxColor = "#00ff00"; // 초록
+
+            ctx.strokeStyle = boxColor;
+
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            ctx.strokeRect(originX, originY, width, height);
+
+            ctx.fillStyle = "rgba(0, 255, 0, 0.7)";
+            ctx.fillRect(originX, originY - 40, 120, 40);
+            ctx.fillStyle = "#000000";
+            ctx.font = "14px Arial";
+            ctx.fillText("얼굴 감지됨", originX + 5, originY - 25);
+            if (iouText) {
+              ctx.fillText(iouText, originX + 5, originY - 10);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[MediaPipe] Face detection error:", e);
+      }
+
+      requestRef.current = requestAnimationFrame(detectLoop);
+    };
+
+    requestRef.current = requestAnimationFrame(detectLoop);
+
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [faceDetector]);
 
   // Update refs when values change
   useEffect(() => {
@@ -59,6 +245,15 @@ function WebcamView() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // 비디오가 메타데이터를 로드했을 때 이벤트 리스너
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play().catch((err) => {
+              console.error("비디오 재생 실패:", err);
+              setError("비디오 재생 실패: " + err.message);
+            });
+          }
+        };
       }
 
       // Setup canvases
@@ -103,178 +298,210 @@ function WebcamView() {
     if (processingTimeoutRef.current) {
       window.clearTimeout(processingTimeoutRef.current);
     }
+    if (level1LogIntervalRef.current) {
+      clearInterval(level1LogIntervalRef.current);
+      level1LogIntervalRef.current = null;
+    }
     disconnectLocalServer();
   };
 
   useEffect(() => {
-    init();
+    const runInitAndLoad = async () => {
+      try {
+        await init(); // 먼저 웹캠 시작
+
+        // 최신 WASM 경로로 수정
+        const filesetResolver = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        const detector = await FaceDetector.createFromOptions(filesetResolver, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+        });
+
+        setFaceDetector(detector);
+        setIsMediaPipeReady(true);
+
+        console.log("[MediaPipe] Face detector loaded successfully");
+      } catch (err) {
+        console.error("[MediaPipe] Setup error:", err);
+        setError("MediaPipe 설정 오류: " + (err as Error).message);
+      }
+    };
+
+    runInitAndLoad();
     return cleanup;
   }, []);
 
-  useEffect(() => {
-    async function handleFaceRecognition(result: FaceDetectionResult) {
-      // Clear the processing timeout since we got a response
-      if (processingTimeoutRef.current) {
-        window.clearTimeout(processingTimeoutRef.current);
-        processingTimeoutRef.current = null;
-      }
+  // useEffect(() => {
+  // async function handleFaceRecognition(result: FaceDetectionResult) {
+  //   // Clear the processing timeout since we got a response
+  //   if (processingTimeoutRef.current) {
+  //     window.clearTimeout(processingTimeoutRef.current);
+  //     processingTimeoutRef.current = null;
+  //   }
 
-      console.log("[WebSocket] Received face recognition response:", new Date().toISOString());
-      console.log("[Face Detection] Result:", result);
+  //   console.log("[WebSocket] Received face recognition response:", new Date().toISOString());
+  //   console.log("[Face Detection] Result:", result);
 
-      // Draw the frame that was processed
-      if (lastProcessedFrameRef.current && videoCanvasRef.current) {
-        const ctx = videoCanvasRef.current.getContext("2d");
-        if (ctx) {
-          // Clear and put the new frame data directly
-          ctx.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
-          ctx.putImageData(lastProcessedFrameRef.current, 0, 0);
+  //   // Draw the frame that was processed
+  //   if (lastProcessedFrameRef.current && videoCanvasRef.current) {
+  //     const ctx = videoCanvasRef.current.getContext("2d");
+  //     if (ctx) {
+  //       // Clear and put the new frame data directly
+  //       ctx.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  //       ctx.putImageData(lastProcessedFrameRef.current, 0, 0);
 
-          // Draw face box if face detected
-          if (result.result && result.result.length > 0) {
-            const { identity: memberId } = result.result[0];
-            console.log("[Face Detection] Detected member:", memberId);
+  //       // Draw face box if face detected
+  //       if (result.result && result.result.length > 0) {
+  //         const { identity: memberId } = result.result[0];
+  //         console.log("[Face Detection] Detected member:", memberId);
 
-            // 현재 멤버랑 다른 경우에만 업데이트하기
-            if (currentMemberRef.current?.member_id !== memberId) {
-              (async () => {
-                try {
-                  // 1. Create new member
-                  const newMember = await createAndGetMember({
-                    member_id: memberId,
-                    age: 0,
-                    image_path: "null",
-                  });
+  //         // 현재 멤버랑 다른 경우에만 업데이트하기
+  //         if (currentMemberRef.current?.member_id !== memberId) {
+  //           (async () => {
+  //             try {
+  //               // 1. Create new member
+  //               const newMember = await createAndGetMember({
+  //                 member_id: memberId,
+  //                 age: 0,
+  //                 image_path: "null",
+  //               });
 
-                  // 2. Update members
-                  const members = await getMembers();
-                  setMembers(members);
+  //               // 2. Update members
+  //               const members = await getMembers();
+  //               setMembers(members);
 
-                  // 3. Set current member
-                  setCurrentMember(newMember);
-                } catch (error) {
-                  console.error("Failed to create or update member:", error);
-                }
-              })();
-            }
+  //               // 3. Set current member
+  //               setCurrentMember(newMember);
+  //             } catch (error) {
+  //               console.error("Failed to create or update member:", error);
+  //             }
+  //           })();
+  //         }
 
-            // 박스 그리기
-            const face = result.result[0];
-            console.log("[Face Box] Drawing box with coordinates:", {
-              x: face.source_x,
-              y: face.source_y,
-              w: face.source_w,
-              h: face.source_h,
-            });
+  //         // 박스 그리기
+  //         const face = result.result[0];
+  //         console.log("[Face Box] Drawing box with coordinates:", {
+  //           x: face.source_x,
+  //           y: face.source_y,
+  //           w: face.source_w,
+  //           h: face.source_h,
+  //         });
 
-            if (
-              typeof face.source_x === "number" &&
-              typeof face.source_y === "number" &&
-              typeof face.source_w === "number" &&
-              typeof face.source_h === "number"
-            ) {
-              // Draw face box with yellow color
-              ctx.beginPath();
-              ctx.strokeStyle = "#ffff00"; // Yellow box
-              ctx.lineWidth = 3;
-              ctx.strokeRect(face.source_x, face.source_y, face.source_w, face.source_h);
+  //         if (
+  //           typeof face.source_x === "number" &&
+  //           typeof face.source_y === "number" &&
+  //           typeof face.source_w === "number" &&
+  //           typeof face.source_h === "number"
+  //         ) {
+  //           // Draw face box with yellow color
+  //           ctx.beginPath();
+  //           ctx.strokeStyle = "#ffff00"; // Yellow box
+  //           ctx.lineWidth = 3;
+  //           ctx.strokeRect(face.source_x, face.source_y, face.source_w, face.source_h);
 
-              console.log("[Face Box] Box drawn successfully");
-            }
-          }
+  //           console.log("[Face Box] Box drawn successfully");
+  //         }
+  //       }
 
-          // Clear the stored frame after drawing
-          lastProcessedFrameRef.current = null;
+  //       // Clear the stored frame after drawing
+  //       lastProcessedFrameRef.current = null;
 
-          // Mark processing as complete and send next frame
-          isProcessingRef.current = false;
-          sendNextFrame();
-        }
-      } else {
-        // If no frame was stored, just send next frame
-        isProcessingRef.current = false;
-        sendNextFrame();
-      }
-    }
+  //       // Mark processing as complete and send next frame
+  //       isProcessingRef.current = false;
+  //       sendNextFrame();
+  //     }
+  //   } else {
+  //     // If no frame was stored, just send next frame
+  //     isProcessingRef.current = false;
+  //     sendNextFrame();
+  //   }
+  // }
 
-    function sendNextFrame() {
-      // Don't send if already processing
-      if (isProcessingRef.current) {
-        console.log("[Frame] Skipping send - already processing");
-        return;
-      }
+  // function sendNextFrame() {
+  //   // Don't send if already processing
+  //   if (isProcessingRef.current) {
+  //     console.log("[Frame] Skipping send - already processing");
+  //     return;
+  //   }
 
-      // Don't send if not connected
-      if (!isLocalServerConnected()) {
-        console.log("[Frame] Skipping send - not connected");
-        return;
-      }
+  //   // Don't send if not connected
+  //   if (!isLocalServerConnected()) {
+  //     console.log("[Frame] Skipping send - not connected");
+  //     return;
+  //   }
 
-      const video = videoRef.current;
-      if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Create a temporary canvas for frame extraction
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = VIDEO_WIDTH;
-        tempCanvas.height = VIDEO_HEIGHT;
-        const tempCtx = tempCanvas.getContext("2d");
+  //   const video = videoRef.current;
+  //   if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+  //     // Create a temporary canvas for frame extraction
+  //     const tempCanvas = document.createElement("canvas");
+  //     tempCanvas.width = VIDEO_WIDTH;
+  //     tempCanvas.height = VIDEO_HEIGHT;
+  //     const tempCtx = tempCanvas.getContext("2d");
 
-        if (tempCtx) {
-          // Draw current video frame to temporary canvas
-          tempCtx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  //     if (tempCtx) {
+  //       // Draw current video frame to temporary canvas
+  //       tempCtx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
 
-          // Store the frame data as ImageData
-          lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  //       // Store the frame data as ImageData
+  //       lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
 
-          // Convert ImageData to base64 for sending
-          const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
+  //       // Convert ImageData to base64 for sending
+  //       const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
-          // Mark as processing and send frame
-          isProcessingRef.current = true;
+  //       // Mark as processing and send frame
+  //       isProcessingRef.current = true;
 
-          // Set a timeout to handle cases where we don't get a response
-          processingTimeoutRef.current = window.setTimeout(() => {
-            console.log(
-              "[WebSocket] Frame processing timeout, resetting state...",
-              new Date().toISOString()
-            );
-            isProcessingRef.current = false;
-            sendNextFrame();
-          }, 5000); // 5 second timeout
+  //       // Set a timeout to handle cases where we don't get a response
+  //       processingTimeoutRef.current = window.setTimeout(() => {
+  //         console.log(
+  //           "[WebSocket] Frame processing timeout, resetting state...",
+  //           new Date().toISOString()
+  //         );
+  //         isProcessingRef.current = false;
+  //         sendNextFrame();
+  //       }, 5000); // 5 second timeout
 
-          console.log("[WebSocket] Sending frame to server:", new Date().toISOString());
-          sendToLocalServer(frameData);
-        }
-      } else {
-        console.log("[Frame] Skipping send - video not ready");
-      }
-    }
+  //       console.log("[WebSocket] Sending frame to server:", new Date().toISOString());
+  //       sendToLocalServer({ image: frameData, level: 1, uuid: null });
+  //     }
+  //   } else {
+  //     console.log("[Frame] Skipping send - video not ready");
+  //   }
+  // }
 
-    // Function to check connection and start sending frames
-    const checkConnectionAndStart = () => {
-      if (isLocalServerConnected() && !isProcessingRef.current) {
-        sendNextFrame();
-      }
-    };
+  // // Function to check connection and start sending frames
+  // const checkConnectionAndStart = () => {
+  //   if (isLocalServerConnected() && !isProcessingRef.current) {
+  //     sendNextFrame();
+  //   }
+  // };
 
-    // Register WebSocket message handler
-    onLocalServerMessage(handleFaceRecognition);
+  // // Register WebSocket message handler
+  // onLocalServerMessage(handleFaceRecognition);
 
-    // Start checking for connection and periodically check
-    checkConnectionAndStart();
-    connectionCheckIntervalRef.current = window.setInterval(checkConnectionAndStart, 500);
+  // // Start checking for connection and periodically check
+  // checkConnectionAndStart();
+  // connectionCheckIntervalRef.current = window.setInterval(checkConnectionAndStart, 500);
 
-    // Cleanup
-    return () => {
-      offLocalServerMessage(handleFaceRecognition);
-      if (connectionCheckIntervalRef.current) {
-        window.clearInterval(connectionCheckIntervalRef.current);
-      }
-      if (processingTimeoutRef.current) {
-        window.clearTimeout(processingTimeoutRef.current);
-      }
-      disconnectLocalServer();
-    };
-  }, []); // Remove dependencies that cause re-renders
+  // Cleanup
+  //   return () => {
+  //     // offLocalServerMessage(handleFaceRecognition);
+  //     if (connectionCheckIntervalRef.current) {
+  //       window.clearInterval(connectionCheckIntervalRef.current);
+  //     }
+  //     if (processingTimeoutRef.current) {
+  //       window.clearTimeout(processingTimeoutRef.current);
+  //     }
+  //     disconnectLocalServer();
+  //   };
+  // }, []); // Remove dependencies that cause re-renders
 
   if (error) {
     return (

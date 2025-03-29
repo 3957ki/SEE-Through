@@ -105,17 +105,7 @@ def extract_faces(
 
     # in case of no face found
     if len(face_objs) == 0 and enforce_detection is True:
-        if img_name is not None:
-            raise ValueError(
-                f"Face could not be detected in {img_name}."
-                "Please confirm that the picture is a face photo "
-                "or consider to set enforce_detection param to False."
-            )
-        else:
-            raise ValueError(
-                "Face could not be detected. Please confirm that the picture is a face photo "
-                "or consider to set enforce_detection param to False."
-            )
+        return []
 
     if len(face_objs) == 0 and enforce_detection is False:
         face_objs = [DetectedFace(img=img, facial_area=base_region, confidence=0)]
