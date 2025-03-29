@@ -24,6 +24,7 @@ import com.seethrough.api.meal.exception.MealNotFoundException;
 import com.seethrough.api.meal.infrastructure.external.llm.LlmApiMealService;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealListRequest;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealRequest;
+import com.seethrough.api.meal.presentation.dto.request.CreateMealsForPeriodRequest;
 import com.seethrough.api.meal.presentation.dto.response.DailyMealResponse;
 import com.seethrough.api.meal.presentation.dto.response.MealDetailResponse;
 import com.seethrough.api.member.application.service.MemberService;
@@ -77,6 +78,27 @@ public class MealService {
 		saveMeals(memberIdObj, missingDateList);
 
 		return true;
+	}
+
+	@Transactional
+	public void createMealsForPeriod(String memberId, CreateMealsForPeriodRequest request) {
+		log.debug("[Service] createMealsForPeriod 호출");
+
+		UUID memberIdObj = memberService.checkMemberExists(memberId);
+
+		List<DailyMeal> dailyMealList = findDailyMeals(memberIdObj, request.getStartDate(), request.getEndDate());
+
+		List<LocalDate> missingDateList = findMissingDates(dailyMealList, request.getStartDate(), request.getEndDate());
+
+		if (missingDateList.isEmpty()) {
+			log.debug("[Service] 식단 생성 필요 없음");
+
+			return;
+		}
+
+		log.debug("[Service] 식단 생성 호출");
+
+		saveMeals(memberIdObj, missingDateList);
 	}
 
 	@Transactional
