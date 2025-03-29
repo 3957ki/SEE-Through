@@ -3,15 +3,22 @@ package com.seethrough.api.member.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.seethrough.api.alert.domain.Alert;
+import com.seethrough.api.meal.domain.Meal;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -97,6 +104,12 @@ public class Member {
 	@Column(name = "deleted_at", columnDefinition = "TIMESTAMP")
 	private LocalDateTime deletedAt;
 
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Meal> meals;
+
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Alert> alerts;
+
 	public void login(int age, String imagePath) {
 		if (!isRegistered) {
 			this.age = age;
@@ -151,6 +164,10 @@ public class Member {
 
 	public void delete() {
 		validateDeletion();
+
+		this.meals.clear();
+		this.alerts.clear();
+
 		this.deletedAt = LocalDateTime.now();
 	}
 

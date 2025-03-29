@@ -29,17 +29,17 @@ public class Alert {
 	@EmbeddedId
 	private AlertId alertId;
 
-	@MapsId("ingredientId")
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ingredient_id")
-	@ToString.Exclude
-	private Ingredient ingredient;
-
 	@MapsId("memberId")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	@ToString.Exclude
 	private Member member;
+
+	@MapsId("ingredientId")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ingredient_id")
+	@ToString.Exclude
+	private Ingredient ingredient;
 
 	@Column(name = "comment", columnDefinition = "TEXT", nullable = false)
 	private String comment;
