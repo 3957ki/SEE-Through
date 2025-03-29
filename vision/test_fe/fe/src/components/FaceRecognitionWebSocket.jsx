@@ -67,7 +67,7 @@ export default function FaceRecognition() {
       if (ws && ws.readyState === WebSocket.OPEN) {
         const payload = {
           image: base64Image,
-          level: 1,
+          level: 2,
           uuid: null, // 필요 시 uuid를 여기에 추가 가능
         };
         ws.send(JSON.stringify(payload));
