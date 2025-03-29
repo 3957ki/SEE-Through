@@ -3,17 +3,20 @@ package com.seethrough.api.meal.presentation;
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.seethrough.api.common.exception.ErrorResponse;
 import com.seethrough.api.meal.application.service.MealService;
+import com.seethrough.api.meal.presentation.dto.request.CreateMealsForPeriodRequest;
 import com.seethrough.api.meal.presentation.dto.response.DailyMealResponse;
 import com.seethrough.api.meal.presentation.dto.response.MealDetailResponse;
 
@@ -23,6 +26,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,5 +115,30 @@ public class MealController {
 		log.debug("[Controller] 특정 날짜의 식단 교체 응답: {}", response);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{memberId}/period")
+	@Operation(
+		summary = "원하는 기간의 식단 생성",
+		description = "원하는 기간의 식단을 생성합니다.<br>" +
+			"해당 구성원 ID에 매칭되는 구성원이 없는 경우 MemberNotFoundException이 발생합니다.<br><br>" +
+			"응답으로는 201 Created 상태 코드가 반환됩니다."
+	)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "원하는 기간의 식단 생성 성공"),
+		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
+			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+	})
+	public ResponseEntity<DailyMealResponse> createMealsForPeriod(
+		@PathVariable String memberId,
+		@Valid @RequestBody CreateMealsForPeriodRequest request
+	) {
+		log.info("[Controller - POST /api/meals/{memberId}] 원하는 기간의 식단 생성 요청: memberId={}, request={}", memberId, request);
+
+		mealService.createMealsForPeriod(memberId, request);
+
+		log.debug("[Controller] 원하는 기간의 식단 생성 성공");
+
+		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 }
