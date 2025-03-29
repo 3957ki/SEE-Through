@@ -51,5 +51,15 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.3"
+  },
+  "overrides": {
+    "@rollup/rollup-darwin-arm64": {
+      "os": [
+        "darwin"
+      ],
+      "cpu": [
+        "x64"
+      ]
+    }
   }
 }
