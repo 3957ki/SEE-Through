@@ -16,7 +16,6 @@ public class MealScheduler {
 	private final MealOrchestrationService mealOrchestrationService;
 
 	@Scheduled(cron = "0 0 4 * * Sun")
-	// @Scheduled(cron = "*/10 * * * * *")
 	public void scheduleMealGeneration() {
 		log.info("[Scheduler] 식단 자동 생성 스케줄러 실행");
 
