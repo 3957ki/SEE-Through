@@ -50,9 +50,14 @@ public class IngredientService {
 	private final LlmApiIngredientService llmApiIngredientService;
 
 	public SliceResponseDto<IngredientListResponse> getIngredientList(
-		Integer page, Integer size, String sortBy, String sortDirection
+		String memberId, Integer page, Integer size, String sortBy, String sortDirection
 	) {
 		log.debug("[Service] getIngredientList 호출");
+
+		UUID memberIdObj = null;
+		if (memberId != null && !memberId.isEmpty()) {
+			memberIdObj = memberService.checkMemberExists(memberId);
+		}
 
 		SliceRequestDto sliceRequestDto = SliceRequestDto.builder()
 			.page(page)
@@ -61,7 +66,9 @@ public class IngredientService {
 			.sortDirection(sortDirection)
 			.build();
 
-		Slice<Ingredient> ingredients = ingredientRepository.findIngredients(sliceRequestDto.toPageable());
+		Slice<Ingredient> ingredients = memberIdObj == null ?
+			ingredientRepository.findIngredients(sliceRequestDto.toPageable()) :
+			ingredientRepository.findIngredientsOrderedByPreference(memberIdObj, sliceRequestDto.toPageableForNative());
 
 		return SliceResponseDto.of(ingredients.map(ingredientDtoMapper::toListResponse));
 	}

@@ -43,10 +43,14 @@ public class IngredientController {
 	@Operation(
 		summary = "식재료 목록 조회",
 		description = "모든 식재료의 목록을 페이지네이션을 적용하여 반환합니다.<br>" +
+			"구성원 ID이 존재하는 경우, 선호 음식 → 중립 → 비선호 음식으로 정렬합니다.<br>" +
 			"기본적으로 생성일 기준 오름차순으로 정렬되며, 페이지당 최대 100명의 식재료 정보를 제공합니다.<br>" +
 			"정렬 기준과 방향을 변경할 수 있으며, 추가 페이지 존재 여부를 함께 반환합니다."
 	)
 	public ResponseEntity<SliceResponseDto<IngredientListResponse>> getIngredientList(
+		@Parameter(description = "구성원 ID")
+		@RequestParam(required = false) String memberId,
+
 		@Parameter(description = "조회할 페이지 번호 (1부터 시작)")
 		@RequestParam(defaultValue = "1") Integer page,
 
@@ -59,10 +63,10 @@ public class IngredientController {
 		@Parameter(description = "정렬 방향 (ASC: 오름차순, DESC: 내림차순)")
 		@RequestParam(defaultValue = "ASC") String sortDirection
 	) {
-		log.info("[Controller - GET /api/ingredients] 식재료 목록 조회 요청: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy,
-			sortDirection);
+		log.info("[Controller - GET /api/ingredients] 식재료 목록 조회 요청: memberId={}, page={}, size={}, sortBy={}, sortDirection={}",
+			memberId, page, size, sortBy, sortDirection);
 
-		SliceResponseDto<IngredientListResponse> responseList = ingredientService.getIngredientList(page, size, sortBy, sortDirection);
+		SliceResponseDto<IngredientListResponse> responseList = ingredientService.getIngredientList(memberId, page, size, sortBy, sortDirection);
 
 		if (!responseList.getContent().isEmpty()) {
 			log.debug("[Controller] 첫 번째 응답 상세 정보:{}", responseList.getContent().get(0));
