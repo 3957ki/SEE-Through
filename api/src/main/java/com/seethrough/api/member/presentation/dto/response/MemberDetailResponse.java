@@ -17,6 +17,8 @@ public class MemberDetailResponse {
 	private LocalDate birth;
 	private Integer age;
 	private String imagePath;
+	private String color;
+	private String fontSize;
 	private Set<String> preferredFoods;
 	private Set<String> dislikedFoods;
 	private Set<String> allergies;

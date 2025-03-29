@@ -26,6 +26,8 @@ public class MemberDtoMapper {
 			.birth(member.getBirth())
 			.age(member.getAge())
 			.imagePath(member.getImagePath())
+			.color(member.getColor())
+			.fontSize(member.getFontSize())
 			.preferredFoods(member.getPreferredFoods())
 			.dislikedFoods(member.getDislikedFoods())
 			.allergies(member.getAllergies())

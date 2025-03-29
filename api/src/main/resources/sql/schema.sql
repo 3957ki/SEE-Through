@@ -39,6 +39,8 @@ CREATE TABLE members
     birth             DATE,
     age               INTEGER     NOT NULL,
     image_path        TEXT        NOT NULL,
+    color             TEXT        NOT NULL DEFAULT 'bg-orange-400',
+    font_size         TEXT        NOT NULL DEFAULT 'text-sm',
     preferred_foods   JSONB       NOT NULL DEFAULT '[]'::JSONB,
     disliked_foods    JSONB       NOT NULL DEFAULT '[]'::JSONB,
     allergies         JSONB       NOT NULL DEFAULT '[]'::JSONB,

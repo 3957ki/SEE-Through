@@ -47,6 +47,14 @@ public class Member {
 	private String imagePath;
 
 	@Builder.Default
+	@Column(name = "color", columnDefinition = "TEXT", nullable = false)
+	private String color = "bg-orange-400";
+
+	@Builder.Default
+	@Column(name = "font_size", columnDefinition = "TEXT", nullable = false)
+	private String fontSize = "text-sm";
+
+	@Builder.Default
 	@Column(name = "preferred_foods", columnDefinition = "JSONB", nullable = false)
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Set<String> preferredFoods = new HashSet<>();
@@ -103,6 +111,8 @@ public class Member {
 	public void update(
 		String name,
 		LocalDate birth,
+		String color,
+		String fontSize,
 		Set<String> preferredFoods,
 		Set<String> dislikedFoods,
 		Set<String> allergies,
@@ -115,6 +125,8 @@ public class Member {
 		this.name = name;
 		this.birth = birth;
 		calculateAge();
+		this.color = color;
+		this.fontSize = fontSize;
 		this.preferredFoods = preferredFoods;
 		this.dislikedFoods = dislikedFoods;
 		this.allergies = allergies;

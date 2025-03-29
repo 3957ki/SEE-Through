@@ -25,6 +25,12 @@ public class UpdateMemberRequest {
 	@PastOrPresent(message = "생일은 현재 또는 과거 날짜여야 합니다")
 	private LocalDate birth;
 
+	@NotBlank(message = "색상은 필수 입력값입니다")
+	private String color;
+
+	@NotBlank(message = "폰트 크기는 필수 입력값입니다")
+	private String fontSize;
+
 	@NotNull
 	private Set<String> preferredFoods;
 

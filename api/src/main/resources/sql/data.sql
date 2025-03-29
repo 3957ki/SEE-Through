@@ -1,7 +1,9 @@
 -- 구성원 테이블 데이터
-INSERT INTO members (member_id, name, birth, age, image_path, preferred_foods, disliked_foods, allergies, diseases, is_registered, is_monitored,
+INSERT INTO members (member_id, name, birth, age, image_path, color, font_size, preferred_foods, disliked_foods, allergies, diseases, is_registered,
+                     is_monitored,
                      recognition_times)
 VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/mom.jpg',
+        'bg-orange-400', 'text-sm',
         '[
           "김치찌개",
           "비빔밥",
@@ -19,6 +21,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
         ]'::JSONB,
         TRUE, FALSE, 35),
        ('00000000-0000-0000-0000-000000000002', '아빠', '1982-01-01', 43, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/dad.jpg',
+        'bg-green-400', 'text-lg',
         '[
           "삼겹살",
           "냉면",
@@ -32,6 +35,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
         '[]'::JSONB,
         TRUE, TRUE, 28),
        ('00000000-0000-0000-0000-000000000003', '아들', '2010-01-01', 15, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/son.jpg',
+        'bg-orange-400', 'text-sm',
         '[
           "피자",
           "치킨",
@@ -49,6 +53,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
         ]'::JSONB,
         TRUE, TRUE, 17),
        ('00000000-0000-0000-0000-000000000004', '외부인1', NULL, 35, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/1.jpg',
+        'bg-orange-400', 'text-sm',
         '[
           "초밥",
           "스테이크",
@@ -64,6 +69,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
         '[]'::JSONB,
         FALSE, FALSE, 3),
        ('00000000-0000-0000-0000-000000000005', '외부인2', NULL, 28, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/2.jpg',
+        'bg-orange-400', 'text-sm',
         '[
           "마라탕",
           "카레",
@@ -77,6 +83,7 @@ VALUES ('00000000-0000-0000-0000-000000000001', '엄마', '1985-01-01', 40, 'htt
         '[]'::JSONB,
         FALSE, FALSE, 1),
        ('00000000-0000-0000-0000-000000000006', '탈퇴인1', NULL, 27, 'https://see-through002.s3.ap-northeast-2.amazonaws.com/member/3.jpg',
+        'bg-orange-400', 'text-sm',
         '[
           "치킨",
           "비빔밥"
