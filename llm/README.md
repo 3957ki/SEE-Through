@@ -35,3 +35,16 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --reload
 ```
 ---
+
+### 4. SQL 
+- 메뉴명 저장 table 쿼리
+```
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE menu_vectors (
+    menu_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    embedding VECTOR(1536) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```

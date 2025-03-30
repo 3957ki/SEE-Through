@@ -6,6 +6,10 @@ from app.core.config import OPENAI_API_KEY
 from typing import List
 import logging
 import uuid
+from typing import List, Tuple
+from datetime import datetime
+from app.utils.vectors import find_abnormal_menus, save_menu_vectors
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +64,7 @@ prompt_meal_plan = ChatPromptTemplate.from_template(
 - 알러지가 있는 재료는 사용하지 말아야 합니다.
 - 질병 정보에 따라 제한이 있는 음식은 피해야 합니다.
 - 하루 식단 내에서는 같은 음식 이름이나 유사한 구성(예: 김치볶음밥, 김치찌개 등)이 **절대 반복되지 않도록** 하세요.
+- 실제로 존재하지 않는 음식명, 조합이 이상하거나 단어가 섞인 말(예: '치즈볶음찜', '딸기된장찌개')은 생성하지 마세요.
 
 또한, 각 식단이 추천된 이유를 `reason` 필드에 작성하세요.
 [작성 조건]
@@ -153,3 +158,90 @@ async def generate_single_meal(
     except Exception as e:
         logger.error(f"LLM 응답 파싱 오류: {e}")
         return MealScheduleSchema(menu=[], reason=""), []
+
+
+async def generate_single_meal_with_rag(
+    description,
+    schedule,
+    preferred_foods,
+    disliked_foods,
+    allergies,
+    diseases,
+    birthday,
+    available_ingredients,
+    db,
+    max_retries: int = 3,
+) -> Tuple[MealScheduleSchema, List[str]]:
+    serving_time = schedule.serving_time
+    serving_date = schedule.serving_date
+
+    try:
+        serving_mmdd = "-".join(serving_date.split("-")[1:])
+        birth_mmdd = birthday.strftime("%m-%d") if birthday else None
+        is_birthday = birth_mmdd == serving_mmdd
+    except Exception as e:
+        logger.error(f"🎂 생일/날짜 비교 오류: {e}")
+        is_birthday = False
+
+    birthday_clause = (
+        "오늘은 사용자의 생일입니다. 따라서 식단은 생일을 축하하는 특별한 메뉴로 구성되어야 하며, reason에는 반드시 생일 관련 문구가 포함되어야 합니다."
+        if is_birthday
+        else "오늘은 생일이 아닙니다."
+    )
+
+    last_valid_result = None
+
+    for attempt in range(1, max_retries + 1):
+        menu_code = str(uuid.uuid4())
+
+        prompt = prompt_meal_plan.format(
+            description=description,
+            available_ingredients=", ".join(available_ingredients),
+            preferred_foods=", ".join(preferred_foods) if preferred_foods else "없음",
+            disliked_foods=", ".join(disliked_foods) if disliked_foods else "없음",
+            allergies=", ".join(allergies) if allergies else "없음",
+            diseases=", ".join(diseases) if diseases else "없음",
+            birthday=birthday.strftime("%Y-%m-%d") if birthday else "없음",
+            serving_time=serving_time,
+            serving_date=serving_date,
+            birthday_clause=birthday_clause,
+            menu_code=menu_code,
+            format_instructions=parser.get_format_instructions(),
+        )
+
+        try:
+            logger.info(
+                f"[RAG 시도 {attempt}/{max_retries}] 날짜: {serving_date}, 시간: {serving_time}"
+            )
+            start_time = time.perf_counter()
+
+            response = await llm.ainvoke(prompt)
+
+            end_time = time.perf_counter()
+            duration = round(end_time - start_time, 2)
+            logger.info(f"🕒 RAG 응답 시간: {duration}초")
+
+            parsed = parser.parse(response.content)
+            meal = parsed.schedules[0]
+            required_ingredients = parsed.required_ingredients
+
+            abnormal_menus = find_abnormal_menus(meal.menu, db)
+            if not abnormal_menus:
+                save_menu_vectors(meal.menu, db)
+                return meal, required_ingredients
+            else:
+                logger.warning(
+                    f"🚫 이상한 음식명 발견 (시도 {attempt}): {abnormal_menus}"
+                )
+                last_valid_result = (meal, required_ingredients)
+
+        except Exception as e:
+            logger.error(f"[RAG] 응답 실패 (시도 {attempt}): {e}")
+
+    if last_valid_result:
+        logger.warning("⚠️ 최대 재시도 도달, 마지막 식단 결과를 사용합니다.")
+        meal, required_ingredients = last_valid_result
+        save_menu_vectors(meal.menu, db)
+        return meal, required_ingredients
+
+    return MealScheduleSchema(menu=[], reason="식단 생성 실패"), []
