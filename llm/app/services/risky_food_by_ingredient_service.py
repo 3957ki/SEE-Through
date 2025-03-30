@@ -3,9 +3,10 @@ from app.core.langchain_risky_check_by_ingredient import analyze_risky_food_for_
 from app.db.models import Member
 import json
 
+
 def check_risky_food_by_ingredient(ingredient: str, db: Session):
     members = db.query(Member).all()
-    
+
     if not members:
         return None
 
@@ -13,7 +14,7 @@ def check_risky_food_by_ingredient(ingredient: str, db: Session):
     health_data = {
         member.member_id: {
             "allergies": member.allergies or [],
-            "diseases": member.diseases or []
+            "diseases": member.diseases or [],
         }
         for member in members
         if member.allergies or member.diseases
@@ -21,10 +22,9 @@ def check_risky_food_by_ingredient(ingredient: str, db: Session):
 
     health_data_json = json.dumps(health_data, ensure_ascii=False)
 
-    risky_members = analyze_risky_food_for_members(ingredient, health_data_json)
+    risky_members = analyze_risky_food_for_members(ingredient, health_data_json, db)
 
     return {
         "ingredient": ingredient,
         "risky_members": risky_members if risky_members else [],
     }
-

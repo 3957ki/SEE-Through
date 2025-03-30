@@ -2,12 +2,20 @@ from langchain_openai import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
 from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+from app.core.embedding import get_embedding
+from app.db.models import DiseaseVector
 from app.core.config import OPENAI_API_KEY
+import numpy as np
+from numpy.linalg import norm
+import json
+import logging
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, openai_api_key=OPENAI_API_KEY)
+logger = logging.getLogger(__name__)
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5, openai_api_key=OPENAI_API_KEY)
 
 
-# JSON 응답을 강제할 스키마 정의
 class RiskyMemberSchema(BaseModel):
     member_id: str = Field(..., description="위험 가능성이 있는 사용자 ID")
     comment: str = Field(..., description="사용자에게 제공할 경고 메시지")
@@ -18,11 +26,10 @@ class RiskyFoodResult(BaseModel):
     risky_members: list[RiskyMemberSchema]
 
 
-# LangChain OutputParser 적용 (LLM의 응답을 JSON으로 변환)
 parser = PydanticOutputParser(pydantic_object=RiskyFoodResult)
 fixing_parser = OutputFixingParser.from_llm(parser=parser, llm=llm)
 
-# LLM 프롬프트 템플릿 정의
+
 prompt_risky = ChatPromptTemplate.from_template(
     """
 당신은 식품 안전 및 의료 전문가 역할을 수행하는 AI입니다.
@@ -45,6 +52,10 @@ prompt_risky = ChatPromptTemplate.from_template(
 
 4. 사용자의 건강 정보에 **명시되지 않은 질병이나 알레르기**를 근거로 판단하지 마세요.
 
+5. 🔒 반드시 아래 JSON 응답 형식을 **정확하게 따르세요**:
+   - `ingredient` 필드는 절대 생략하지 말고, 분석한 재료명을 그대로 명시하세요.
+   - `risky_members`는 위험한 사용자만 포함하고, 위험하지 않다면 빈 리스트로 주세요.
+
 ---
 
 🧾 확인할 음식 재료:
@@ -53,27 +64,101 @@ prompt_risky = ChatPromptTemplate.from_template(
 👥 사용자별 건강 정보 (JSON):
 {health_data}
 
+📚 참고할 수 있는 의료 정보:
+{medical_info}
+
 📄 응답 형식 (JSON):
 {format_instructions}
 """
 )
 
 
-def analyze_risky_food_for_members(ingredient: str, health_data: str) -> list:
-    formatted_prompt = prompt_risky.format(
-        ingredient=ingredient,
-        health_data=health_data,
-        format_instructions=parser.get_format_instructions(),
-    )
-
-    # ✅ 프롬프트 출력 (print 또는 logger 사용)
-    print("📤 LLM 요청 프롬프트:\n", formatted_prompt)
-
-    response = llm.invoke(formatted_prompt)
-
+def retrieve_medical_info(
+    ingredient: str, diseases: list[str], db: Session, top_k=5
+) -> str:
     try:
-        parsed_data = fixing_parser.parse(response.content)
-        return parsed_data.risky_members
+        embedding = get_embedding(ingredient)
+
+        candidates = (
+            db.query(DiseaseVector).filter(DiseaseVector.disease.in_(diseases)).all()
+        )
+
+        scored = []
+        for item in candidates:
+            vec = np.array(item.embedding)
+            similarity = np.dot(embedding, vec) / (norm(embedding) * norm(vec))
+            scored.append((similarity, item))
+
+        top_related = sorted(scored, key=lambda x: -x[0])[:top_k]
+        medical_info = {
+            f"📌 '{v.ingredient}'은(는) '{v.disease}' 환자에게 주의가 필요합니다: {v.reason}"
+            for _, v in top_related
+        }
+
+        return "\n".join(sorted(medical_info)) if medical_info else "없음"
     except Exception as e:
-        print(f"LLM JSON 파싱 오류: {e}")
+        logger.error(f"❌ 벡터 기반 질병 정보 조회 오류: {e}")
+        return "없음"
+
+
+def analyze_risky_food_for_members(
+    ingredient: str, health_data: str, db: Session
+) -> list:
+    try:
+        logger.info("🔍 분석 시작 - ingredient: %s", ingredient)
+
+        # JSON 파싱 및 질병 정보 추출
+        parsed_health = json.loads(health_data)
+        logger.info("🧾 입력된 사용자 건강 정보: %s", parsed_health)
+
+        diseases = set()
+        for member_id, info in parsed_health.items():
+            member_diseases = [
+                d for d in info.get("diseases", []) if d.lower() != "string"
+            ]
+            diseases.update(member_diseases)
+
+            logger.info(
+                "👤 사용자 ID: %s | 알레르기: %s | 질병: %s",
+                member_id,
+                info.get("allergies", []),
+                member_diseases,
+            )
+
+        logger.info("📌 전체 사용자로부터 추출된 질병 목록: %s", list(diseases))
+
+        # 벡터 기반 의료 정보 검색
+        medical_info = retrieve_medical_info(ingredient, list(diseases), db)
+        logger.info("📚 프롬프트에 포함된 의료 정보:\n%s", medical_info)
+
+        # 프롬프트 구성
+        formatted_prompt = prompt_risky.format(
+            ingredient=ingredient,
+            health_data=health_data,
+            medical_info=medical_info,
+            format_instructions=parser.get_format_instructions(),
+        )
+        logger.debug("📤 LLM 최종 프롬프트:\n%s", formatted_prompt)
+
+        # LLM 호출
+        response = llm.invoke(formatted_prompt)
+        logger.info("📥 LLM 응답 수신 완료 - 응답 길이: %d", len(response.content))
+        logger.debug("📥 LLM 응답 내용:\n%s", response.content)
+
+        # 파싱 시도
+        parsed = fixing_parser.parse(response.content)
+
+        if not isinstance(parsed.risky_members, list):
+            logger.warning(
+                "⚠️ 'risky_members'가 리스트가 아님: %s", parsed.risky_members
+            )
+            return []
+
+        logger.info("✅ 분석 완료 - 위험 사용자 수: %d", len(parsed.risky_members))
+        return parsed.risky_members
+
+    except Exception as e:
+        logger.error("❌ analyze_risky_food_for_members 오류: %s", e)
+        if "response" in locals():
+            logger.debug("📥 오류 발생 시 LLM 응답:\n%s", response.content)
         return []
