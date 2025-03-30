@@ -91,4 +91,15 @@ public class MemberRepositoryImpl implements MemberRepository {
 
 		return result;
 	}
+
+	@Override
+	public Integer findMaxNewMemberNumber() {
+		log.debug("[Repository] findMaxNewMemberNumber 호출");
+
+		Integer result = memberJpaRepository.findMaxUserNumber();
+
+		log.debug("[Repository] 신규 구성원 숫자: {}", result);
+
+		return result;
+	}
 }
