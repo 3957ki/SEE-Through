@@ -15,9 +15,10 @@ def check_risky_food_by_ingredient(ingredient: str, db: Session):
         member.member_id: {
             "allergies": member.allergies or [],
             "diseases": member.diseases or [],
+            "age": member.age,  # 반드시 정수형으로 포함
         }
         for member in members
-        if member.allergies or member.diseases
+        if member.allergies or member.diseases or member.age is not None
     }
 
     health_data_json = json.dumps(health_data, ensure_ascii=False)
