@@ -71,3 +71,14 @@ class MenuVector(Base):
     name = Column(String, nullable=False)
     embedding = Column(Vector(1536), nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+
+
+class DiseaseVector(Base):
+    __tablename__ = "disease_vectors"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    disease = Column(String, nullable=False)
+    ingredient = Column(String, nullable=False)
+    reason = Column(String, nullable=False)
+    embedding = Column(Vector(1536), nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
