@@ -124,15 +124,60 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
       {selectedMeals.map(({ title, data, color }) => (
         <div
           key={data.meal_id}
-          className={`relative w-full rounded-2xl shadow-md min-h-[160px] text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
+          className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
           onClick={() => onShowMealPage?.()}
         >
           {/* AI 생성 중 오버레이 */}
           {refreshingMealId === data.meal_id && (
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20">
-              <div className="w-36 h-36 bg-white/95 rounded-xl shadow flex flex-col items-center justify-center">
-                <div className="text-4xl mb-2">🤖</div>
-                <p className="text-sm font-semibold text-gray-800">식단 새로고침 중</p>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
+              <div
+                className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="sambyul-spinner relative w-10 h-10">
+                  <div className="dot top-dot"></div>
+                  <div className="dot left-dot"></div>
+                  <div className="dot right-dot"></div>
+                </div>
+                <p className="text-base font-medium text-gray-800">AI 생성중</p>
+
+                <style>
+                  {`
+          .sambyul-spinner {
+            animation: spinSambyul 1s linear infinite;
+          }
+
+          .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #1f2937; /* Tailwind의 text-gray-800 */
+            border-radius: 9999px;
+          }
+
+          .top-dot {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+          }
+
+          .left-dot {
+            bottom: 10%;
+            left: 10%;
+          }
+
+          .right-dot {
+            bottom: 10%;
+            right: 10%;
+          }
+
+          @keyframes spinSambyul {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+                </style>
               </div>
             </div>
           )}
