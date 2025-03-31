@@ -36,7 +36,7 @@ function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
   );
 }
 
-function Meals() {
+function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
   const { currentMember } = useCurrentMember();
   const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
   const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
@@ -122,7 +122,11 @@ function Meals() {
   return (
     <div className="mt-2 px-4 flex gap-4">
       {selectedMeals.map(({ title, data, color }) => (
-        <div key={data.meal_id} className={`rounded-xl p-4 w-full text-white relative ${color}`}>
+        <div
+          key={data.meal_id}
+          className={`rounded-xl p-4 w-full text-white relative cursor-pointer ${color}`}
+          onClick={() => onShowMealPage?.()}
+        >
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-medium text-lg">{title}</h3>
             <button
@@ -158,16 +162,16 @@ function GreetingSection({ name }: { name?: string }) {
 }
 
 // Today's Diet Recommendation Section
-function TodaysDietSection() {
+function TodaysDietSection({ onShowMealPage }: { onShowMealPage?: () => void }) {
   return (
     <Section>
       <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>오늘의 추천 식단</SectionTitle>
-      <Meals />
+      <Meals onShowMealPage={onShowMealPage} />
     </Section>
   );
 }
 
-function MainPage() {
+function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
   const { currentMember } = useCurrentMember();
   const { ingredients } = useIngredientsContext();
 
@@ -180,7 +184,7 @@ function MainPage() {
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
-      <TodaysDietSection />
+      <TodaysDietSection onShowMealPage={onShowMealPage} />
       <SectionDivider />
       <IngredientsSection ingredients={ingredients} />
     </div>
