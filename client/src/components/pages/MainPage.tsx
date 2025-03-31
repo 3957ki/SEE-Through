@@ -151,26 +151,94 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
       {selectedMeals.map(({ title, data, color }) => (
         <div
           key={data.meal_id}
-          className={`rounded-xl p-4 w-full text-white relative cursor-pointer ${color}`}
+          className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
           onClick={() => onShowMealPage?.()}
         >
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-lg">{title}</h3>
+          {/* AI 생성 중 오버레이 */}
+          {refreshingMealId === data.meal_id && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
+              <div
+                className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="sambyul-spinner relative w-10 h-10">
+                  <div className="dot top-dot"></div>
+                  <div className="dot left-dot"></div>
+                  <div className="dot right-dot"></div>
+                </div>
+                <p className="text-base font-medium text-gray-800">AI 생성중</p>
+
+                <style>
+                  {`
+          .sambyul-spinner {
+            animation: spinSambyul 1s linear infinite;
+          }
+
+          .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #1f2937; /* Tailwind의 text-gray-800 */
+            border-radius: 9999px;
+          }
+
+          .top-dot {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+          }
+
+          .left-dot {
+            bottom: 10%;
+            left: 10%;
+          }
+
+          .right-dot {
+            bottom: 10%;
+            right: 10%;
+          }
+
+          @keyframes spinSambyul {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+                </style>
+              </div>
+            </div>
+          )}
+
+          {/* 제목 + 버튼 */}
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-base font-semibold">{title}</h3>
             <button
-              type="button"
-              onClick={() => handleRefresh(data.meal_id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRefresh(data.meal_id);
+              }}
               disabled={refreshingMealId === data.meal_id}
+              className="flex items-center gap-1"
             >
-              <BsArrowClockwise
-                className={`w-5 h-5 ${refreshingMealId === data.meal_id ? "animate-spin text-white/70" : "text-white"}`}
-              />
+              {refreshingMealId === data.meal_id ? (
+                <div className="flex items-center gap-1 text-white/80 animate-pulse">
+                  <BsArrowClockwise className="w-4 h-4 animate-spin" />
+                  <span className="text-xs">AI 생성 중...</span>
+                </div>
+              ) : (
+                <BsArrowClockwise className="w-5 h-5 text-white" />
+              )}
             </button>
           </div>
-          {data.menu.map((item, index) => (
-            <p key={index} className="text-sm">
-              {item}
-            </p>
-          ))}
+
+          {/* 메뉴 목록 */}
+          <ul className="space-y-1 text-sm">
+            {data.menu.map((item, index) => (
+              <li key={index} className="truncate">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </div>
