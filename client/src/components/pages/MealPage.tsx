@@ -263,7 +263,7 @@ export default function MealPage() {
   return (
     <div className="pb-24 relative">
       <div className="flex justify-between items-center px-4 mt-4">
-        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캔리더</SectionTitle>
+        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
         <button
           onClick={handleGoToday}
           className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
