@@ -124,25 +124,49 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
       {selectedMeals.map(({ title, data, color }) => (
         <div
           key={data.meal_id}
-          className={`rounded-xl p-4 w-full text-white relative cursor-pointer ${color}`}
+          className={`relative w-full rounded-2xl shadow-md min-h-[160px] text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
           onClick={() => onShowMealPage?.()}
         >
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-lg">{title}</h3>
+          {/* AI 생성 중 오버레이 */}
+          {refreshingMealId === data.meal_id && (
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20">
+              <div className="w-36 h-36 bg-white/95 rounded-xl shadow flex flex-col items-center justify-center">
+                <div className="text-4xl mb-2">🤖</div>
+                <p className="text-sm font-semibold text-gray-800">식단 새로고침 중</p>
+              </div>
+            </div>
+          )}
+
+          {/* 제목 + 버튼 */}
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-base font-semibold">{title}</h3>
             <button
-              onClick={() => handleRefresh(data.meal_id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRefresh(data.meal_id);
+              }}
               disabled={refreshingMealId === data.meal_id}
+              className="flex items-center gap-1"
             >
-              <BsArrowClockwise
-                className={`w-5 h-5 ${refreshingMealId === data.meal_id ? "animate-spin text-white/70" : "text-white"}`}
-              />
+              {refreshingMealId === data.meal_id ? (
+                <div className="flex items-center gap-1 text-white/80 animate-pulse">
+                  <BsArrowClockwise className="w-4 h-4 animate-spin" />
+                  <span className="text-xs">AI 생성 중...</span>
+                </div>
+              ) : (
+                <BsArrowClockwise className="w-5 h-5 text-white" />
+              )}
             </button>
           </div>
-          {data.menu.map((item, index) => (
-            <p key={index} className="text-sm">
-              {item}
-            </p>
-          ))}
+
+          {/* 메뉴 목록 */}
+          <ul className="space-y-1 text-sm">
+            {data.menu.map((item, index) => (
+              <li key={index} className="truncate">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </div>
