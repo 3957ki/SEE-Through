@@ -1,27 +1,19 @@
 import { getMealsByDate, refreshMeal } from "@/api/meals";
+import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useDialog } from "@/contexts/DialogContext";
 import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
-function IngredientBlock({ ingredient }: { ingredient: Ingredient }) {
-  return (
-    <div className="aspect-square bg-white rounded-md overflow-hidden border">
-      <img
-        src={ingredient.image_path ?? "/placeholder.svg"}
-        alt={ingredient.name ?? "Ingredient image"}
-        className="w-full h-full object-cover"
-      />
-    </div>
-  );
-}
-
 function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
   const { loadMoreIngredients, hasMore, isLoading } = useIngredientsContext();
+  const { showDialog, hideDialog } = useDialog();
   const observer = useRef<IntersectionObserver | null>(null);
+
   const lastIngredientRef = useCallback(
     (node: HTMLDivElement) => {
       if (isLoading) return;
@@ -38,6 +30,10 @@ function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
     [isLoading, hasMore, loadMoreIngredients]
   );
 
+  const handleIngredientClick = (ingredient: Ingredient) => {
+    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
+  };
+
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
@@ -48,7 +44,16 @@ function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
               key={ingredient.ingredient_id}
               ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
             >
-              <IngredientBlock ingredient={ingredient} />
+              <div
+                className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleIngredientClick(ingredient)}
+              >
+                <img
+                  src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
+                  alt={ingredient.name ?? "Ingredient image"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           ))}
         </div>
