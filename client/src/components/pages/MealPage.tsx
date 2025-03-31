@@ -211,6 +211,27 @@ export default function MealPage() {
   const [meals, setMeals] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
+  const [isFeedbackInitialized, setIsFeedbackInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!currentMember || isFeedbackInitialized) return;
+
+    const preferred = currentMember.preferred_foods || [];
+    const disliked = currentMember.disliked_foods || [];
+
+    const initialFeedback: Record<string, "like" | "dislike"> = {};
+
+    preferred.forEach((food) => {
+      initialFeedback[food] = "like";
+    });
+
+    disliked.forEach((food) => {
+      initialFeedback[food] = "dislike";
+    });
+
+    setFeedbackMap(initialFeedback);
+    setIsFeedbackInitialized(true);
+  }, [currentMember, isFeedbackInitialized]);
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
@@ -263,7 +284,7 @@ export default function MealPage() {
   return (
     <div className="pb-24 relative">
       <div className="flex justify-between items-center px-4 mt-4">
-        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캔리더</SectionTitle>
+        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
         <button
           onClick={handleGoToday}
           className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
