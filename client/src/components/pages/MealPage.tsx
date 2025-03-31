@@ -211,6 +211,27 @@ export default function MealPage() {
   const [meals, setMeals] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
+  const [isFeedbackInitialized, setIsFeedbackInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!currentMember || isFeedbackInitialized) return;
+
+    const preferred = currentMember.preferred_foods || [];
+    const disliked = currentMember.disliked_foods || [];
+
+    const initialFeedback: Record<string, "like" | "dislike"> = {};
+
+    preferred.forEach((food) => {
+      initialFeedback[food] = "like";
+    });
+
+    disliked.forEach((food) => {
+      initialFeedback[food] = "dislike";
+    });
+
+    setFeedbackMap(initialFeedback);
+    setIsFeedbackInitialized(true);
+  }, [currentMember, isFeedbackInitialized]);
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
