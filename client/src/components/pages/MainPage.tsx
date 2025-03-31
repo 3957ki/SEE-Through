@@ -4,7 +4,7 @@ import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
 function IngredientBlock({ ingredient }: { ingredient: Ingredient }) {
@@ -20,17 +20,39 @@ function IngredientBlock({ ingredient }: { ingredient: Ingredient }) {
 }
 
 function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
-  const MAX_COUNT = 10;
+  const { loadMoreIngredients, hasMore, isLoading } = useIngredientsContext();
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastIngredientRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreIngredients();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore, loadMoreIngredients]
+  );
 
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {ingredients.slice(0, MAX_COUNT).map((ingredient) => (
-            <IngredientBlock key={ingredient.ingredient_id} ingredient={ingredient} />
+          {ingredients.map((ingredient, index) => (
+            <div
+              key={ingredient.ingredient_id}
+              ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
+            >
+              <IngredientBlock ingredient={ingredient} />
+            </div>
           ))}
         </div>
+        {isLoading && <div className="text-center py-4">로딩 중...</div>}
       </SectionContent>
     </Section>
   );
@@ -126,6 +148,7 @@ function Meals() {
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-medium text-lg">{title}</h3>
             <button
+              type="button"
               onClick={() => handleRefresh(data.meal_id)}
               disabled={refreshingMealId === data.meal_id}
             >

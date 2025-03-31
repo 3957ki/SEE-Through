@@ -2,8 +2,12 @@ import Ingredient from "@/interfaces/Ingredient";
 import { createContext, use } from "react";
 
 export interface IngredientsContextType {
-  ingredients: Ingredient[]; // API로 받아온 재료 + 드래그로 추가된 재료
+  ingredients: Ingredient[];
   setIngredients: (ingredients: Ingredient[]) => void;
+  loadMoreIngredients: () => Promise<void>;
+  hasMore: boolean;
+  isLoading: boolean;
+  page: number;
 }
 
 export const IngredientsContext = createContext<IngredientsContextType | null>(null);
