@@ -1,36 +1,63 @@
 import { getMealsByDate, refreshMeal } from "@/api/meals";
+import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useDialog } from "@/contexts/DialogContext";
 import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
-function IngredientBlock({ ingredient }: { ingredient: Ingredient }) {
-  return (
-    <div className="aspect-square bg-white rounded-md overflow-hidden border">
-      <img
-        src={ingredient.image_path ?? "/placeholder.svg"}
-        alt={ingredient.name ?? "Ingredient image"}
-        className="w-full h-full object-cover"
-      />
-    </div>
-  );
-}
-
 function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
-  const MAX_COUNT = 10;
+  const { loadMoreIngredients, hasMore, isLoading } = useIngredientsContext();
+  const { showDialog, hideDialog } = useDialog();
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastIngredientRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreIngredients();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore, loadMoreIngredients]
+  );
+
+  const handleIngredientClick = (ingredient: Ingredient) => {
+    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
+  };
 
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {ingredients.slice(0, MAX_COUNT).map((ingredient) => (
-            <IngredientBlock key={ingredient.ingredient_id} ingredient={ingredient} />
+          {ingredients.map((ingredient, index) => (
+            <div
+              key={ingredient.ingredient_id}
+              ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
+            >
+              <div
+                className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleIngredientClick(ingredient)}
+              >
+                <img
+                  src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
+                  alt={ingredient.name ?? "Ingredient image"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
           ))}
         </div>
+        {isLoading && <div className="text-center py-4">로딩 중...</div>}
       </SectionContent>
     </Section>
   );
@@ -130,6 +157,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-medium text-lg">{title}</h3>
             <button
+              type="button"
               onClick={() => handleRefresh(data.meal_id)}
               disabled={refreshingMealId === data.meal_id}
             >
