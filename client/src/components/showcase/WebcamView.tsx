@@ -13,8 +13,8 @@ import { useEffect, useRef, useState } from "react";
 
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
-const SMALL_FACE_CUT = 20000;
-const LARGE_FACE_CUT = 40000;
+const SMALL_FACE_CUT = 10000;
+const LARGE_FACE_CUT = 25000;
 const IOU_CUT = 0.5;
 
 function WebcamView() {
@@ -37,7 +37,6 @@ function WebcamView() {
   const setCurrentMemberRef = useRef(setCurrentMember);
 
   // Frame sending control
-  const isProcessingRef = useRef<boolean>(false);
   const processingTimeoutRef = useRef<number | null>(null);
   const connectionCheckIntervalRef = useRef<number | null>(null);
 
@@ -49,20 +48,16 @@ function WebcamView() {
   // 현재 얼굴 레벨
   const [faceLevel, setFaceLevel] = useState<{ level: number; cut: number }>({
     level: 0,
-    cut: SMALL_FACE_CUT,
+    cut: LARGE_FACE_CUT,
   });
   const faceLevelRef = useRef<{ level: number; cut: number }>({
     level: 0,
-    cut: SMALL_FACE_CUT,
+    cut: LARGE_FACE_CUT,
   });
   const updateFaceLevel = (newLevel: { level: number; cut: number }) => {
     faceLevelRef.current = newLevel;
     setFaceLevel(newLevel);
   };
-
-  // 얼굴 레벨 변경에 따른 Ref
-  const level1LogIntervalRef = useRef<number | null>(null);
-  const hasLoggedLevel2Ref = useRef(false);
 
   // IOU 계산 함수
   const calculateIOU = (boxA: BoundingBox, boxB: BoundingBox): number => {
@@ -84,47 +79,31 @@ function WebcamView() {
     if (newLevel === 0) {
       console.log("[레벨 0] 얼굴 없음");
       setCurrentMemberRef.current(null);
-
-      if (level1LogIntervalRef.current) {
-        clearInterval(level1LogIntervalRef.current);
-        level1LogIntervalRef.current = null;
-      }
-      hasLoggedLevel2Ref.current = false;
     }
 
-    // 레벨 1: interval 로 주기적 로그, 2 로그 상태 초기화
+    // 레벨 1: 주기적 요청, 2 로그 상태 초기화
     else if (newLevel === 1) {
-      if (!level1LogIntervalRef.current && isLocalServerConnected()) {
+      if (isLocalServerConnected()) {
         console.log("[레벨 1] 요청 시작");
-
-        const uuid = currentMemberRef.current?.member_id ?? null;
-        sendNextFrame(newLevel, uuid);
+        sendNextFrame(newLevel, null);
       }
-      hasLoggedLevel2Ref.current = false;
     }
 
     // 레벨 2: 로그는 딱 한 번만 출력, 타이머 정리 (IOU 값에 따른 요청 분기로 수정 예정)
     else if (newLevel === 2) {
-      if (!hasLoggedLevel2Ref.current) {
+      if (isLocalServerConnected()) {
         console.log("[레벨 2] 요청");
-
-        // const uuid = currentMemberRef.current?.member_id ?? null;
-        // sendNextFrame(newLevel, uuid);
-        hasLoggedLevel2Ref.current = true;
-      }
-
-      if (level1LogIntervalRef.current) {
-        clearInterval(level1LogIntervalRef.current);
-        level1LogIntervalRef.current = null;
+        sendNextFrame(newLevel, null);
       }
     }
   };
 
   // 이미지 요청 보내는 함수
   function sendNextFrame(level: number, uuid: any) {
-    if (isProcessingRef.current || !isLocalServerConnected() || faceLevelRef.current.level !== 1) {
+    if (!isLocalServerConnected()) {
       return;
     }
+    console.log(`이미지 요청 보내기 level: ${level} uuid: ${uuid}`);
 
     const video = videoRef.current;
     if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -138,11 +117,8 @@ function WebcamView() {
         lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
         const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
-        isProcessingRef.current = true;
-
         processingTimeoutRef.current = window.setTimeout(() => {
           console.warn("[WebSocket] 응답 타임아웃");
-          isProcessingRef.current = false;
           sendNextFrame(level, uuid); // timeout 후에도 계속 시도
         }, 5000);
 
@@ -167,7 +143,7 @@ function WebcamView() {
         let iouText = "";
         // 현재 상태를 지역 변수로 가져오기
         const currentLevel = faceLevelRef.current.level;
-        const currentCut = currentLevel === 1 ? LARGE_FACE_CUT : SMALL_FACE_CUT;
+        const currentCut = currentLevel === 2 ? SMALL_FACE_CUT : LARGE_FACE_CUT;
         let nextFaceLevel = faceLevel;
 
         // 인식된 얼굴이 있다면
@@ -201,12 +177,13 @@ function WebcamView() {
 
             if (iou < IOU_CUT) {
               console.log("[IOU] 낮은 IOU 감지됨:", iou.toFixed(2));
+              sendNextFrame(nextFaceLevel.level, currentMemberRef.current?.member_id);
             }
           }
 
           prevBoundingBoxRef.current = currentBox;
         } else {
-          nextFaceLevel = { level: 0, cut: SMALL_FACE_CUT };
+          nextFaceLevel = { level: 0, cut: LARGE_FACE_CUT };
           prevBoundingBoxRef.current = null;
         }
 
@@ -340,10 +317,6 @@ function WebcamView() {
     if (processingTimeoutRef.current) {
       window.clearTimeout(processingTimeoutRef.current);
     }
-    if (level1LogIntervalRef.current) {
-      clearInterval(level1LogIntervalRef.current);
-      level1LogIntervalRef.current = null;
-    }
     disconnectLocalServer();
   };
 
@@ -396,8 +369,12 @@ function WebcamView() {
       const detected = result?.result?.[0];
       const memberId = detected?.identity;
 
+      if (!memberId) {
+        // 인식 결과 없음 → 무조건 null 처리
+        setCurrentMemberRef.current(null);
+      }
       // 새로운 아이디라면
-      if (isNew) {
+      else if (isNew) {
         try {
           // 신규 등록하기
           const newMember = await createAndGetMember({
@@ -414,7 +391,7 @@ function WebcamView() {
       }
 
       // 새로운 아이디가 아닌데 현재 멤버 아이디와 다를 때
-      else if (memberId && currentMemberRef.current?.member_id !== memberId) {
+      else if (memberId !== currentMemberRef.current?.member_id) {
         try {
           // 인식된 멤버가 있을때 가져오기만 함
           const newMember = await getMember(memberId);
@@ -432,8 +409,6 @@ function WebcamView() {
       ) {
         setCurrentMemberRef.current(null);
       }
-
-      isProcessingRef.current = false;
 
       // 레벨 1이라면 다음 프레임 0.1초 후 전송
       if (shouldContinue && faceLevelRef.current.level === 1) {
@@ -631,6 +606,11 @@ function WebcamView() {
 
   return (
     <div className="bg-black rounded-md w-full h-full flex items-center justify-center relative">
+      {/* 상태 정보 표시 */}
+      {/* <div className="absolute top-2 left-2 z-10 bg-white bg-opacity-80 text-black p-2 rounded text-sm shadow">
+        <p>🧠 얼굴 레벨: {faceLevel.level}</p>
+        <p>🙍‍♂️ 멤버 ID: {currentMember?.member_id ?? "없음"}</p>
+      </div> */}
       <video
         ref={videoRef}
         autoPlay

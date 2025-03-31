@@ -97,7 +97,7 @@ async def websocket_find_faces(websocket: WebSocket):
                 "uuid"
             )  # 프론트에 현재 UUID가 있다면 IOU 크기가 작을 때 UUID를 담을 것, 현재 UUID가 없다면 담으면 안됨
 
-            logger.info("얼굴 인식 요청")
+            logger.info(f"얼굴 인식 요청 level: {level} uuid: {provided_uuid}")
 
             # Base64 디코딩하여 이미지 변환
             image_data = base64.b64decode(image_base64)
@@ -229,7 +229,6 @@ async def websocket_find_faces(websocket: WebSocket):
 
                         result = [{"identity": user_id}]
 
-                logger.info(f"응답 결과: {result}")
                 await websocket.send_json({"result": result, "is_new": is_new})
 
             except Exception as e:
