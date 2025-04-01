@@ -5,7 +5,7 @@ import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
 function IngredientsContent() {
@@ -25,6 +25,11 @@ function IngredientsContent() {
     hasMore = result.hasMore;
     isLoading = result.isLoading;
     isFetchingNextPage = result.isFetchingNextPage;
+
+    // Handle error from the hook
+    if (result.isError && result.error) {
+      setError(result.error instanceof Error ? result.error : new Error(String(result.error)));
+    }
   } catch (err) {
     console.error("Error in useCurrentMemberIngredients:", err);
     setError(err instanceof Error ? err : new Error(String(err)));
@@ -33,6 +38,13 @@ function IngredientsContent() {
   const { showDialog, hideDialog } = useDialog();
   const observer = useRef<IntersectionObserver | null>(null);
   const lastIngredientRef = useRef<HTMLDivElement | null>(null);
+
+  // Use callback for stable identity
+  const internalLoadMore = useCallback(() => {
+    if (!isFetchingNextPage && hasMore) {
+      loadMoreIngredients();
+    }
+  }, [isFetchingNextPage, hasMore, loadMoreIngredients]);
 
   // Set up intersection observer for infinite scrolling
   useEffect(() => {
@@ -47,7 +59,7 @@ function IngredientsContent() {
     observer.current = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting && hasMore && !isFetchingNextPage) {
-          loadMoreIngredients();
+          internalLoadMore();
         }
       },
       { threshold: 0.1 }
@@ -62,7 +74,7 @@ function IngredientsContent() {
     return () => {
       observer.current?.disconnect();
     };
-  }, [isLoading, hasMore, isFetchingNextPage, loadMoreIngredients, ingredients.length]);
+  }, [isLoading, hasMore, isFetchingNextPage, internalLoadMore]);
 
   const handleIngredientClick = (ingredient: Ingredient) => {
     showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);

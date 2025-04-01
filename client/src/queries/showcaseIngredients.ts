@@ -1,5 +1,6 @@
-import { getIngredient } from "@/api/ingredients";
+import { deleteIngredient, getIngredient, insertIngredient } from "@/api/ingredients";
 import { Ingredient } from "@/interfaces/Ingredient";
+import { useCurrentMember } from "@/queries/members";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
@@ -35,7 +36,7 @@ export const showcaseIngredientsKeys = createQueryKeys("showcaseIngredients", {
   all: null,
   ingredient: (ingredientId: string) => ({
     queryKey: [ingredientId],
-    queryFn: () => getIngredient(ingredientId).catch(() => null),
+    queryFn: () => getIngredient(ingredientId),
   }),
 });
 
@@ -43,7 +44,7 @@ export function useShowcaseIngredients() {
   const queries = useQueries({
     queries: showcaseIngredients.map((ingredient) => ({
       queryKey: showcaseIngredientsKeys.ingredient(ingredient.ingredient_id).queryKey,
-      queryFn: () => getIngredient(ingredient.ingredient_id).catch(() => null),
+      queryFn: () => getIngredient(ingredient.ingredient_id),
       retry: false,
     })),
   });
@@ -65,10 +66,16 @@ export function useShowcaseIngredients() {
 
 export function useOptimisticIngredientUpdates() {
   const queryClient = useQueryClient();
+  const { data: currentMember } = useCurrentMember();
 
   const addIngredient = useMutation({
     mutationFn: async (ingredient: Ingredient) => {
-      // Replace this with actual API call if needed
+      if (!currentMember) {
+        throw new Error("No current member found");
+      }
+
+      // Make the actual API call to insert the ingredient, including showcase ingredients
+      await insertIngredient(ingredient, currentMember.member_id);
       return ingredient;
     },
     onMutate: async (ingredient) => {
@@ -107,7 +114,12 @@ export function useOptimisticIngredientUpdates() {
 
   const removeIngredient = useMutation({
     mutationFn: async (ingredientId: string) => {
-      // Replace this with actual API call if needed
+      if (!currentMember) {
+        throw new Error("No current member found");
+      }
+
+      // Make the actual API call to delete the ingredient, including showcase ingredients
+      await deleteIngredient(ingredientId, currentMember.member_id);
       return ingredientId;
     },
     onMutate: async (ingredientId) => {

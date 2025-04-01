@@ -6,6 +6,7 @@ import type { MealPlanResponse } from "@/interfaces/Meal";
 import Member, { DetailedMember } from "@/interfaces/Member";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export const members = createQueryKeys("members", {
   list: {
@@ -110,30 +111,57 @@ export function useMutateRefreshMeal(date: Date) {
 export function useCurrentMemberIngredients() {
   const { currentMemberId } = useCurrentMemberId();
 
-  if (!currentMemberId || currentMemberId === "") {
-    throw new Error("Current member ID is not set or is empty");
-  }
-
+  // Call hooks unconditionally
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: members.current._ctx.detail(currentMemberId)._ctx.ingredients.queryKey,
-      queryFn: ({ pageParam = 1 }) => getIngredients(currentMemberId, pageParam),
+      queryKey: members.current._ctx.detail(currentMemberId || "")._ctx.ingredients.queryKey,
+      queryFn: async ({ pageParam = 1 }) => {
+        // Throw an error early if there's no member ID
+        if (!currentMemberId || currentMemberId === "") {
+          throw new Error("Current member ID is not set or is empty");
+        }
+
+        try {
+          const result = await getIngredients(currentMemberId, pageParam);
+          return result;
+        } catch (err) {
+          console.error("Error fetching ingredients:", err);
+          throw err;
+        }
+      },
       getNextPageParam: (lastPage) => {
-        if (!lastPage.sliceInfo.hasNext) return undefined;
-        return lastPage.sliceInfo.currentPage + 1;
+        // Safely handle possible undefined values
+        if (!lastPage || !lastPage.sliceInfo) return undefined;
+        return lastPage.sliceInfo.hasNext ? lastPage.sliceInfo.currentPage + 1 : undefined;
       },
       initialPageParam: 1,
+      // Disable the query if there's no member ID
+      enabled: !!currentMemberId && currentMemberId !== "",
     });
 
   // Process the pages into a flat array of ingredients
-  const ingredients = data?.pages.flatMap((page) => page.content) || [];
+  const ingredients = data?.pages.flatMap((page) => page?.content || []) || [];
 
-  // Function to load more ingredients
-  const loadMoreIngredients = () => {
+  // Stable function reference for loadMoreIngredients (called unconditionally)
+  const loadMoreIngredients = useCallback(() => {
+    if (!currentMemberId || currentMemberId === "") return;
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
-  };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, currentMemberId]);
+
+  // Return appropriate data based on whether we have a member ID
+  if (!currentMemberId || currentMemberId === "") {
+    return {
+      ingredients: [],
+      isLoading: false,
+      isError: true,
+      error: new Error("Current member ID is not set or is empty"),
+      loadMoreIngredients,
+      hasMore: false,
+      isFetchingNextPage: false,
+    };
+  }
 
   return {
     ingredients,
