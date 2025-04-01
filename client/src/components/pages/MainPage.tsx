@@ -239,7 +239,17 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
           className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
           onClick={() => onShowMealPage?.()}
         >
-          {/* 로딩 스피너 */}
+          {/* 새로고침 로딩 스피너 */}
+          {refreshingMealId === data.meal_id && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
+              <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-white bg-opacity-90 rounded-lg shadow-lg">
+                <div className="w-12 h-12 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+                <p className="text-base font-medium text-gray-800 text-center">AI 생성중</p>
+              </div>
+            </div>
+          )}
+
+          {/* 전체 로딩 스피너 */}
           {loading && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
               <div
@@ -247,8 +257,8 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
                 role="alert"
                 aria-live="assertive"
               >
-                <div className="w-10 h-10 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
-                <p className="text-base font-medium text-gray-800">AI 생성중</p>
+                <div className="w-16 h-16 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+                <p className="text-base font-medium text-gray-800 mt-4">AI 생성중</p>
               </div>
             </div>
           )}
@@ -264,14 +274,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
               disabled={refreshingMealId === data.meal_id}
               className="flex items-center gap-1"
             >
-              {refreshingMealId === data.meal_id ? (
-                <div className="flex items-center gap-1 text-white/80 animate-pulse">
-                  <BsArrowClockwise className="w-4 h-4 animate-spin" />
-                  <span className="text-xs">AI 생성 중...</span>
-                </div>
-              ) : (
-                <BsArrowClockwise className="w-5 h-5 text-white" />
-              )}
+              <BsArrowClockwise className="w-5 h-5 text-white" />
             </button>
           </div>
 
