@@ -17,6 +17,8 @@ export interface MemberListResponse {
 export interface DetailedMember extends MemberListItem {
   birth: string;
   age: number;
+  color: string;
+  font_size: string;
   preferred_foods: string[];
   disliked_foods: string[];
   allergies: string[];
