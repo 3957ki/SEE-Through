@@ -1,13 +1,17 @@
-import { getIngredient, getIngredients } from "@/api/ingredients";
+import { getIngredient } from "@/api/ingredients";
+import { DetailedIngredient } from "@/interfaces/Ingredient";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
+import { useQuery } from "@tanstack/react-query";
 
 export const ingredients = createQueryKeys("ingredients", {
-  all: (memberId?: string, page: number = 1, size: number = 10) => ({
-    queryKey: [memberId, page, size],
-    queryFn: () => getIngredients(memberId, page, size),
-  }),
   detail: (ingredientId: string) => ({
     queryKey: [ingredientId],
     queryFn: () => getIngredient(ingredientId),
   }),
 });
+
+export function useIngredient(ingredientId: string) {
+  const { data } = useQuery(ingredients.detail(ingredientId));
+
+  return { data: data as DetailedIngredient };
+}

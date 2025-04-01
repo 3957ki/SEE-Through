@@ -1,6 +1,5 @@
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
-import ExamplePage from "@/components/pages/ExamplePage";
 import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
 import MyPage from "@/components/pages/MyPage";
@@ -24,7 +23,6 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
     main: <MainPage onShowMealPage={() => handleNavigate("meal")} />,
     logs: <LogPage />,
     monitoring: <MonitoringPage currentPin={currentPin} onPinChange={setCurrentPin} />,
-    example: <ExamplePage />,
     meal: <MealPage />,
     my: <MyPage />,
   };

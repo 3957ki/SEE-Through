@@ -1,11 +1,11 @@
 import { MemberSwitcherDialog } from "@/components/dialog/MemberSwitcherDialog";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
+import { useCurrentMember } from "@/queries/members";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { BsPersonCircle } from "react-icons/bs";
 
 function Header() {
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
   const { showDialog } = useDialog();
 
   return (
@@ -15,7 +15,7 @@ function Header() {
         className="h-10 w-10 cursor-pointer bg-gray-100 rounded-full"
         onClick={() => showDialog(<MemberSwitcherDialog />)}
       >
-        <AvatarImage src={currentMember?.avatar} alt="User avatar" />
+        <AvatarImage src={currentMember?.image_path} alt="User avatar" />
         <AvatarFallback>
           <BsPersonCircle className="w-full h-full" />
         </AvatarFallback>

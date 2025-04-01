@@ -1,5 +1,9 @@
+import { fetchMonitoringUsers } from "@/api/monitoring";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 
 export const monitoring = createQueryKeys("monitoring", {
-  users: null,
+  list: {
+    queryKey: null,
+    queryFn: () => fetchMonitoringUsers(),
+  },
 });

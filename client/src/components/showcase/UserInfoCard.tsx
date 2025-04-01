@@ -1,16 +1,16 @@
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useCurrentMember } from "@/queries/members";
 import { BsPersonCircle } from "react-icons/bs";
 
 function UserInfoCard() {
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
 
   return (
     <div className="bg-white rounded-md shadow-md w-full p-4">
       <div className="flex items-center">
         <div className="flex-shrink-0">
-          {currentMember?.avatar ? (
+          {currentMember?.image_path ? (
             <img
-              src={currentMember.avatar ?? null}
+              src={currentMember?.image_path ?? null}
               alt={currentMember?.name}
               className="w-12 h-12 rounded-full object-cover"
             />

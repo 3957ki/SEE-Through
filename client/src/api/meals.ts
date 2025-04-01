@@ -19,27 +19,3 @@ export async function refreshMeal(mealId: string): Promise<Meal> {
   const response = await APIServerFetcher.patch<Meal>(`/meals/refresh?mealId=${mealId}`);
   return response.data;
 }
-
-export async function addPreferredFood(memberId: string, food: string): Promise<void> {
-  await APIServerFetcher.post(`/members/${memberId}/preferred-foods`, {
-    preferred_foods: [food],
-  });
-}
-
-export async function addDislikedFood(memberId: string, food: string): Promise<void> {
-  await APIServerFetcher.post(`/members/${memberId}/disliked-foods`, {
-    disliked_foods: [food],
-  });
-}
-
-export async function removePreferredFood(memberId: string, food: string): Promise<void> {
-  await APIServerFetcher.delete(`/members/${memberId}/preferred-foods`, {
-    data: { preferred_foods: [food] },
-  });
-}
-
-export async function removeDislikedFood(memberId: string, food: string): Promise<void> {
-  await APIServerFetcher.delete(`/members/${memberId}/disliked-foods`, {
-    data: { disliked_foods: [food] },
-  });
-}

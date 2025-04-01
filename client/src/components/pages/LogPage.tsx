@@ -1,107 +1,108 @@
-import { getLogs } from "@/api/logs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import type { GroupedLogs, LogsResponse } from "@/interfaces/Log";
-import { ChevronLeft, ChevronRight, Package, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
+import type { GroupedLogs } from "@/interfaces/Log";
+import { useLogs } from "@/queries/logs";
+import { ChevronDown, Package, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [myLogsOnly, setMyLogsOnly] = useState(false);
-  const { currentMember } = useCurrentMember();
+  const { currentMemberId } = useCurrentMemberId();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const pageSize = 10;
 
-  // 페이지네이션 상태 추가
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const pageSize = 10; // 페이지당 항목 수
+  // Use the updated useLogs hook for infinite scrolling
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
+    useLogs(pageSize, myLogsOnly && currentMemberId ? currentMemberId : undefined);
 
-  // 백엔드에서 로그 데이터 가져오기
+  // Process log data whenever it changes
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        setIsLoading(true);
+    if (!data?.pages) return;
 
-        // 페이지네이션 파라미터 추가 및 필요시 멤버 ID 추가 (숫자가 원래는 currentMember.member_id)
-        const memberId = myLogsOnly && currentMember ? currentMember.member_id : undefined;
-        const response: LogsResponse = await getLogs(currentPage, pageSize, memberId);
-        const { content, slice_info } = response;
+    // Merge all pages and group by date
+    const newGroupedLogs = data.pages.reduce<GroupedLogs>((acc, page) => {
+      page.content.forEach((log) => {
+        // ISO date string to YYYY-MM-DD
+        const date = new Date(log.created_at).toISOString().split("T")[0];
 
-        // 페이지네이션 정보 업데이트
-        setHasNextPage(slice_info.has_next);
+        if (!acc[date]) {
+          acc[date] = [];
+        }
 
-        // 날짜별로 로그 그룹화
-        const grouped = content.reduce<GroupedLogs>((acc, log) => {
-          // ISO 날짜 문자열에서 날짜 부분만 추출 (YYYY-MM-DD)
-          const date = new Date(log.created_at).toISOString().split("T")[0];
+        // Add log entry to the appropriate date group
+        acc[date].push({
+          ingredient: log.ingredient_name,
+          ingredient_image: log.ingredient_image_path,
+          user_name: log.member_name,
+          user_image: log.member_image_path,
+          type: log.movement_name,
+          time: new Date(log.created_at).toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+      });
 
-          if (!acc[date]) {
-            acc[date] = [];
-          }
+      return acc;
+    }, {});
 
-          // 로그 데이터 형식 변환 - 이미지 경로 추가
-          acc[date].push({
-            ingredient: log.ingredient_name,
-            ingredient_image: log.ingredient_image_path,
-            user_name: log.member_name,
-            user_image: log.member_image_path,
-            type: log.movement_name,
-            time: new Date(log.created_at).toLocaleTimeString("ko-KR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          });
+    setGroupedLogs(newGroupedLogs);
+  }, [data?.pages]);
 
-          return acc;
-        }, {});
+  // Setup intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
 
-        setGroupedLogs(grouped);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다");
-      } finally {
-        setIsLoading(false);
-      }
+    // Disconnect previous observer if it exists
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    // Create a new observer
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // If the load-more element is visible and we have more pages
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    // Start observing the load-more element
+    observerRef.current.observe(loadMoreRef.current);
+
+    // Cleanup observer on unmount
+    return () => {
+      observerRef.current?.disconnect();
     };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    fetchLogs();
-  }, [currentPage, pageSize, myLogsOnly, currentMember]); // 필터 변경 시에도 데이터 다시 로드
-
-  // 필터 토글 처리
+  // Handle toggle for "my logs only"
   const handleToggleMyLogs = () => {
     setMyLogsOnly(!myLogsOnly);
-    setCurrentPage(1); // 필터 변경 시 첫 페이지로 돌아가기
-  };
-
-  // 이전 페이지로 이동
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  // 다음 페이지로 이동
-  const goToNextPage = () => {
-    if (hasNextPage) {
-      setCurrentPage((prev) => prev + 1);
-    }
   };
 
   if (isLoading) {
     return <div className="p-4 text-center">로딩 중...</div>;
   }
 
-  if (error) {
-    return <div className="p-4 text-center text-red-500">{error}</div>;
+  if (isError) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
+      </div>
+    );
   }
 
-  // 날짜가 없는 경우
+  // No logs to display
   if (Object.keys(groupedLogs).length === 0) {
     return (
       <div className="max-w-md mx-auto p-4">
-        {/* 내 로그만 보기 토글 */}
         <div className="flex items-center justify-end mb-4">
           <span className="text-sm mr-2">내 로그만 보기</span>
           <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
@@ -119,31 +120,7 @@ export default function LogPage() {
         <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
       </div>
 
-      {/* 페이지네이션 컨트롤 */}
-      <div className="flex justify-between items-center px-4 mb-4">
-        <Button
-          variant="outline"
-          onClick={goToPreviousPage}
-          disabled={currentPage === 1}
-          className="flex items-center gap-1"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          이전
-        </Button>
-
-        <span className="text-sm font-medium">페이지 {currentPage}</span>
-
-        <Button
-          variant="outline"
-          onClick={goToNextPage}
-          disabled={!hasNextPage}
-          className="flex items-center gap-1"
-        >
-          다음
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-
+      {/* Logs grouped by date */}
       {Object.entries(groupedLogs).map(([date, entries]) => (
         <div key={date} className="mb-6">
           {/* 날짜 헤더 */}
@@ -193,13 +170,27 @@ export default function LogPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* 구분선 제거하고 카드 스타일로 변경 */}
               </div>
             ))}
           </div>
         </div>
       ))}
+
+      {/* Infinite scroll loading trigger */}
+      <div ref={loadMoreRef} className="text-center py-4">
+        {isFetchingNextPage ? (
+          <div className="text-sm text-gray-500">로딩 중...</div>
+        ) : hasNextPage ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => fetchNextPage()}
+            className="flex items-center gap-1"
+          >
+            더 보기 <ChevronDown className="h-4 w-4" />
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

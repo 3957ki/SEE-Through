@@ -18,12 +18,3 @@ export const APIServerFetcher = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-export function ServerMembersFetcher() {
-  return axios.create({
-    baseURL: API_SERVER_URL + "/members",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-}

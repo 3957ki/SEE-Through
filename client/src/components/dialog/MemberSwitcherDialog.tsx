@@ -1,8 +1,7 @@
-import { getMember } from "@/api/members";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
+import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import { useDialog } from "@/contexts/DialogContext";
-import { useMembers } from "@/contexts/MembersContext";
 import Member from "@/interfaces/Member";
+import { useMembers } from "@/queries/members";
 import { BsPersonCircle } from "react-icons/bs";
 
 interface MemberItemProps {
@@ -19,24 +18,34 @@ function MemberItem({ member, isSelected, onSelect }: MemberItemProps) {
       }`}
       onClick={() => onSelect(member.member_id)}
     >
-      <BsPersonCircle className="w-10 h-10 text-gray-400" />
-      <div className="flex-1">
+      {member.image_path ? (
+        <img
+          src={member.image_path}
+          alt={member.name}
+          className="w-10 h-10 rounded-full object-cover"
+        />
+      ) : (
+        <BsPersonCircle className="w-10 h-10 text-gray-400" />
+      )}
+      <div>
         <h3 className="font-medium">{member.name}</h3>
-        <p className="text-sm text-gray-500">{member.member_id}</p>
+        <p className="text-sm text-gray-500">만 24세, 피관자</p>
       </div>
     </div>
   );
 }
 
 export function MemberSwitcherDialog() {
-  const { members } = useMembers();
-  const { currentMember, setCurrentMember } = useCurrentMember();
+  const { data: members = [] } = useMembers();
+  const { currentMemberId, setCurrentMemberId } = useCurrentMemberId();
   const { hideDialog } = useDialog();
 
   const handleSelectMember = async (id: string) => {
     try {
-      const member = await getMember(id);
-      setCurrentMember(member);
+      // Get member details directly
+      // const member = await getMember(id);
+
+      setCurrentMemberId(id);
       hideDialog();
     } catch (error) {
       console.error("Failed to fetch member:", error);
@@ -57,7 +66,7 @@ export function MemberSwitcherDialog() {
             <MemberItem
               key={member.member_id}
               member={member}
-              isSelected={member.member_id === currentMember?.member_id}
+              isSelected={member.member_id === currentMemberId}
               onSelect={handleSelectMember}
             />
           ))

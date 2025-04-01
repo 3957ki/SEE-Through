@@ -1,73 +1,25 @@
-import { deleteIngredient, insertIngredient } from "@/api/ingredients";
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
-import WebcamView from "@/components/showcase/WebcamView";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
-import { useEffect, useState, type DragEvent } from "react";
-
-const showcaseIngredients = [
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000001",
-    name: "두부",
-    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/tofu.png",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000002",
-    name: "showcase2",
-    image_path: "showcase2",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000003",
-    name: "showcase3",
-    image_path: "showcase3",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000004",
-    name: "showcase4",
-    image_path: "showcase4",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000005",
-    name: "showcase5",
-    image_path: "showcase5",
-  },
-];
+import { useCurrentMember } from "@/queries/members";
+import {
+  useOptimisticIngredientUpdates,
+  useShowcaseIngredients,
+} from "@/queries/showcaseIngredients";
+import { useState, type DragEvent } from "react";
 
 function ShowcaseScreen() {
-  const { ingredients, setIngredients } = useIngredientsContext();
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
+  const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
+  const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
 
-  const [insideIngredients, setInsideIngredients] = useState<Ingredient[]>([]);
-  const [outsideIngredients, setOutsideIngredients] = useState<Ingredient[]>([]);
-
-  const [dialogMessage, setDialogMessage] = useState<string>(""); // Message to show in dialog
-  const [showDialog, setShowDialog] = useState<boolean>(false); // Whether the dialog is visible
+  const [dialogMessage, setDialogMessage] = useState<string>("");
+  const [showDialog, setShowDialog] = useState<boolean>(false);
 
   const handleCloseDialog = () => {
     setShowDialog(false);
   };
-
-  useEffect(() => {
-    const newInsideIngredients: Ingredient[] = [];
-    const newOutsideIngredients: Ingredient[] = [];
-
-    for (const showcaseIngredient of showcaseIngredients) {
-      const ingredient = ingredients.find(
-        (ingredient) => ingredient.ingredient_id === showcaseIngredient.ingredient_id
-      );
-      if (ingredient) {
-        newInsideIngredients.push(ingredient);
-      } else {
-        newOutsideIngredients.push(showcaseIngredient);
-      }
-    }
-
-    setInsideIngredients(newInsideIngredients);
-    setOutsideIngredients(newOutsideIngredients);
-  }, [ingredients]);
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -80,27 +32,19 @@ function ShowcaseScreen() {
       ingredient = JSON.parse(ingredientData);
       if (!ingredient) return;
 
-      // Optimistic UI update - update state before API call
-      setOutsideIngredients((prev) =>
-        prev.filter((item) => item.ingredient_id !== ingredient!.ingredient_id)
-      );
-      setInsideIngredients((prev) => [...prev, ingredient!]);
-      setIngredients([...ingredients, ingredient!]);
+      // Use the mutation for optimistic updates
+      addIngredient.mutate(ingredient);
 
-      // Call API to insert ingredient
-      await insertIngredient(ingredient, currentMember.member_id);
+      // Show success message
+      setDialogMessage("Ingredient successfully added to the fridge!");
+      setShowDialog(true);
     } catch (error) {
-      // If API call fails, revert the optimistic update
+      // Log the error for debugging
       console.error("Failed to handle drop:", error);
-      if (ingredient) {
-        setOutsideIngredients((prev) => [...prev, ingredient!]);
-        setInsideIngredients((prev) =>
-          prev.filter((item) => item.ingredient_id !== ingredient!.ingredient_id)
-        );
-        setIngredients(
-          ingredients.filter((item) => item.ingredient_id !== ingredient!.ingredient_id)
-        );
-      }
+
+      // Show error message in dialog after failure
+      setDialogMessage("Failed to add ingredient. Please try again.");
+      setShowDialog(true);
     }
   };
 
@@ -108,40 +52,27 @@ function ShowcaseScreen() {
     if (!currentMember) return;
 
     try {
-      // Optimistic UI update - update state before API call
-      setInsideIngredients((prev) =>
-        prev.filter((item) => item.ingredient_id !== ingredient.ingredient_id)
-      );
-      setOutsideIngredients((prev) => [...prev, ingredient]);
-      setIngredients(ingredients.filter((item) => item.ingredient_id !== ingredient.ingredient_id));
+      // Use the mutation for optimistic updates
+      removeIngredient.mutate(ingredient.ingredient_id);
 
-      // API 호출로 재료 삭제
-      const response = await deleteIngredient(ingredient.ingredient_id, currentMember.member_id);
-
-      console.log("response: ", response);
-
-      // 응답에서 받은 메시지 사용
-      const successMessage = response.message || "Ingredient successfully removed from the fridge!";
-
-      // API 응답을 받은 후에 다이얼로그를 띄우기
-      setDialogMessage(successMessage);
+      // Show success message
+      setDialogMessage("Ingredient successfully removed from the fridge!");
       setShowDialog(true);
     } catch (error) {
       // Log the error for debugging
       console.error("Error occurred while removing ingredient:", error);
-
-      // If API call fails, revert the optimistic update
-      setInsideIngredients((prev) => [...prev, ingredient]);
-      setOutsideIngredients((prev) =>
-        prev.filter((item) => item.ingredient_id !== ingredient.ingredient_id)
-      );
-      setIngredients([...ingredients, ingredient]);
 
       // Show error message in dialog after failure
       setDialogMessage("Failed to remove ingredient. Please try again.");
       setShowDialog(true);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">Loading ingredients...</div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative bg-blue-50">
@@ -157,9 +88,7 @@ function ShowcaseScreen() {
 
         {/* Right Area - Controls and Ingredient Table */}
         <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
-          <div className="h-1/3">
-            <WebcamView />
-          </div>
+          <div className="h-1/3">{/* <WebcamView /> */}</div>
           <div className="h-1/3">
             <UserInfoCard />
           </div>
@@ -170,6 +99,21 @@ function ShowcaseScreen() {
       <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none">
         <Table outsideIngredients={outsideIngredients} />
       </div>
+
+      {/* Simple Dialog for success/error messages */}
+      {showDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-lg max-w-md">
+            <p className="mb-4">{dialogMessage}</p>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={handleCloseDialog}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

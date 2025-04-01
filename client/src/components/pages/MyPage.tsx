@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
+import { useCurrentMember } from "@/queries/members";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
@@ -34,7 +34,7 @@ interface SavedState {
 }
 
 export default function MyPage() {
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
   const { showDialog, hideDialog } = useDialog();
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
   const [name, setName] = useState(currentMember?.name || "");

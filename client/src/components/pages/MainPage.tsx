@@ -1,63 +1,121 @@
 import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
-import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
+import { useEffect, useRef, useState } from "react";
 import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
-function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
-  const { loadMoreIngredients, hasMore, isLoading } = useIngredientsContext();
+function IngredientsContent() {
+  const [error, setError] = useState<Error | null>(null);
+
+  // Use try-catch pattern for the hook
+  let ingredients: Ingredient[] = [];
+  let loadMoreIngredients = () => {};
+  let hasMore = false;
+  let isLoading = false;
+  let isFetchingNextPage = false;
+
+  try {
+    const result = useCurrentMemberIngredients();
+    ingredients = result.ingredients;
+    loadMoreIngredients = result.loadMoreIngredients;
+    hasMore = result.hasMore;
+    isLoading = result.isLoading;
+    isFetchingNextPage = result.isFetchingNextPage;
+  } catch (err) {
+    console.error("Error in useCurrentMemberIngredients:", err);
+    setError(err instanceof Error ? err : new Error(String(err)));
+  }
+
   const { showDialog, hideDialog } = useDialog();
   const observer = useRef<IntersectionObserver | null>(null);
+  const lastIngredientRef = useRef<HTMLDivElement | null>(null);
 
-  const lastIngredientRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
+  // Set up intersection observer for infinite scrolling
+  useEffect(() => {
+    if (isLoading) return;
 
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
+    // Disconnect previous observer if it exists
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+
+    // Create a new intersection observer
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !isFetchingNextPage) {
           loadMoreIngredients();
         }
-      });
+      },
+      { threshold: 0.1 }
+    );
 
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore, loadMoreIngredients]
-  );
+    // Start observing the last ingredient element
+    if (lastIngredientRef.current) {
+      observer.current.observe(lastIngredientRef.current);
+    }
+
+    // Clean up on unmount
+    return () => {
+      observer.current?.disconnect();
+    };
+  }, [isLoading, hasMore, isFetchingNextPage, loadMoreIngredients, ingredients.length]);
 
   const handleIngredientClick = (ingredient: Ingredient) => {
     showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
   };
 
+  // Show error state
+  if (error) {
+    return (
+      <div className="text-center py-4 text-red-500">재료를 불러오는 중 오류가 발생했습니다.</div>
+    );
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return <div className="text-center py-4">재료를 불러오는 중...</div>;
+  }
+
+  return (
+    <div className="grid grid-cols-5 gap-1">
+      {ingredients.map((ingredient, index) => (
+        <div
+          key={ingredient.ingredient_id}
+          ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
+        >
+          <div
+            className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleIngredientClick(ingredient)}
+          >
+            <img
+              src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
+              alt={ingredient.name ?? "Ingredient image"}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      ))}
+      {isFetchingNextPage && <div className="text-center py-4">로딩 중...</div>}
+    </div>
+  );
+}
+
+function IngredientsSection() {
+  const { data: currentMember } = useCurrentMember();
+
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
-        <div className="grid grid-cols-5 gap-1">
-          {ingredients.map((ingredient, index) => (
-            <div
-              key={ingredient.ingredient_id}
-              ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
-            >
-              <div
-                className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleIngredientClick(ingredient)}
-              >
-                <img
-                  src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
-                  alt={ingredient.name ?? "Ingredient image"}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-        {isLoading && <div className="text-center py-4">로딩 중...</div>}
+        {currentMember ? (
+          <IngredientsContent />
+        ) : (
+          <div className="text-center py-4">사용자 정보를 불러오는 중...</div>
+        )}
       </SectionContent>
     </Section>
   );
@@ -87,7 +145,7 @@ function useMeals(currentMember: any) {
         setMealsToday(todayMeals);
         setMealsTomorrow(tomorrowMeals);
         setMealError(false); // 정상적으로 데이터가 오면 오류 상태 초기화
-      } catch (err) {
+      } catch (err: any) {
         if (err.response?.status === 404) {
           setMealError(true); // 404 오류가 발생하면 오류 상태 설정
         } else {
@@ -122,7 +180,7 @@ function useMeals(currentMember: any) {
         else if (updated.serving_time === "저녁") updatedMeals.dinner = updated;
         return updatedMeals;
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("식단 새로고침 실패", err);
     } finally {
       setRefreshingMealId(null);
@@ -150,7 +208,7 @@ function useMeals(currentMember: any) {
 
       setMealsToday(todayMeals);
       setMealsTomorrow(tomorrowMeals);
-    } catch (err) {
+    } catch (err: any) {
       console.error("식단 생성 실패", err);
     } finally {
       setLoading(false); // 식단 생성 완료 후 로딩 상태 비활성화
@@ -170,7 +228,8 @@ function useMeals(currentMember: any) {
 }
 
 function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
+
   const {
     mealsToday,
     mealsTomorrow,
@@ -315,8 +374,7 @@ function TodaysDietSection({ onShowMealPage }: { onShowMealPage?: () => void }) 
 }
 
 function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
-  const { currentMember } = useCurrentMember();
-  const { ingredients } = useIngredientsContext();
+  const { data: currentMember } = useCurrentMember();
 
   useEffect(() => {
     if (currentMember) {
@@ -329,7 +387,7 @@ function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
       <GreetingSection name={currentMember?.name} />
       <TodaysDietSection onShowMealPage={onShowMealPage} />
       <SectionDivider />
-      <IngredientsSection ingredients={ingredients} />
+      <IngredientsSection />
     </div>
   );
 }

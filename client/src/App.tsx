@@ -1,10 +1,10 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
 import ShowcaseScreen from "@/components/ShowcaseScreen";
 import { Button } from "@/components/ui/button";
+import { CurrentMemberIdProvider } from "@/contexts/CurrentMemberIdContext";
 import { disconnectLocalServer, initLocalServerWebSocket } from "@/services/websocketService";
-import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CurrentMemberIdProvider } from "./contexts/CurrentMemberIdContext";
 
 // ShowcaseToggleButton component
 function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: string }) {
@@ -46,7 +46,7 @@ function App() {
     };
   }, []);
 
-  const queryClient = useQueryClient();
+  const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
