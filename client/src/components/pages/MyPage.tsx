@@ -1,7 +1,15 @@
 import { updateMember } from "@/api/members";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useDialog } from "@/contexts/DialogContext";
 import { format } from "date-fns";
@@ -17,6 +25,8 @@ type MeasurementType = (typeof MEASUREMENT_TYPES)[number];
 interface SavedState {
   name: string;
   birth?: string;
+  color: string;
+  font_size: string;
   preferred_foods: string[];
   disliked_foods: string[];
   allergies: string[];
@@ -28,6 +38,8 @@ export default function MyPage() {
   const { showDialog, hideDialog } = useDialog();
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
   const [name, setName] = useState(currentMember?.name || "");
+  const [isColorBlind, setIsColorBlind] = useState(currentMember?.color === "색맹");
+  const [fontSize, setFontSize] = useState(currentMember?.font_size || "보통");
 
   const [birthday, setBirthday] = useState<Date | undefined>(
     currentMember && "birth" in currentMember && currentMember.birth
@@ -51,6 +63,8 @@ export default function MyPage() {
   const [savedState, setSavedState] = useState<SavedState>({
     name: currentMember?.name || "",
     birth: currentMember && "birth" in currentMember ? currentMember.birth : undefined,
+    color: currentMember && "color" in currentMember ? currentMember.color : "보통",
+    font_size: currentMember && "font_size" in currentMember ? currentMember.font_size : "보통",
     preferred_foods:
       currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
     disliked_foods:
@@ -68,6 +82,8 @@ export default function MyPage() {
     return (
       name !== savedState.name ||
       birthdayString !== savedState.birth ||
+      (isColorBlind ? "색맹" : "보통") !== savedState.color ||
+      fontSize !== savedState.font_size ||
       JSON.stringify(preferredFoods) !== JSON.stringify(savedState.preferred_foods) ||
       JSON.stringify(dislikedFoods) !== JSON.stringify(savedState.disliked_foods) ||
       JSON.stringify(allergies) !== JSON.stringify(savedState.allergies) ||
@@ -77,6 +93,8 @@ export default function MyPage() {
     currentMember,
     name,
     birthday,
+    isColorBlind,
+    fontSize,
     preferredFoods,
     dislikedFoods,
     allergies,
@@ -101,6 +119,8 @@ export default function MyPage() {
     setSavedState({
       name: currentMember.name || "",
       birth: "birth" in currentMember ? currentMember.birth : undefined,
+      color: "color" in currentMember ? currentMember.color : "정상",
+      font_size: "font_size" in currentMember ? currentMember.font_size : "보통",
       preferred_foods: "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
       disliked_foods: "disliked_foods" in currentMember ? currentMember.disliked_foods : [],
       allergies: "allergies" in currentMember ? currentMember.allergies : [],
@@ -218,19 +238,54 @@ export default function MyPage() {
               className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {birthday ? format(birthday, "yyyy.MM.dd", { locale: ko }) : "생일을 알려주세요!"}
+              {birthday ? (
+                format(birthday, "yyyy.MM.dd", { locale: ko })
+              ) : (
+                <span className="text-gray-400">생일을 알려주세요!</span>
+              )}
             </Button>
           </div>
         </div>
 
-        {/* Title Section */}
-        <h2 className="text-lg font-medium">선호 색상 및 폰트 크기</h2>
-        <div className="text-sm text-gray-600">적록 색약 체크표시 및 폰트 크기 선택하기</div>
+        {/* Color Blindness and Font Size Section */}
+        <div className="flex gap-4">
+          <div className="flex-1 flex items-center gap-2">
+            <label htmlFor="colorBlind" className="flex items-center gap-2 cursor-pointer">
+              <span className="text-sm">색맹 여부</span>
+              <Checkbox
+                id="colorBlind"
+                checked={isColorBlind}
+                onCheckedChange={(checked) => setIsColorBlind(checked as boolean)}
+              />
+            </label>
+          </div>
+
+          <div className="flex-1 flex items-center gap-2">
+            <span className="text-sm whitespace-nowrap">폰트 크기</span>
+            <Select value={fontSize} onValueChange={setFontSize}>
+              <SelectTrigger className="w-[100px] h-9">
+                <SelectValue placeholder="폰트 크기" className="text-sm" />
+              </SelectTrigger>
+              <SelectContent sideOffset={0} align="center">
+                <SelectItem value="작게" className="text-sm text-center">
+                  작게
+                </SelectItem>
+                <SelectItem value="보통" className="text-sm text-center">
+                  보통
+                </SelectItem>
+                <SelectItem value="크게" className="text-sm text-center">
+                  크게
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {/* Measurement Type Selection */}
         <div className="flex gap-2 border-b">
           {MEASUREMENT_TYPES.map((type) => (
             <button
+              type="button"
               key={type}
               className={`py-2 px-4 ${
                 measurementType === type
@@ -254,6 +309,7 @@ export default function MyPage() {
               >
                 <div className="break-words flex-1">{item}</div>
                 <button
+                  type="button"
                   className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
                   onClick={() => {
                     const newList = getCurrentList().filter((_, i) => i !== index);
@@ -312,7 +368,9 @@ export default function MyPage() {
                 await updateMember({
                   member_id: currentMember.member_id,
                   name,
-                  birth: birthday ? birthday.toISOString().split("T")[0] : "",
+                  birth: birthday ? format(birthday, "yyyy-MM-dd") : "",
+                  color: isColorBlind ? "색맹" : "보통",
+                  font_size: fontSize,
                   preferred_foods: preferredFoods,
                   disliked_foods: dislikedFoods,
                   allergies,
@@ -322,7 +380,9 @@ export default function MyPage() {
                 // Update the saved state after successful save
                 setSavedState({
                   name,
-                  birth: birthday ? birthday.toISOString().split("T")[0] : undefined,
+                  birth: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
+                  color: isColorBlind ? "색맹" : "보통",
+                  font_size: fontSize,
                   preferred_foods: [...preferredFoods],
                   disliked_foods: [...dislikedFoods],
                   allergies: [...allergies],

@@ -15,6 +15,8 @@ export async function updateMember(data: {
   member_id: string;
   name: string;
   birth: string;
+  color: string;
+  font_size: string;
   preferred_foods: string[];
   disliked_foods: string[];
   allergies: string[];
