@@ -1,4 +1,4 @@
-import { getMealsByDate, refreshMeal } from "@/api/meals";
+import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
@@ -67,21 +67,33 @@ function useMeals(currentMember: any) {
   const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
   const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+  const [mealError, setMealError] = useState(false); // 404 오류 상태 추가
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchMeals = async () => {
       if (!currentMember) return;
+
       const today = new Date();
       const tomorrow = new Date();
       tomorrow.setDate(today.getDate() + 1);
 
-      const [todayMeals, tomorrowMeals] = await Promise.all([
-        getMealsByDate(currentMember.member_id, today),
-        getMealsByDate(currentMember.member_id, tomorrow),
-      ]);
+      try {
+        const [todayMeals, tomorrowMeals] = await Promise.all([
+          getMealsByDate(currentMember.member_id, today),
+          getMealsByDate(currentMember.member_id, tomorrow),
+        ]);
 
-      setMealsToday(todayMeals);
-      setMealsTomorrow(tomorrowMeals);
+        setMealsToday(todayMeals);
+        setMealsTomorrow(tomorrowMeals);
+        setMealError(false); // 정상적으로 데이터가 오면 오류 상태 초기화
+      } catch (err) {
+        if (err.response?.status === 404) {
+          setMealError(true); // 404 오류가 발생하면 오류 상태 설정
+        } else {
+          console.error("식단 요청 실패", err);
+        }
+      }
     };
 
     fetchMeals();
@@ -117,12 +129,86 @@ function useMeals(currentMember: any) {
     }
   };
 
-  return { mealsToday, mealsTomorrow, handleRefresh, refreshingMealId };
+  const createMeals = async () => {
+    console.log("식단 생성 시작...");
+    setLoading(true); // 식단 생성 시작 시 로딩 상태 활성화
+    try {
+      const createdMeals = await getTodayMeals(currentMember.member_id); // 식단 생성 요청
+      console.log("식단 생성 완료:", createdMeals);
+      setMealsToday(createdMeals); // 오늘 식단 상태 업데이트
+      setMealError(false); // 식단 생성 성공시 오류 상태 초기화
+
+      // 식단 생성 후 getMealsByDate로 다시 요청하여 최신 식단 정보를 가져옴
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+
+      const [todayMeals, tomorrowMeals] = await Promise.all([
+        getMealsByDate(currentMember.member_id, today),
+        getMealsByDate(currentMember.member_id, tomorrow),
+      ]);
+
+      setMealsToday(todayMeals);
+      setMealsTomorrow(tomorrowMeals);
+    } catch (err) {
+      console.error("식단 생성 실패", err);
+    } finally {
+      setLoading(false); // 식단 생성 완료 후 로딩 상태 비활성화
+      console.log("로딩 상태 비활성화");
+    }
+  };
+
+  return {
+    mealsToday,
+    mealsTomorrow,
+    handleRefresh,
+    refreshingMealId,
+    mealError,
+    createMeals,
+    loading,
+  };
 }
+
 function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
   const { currentMember } = useCurrentMember();
-  const { mealsToday, mealsTomorrow, handleRefresh, refreshingMealId } = useMeals(currentMember);
+  const {
+    mealsToday,
+    mealsTomorrow,
+    handleRefresh,
+    refreshingMealId,
+    mealError,
+    createMeals,
+    loading,
+  } = useMeals(currentMember);
   const hour = new Date().getHours();
+
+  useEffect(() => {
+    console.log("Meals 컴포넌트 렌더링, 로딩 상태:", loading);
+  }, [loading]);
+
+  if (mealError) {
+    return (
+      <div className="mt-2 px-4 flex gap-4">
+        {/* "식단 생성하기" 버튼 */}
+        {!loading ? (
+          <button
+            onClick={createMeals}
+            className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+          >
+            식단 생성하기
+          </button>
+        ) : (
+          <div className="w-full flex justify-center items-center">
+            {/* Tailwind로 로딩 스피너 및 메시지 표시 */}
+            <div className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg">
+              <div className="w-10 h-10 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+              <p className="text-base font-medium text-gray-800">AI가 일주일 식단 생성중</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!mealsToday || !mealsTomorrow) return null;
 
@@ -153,19 +239,15 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
           className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
           onClick={() => onShowMealPage?.()}
         >
-          {/* AI 생성 중 오버레이 */}
-          {refreshingMealId === data.meal_id && (
+          {/* 로딩 스피너 */}
+          {loading && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
               <div
                 className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg"
                 role="alert"
                 aria-live="assertive"
               >
-                <div className="sambyul-spinner relative w-10 h-10">
-                  <div className="dot top-dot"></div>
-                  <div className="dot left-dot"></div>
-                  <div className="dot right-dot"></div>
-                </div>
+                <div className="w-10 h-10 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
                 <p className="text-base font-medium text-gray-800">AI 생성중</p>
               </div>
             </div>
