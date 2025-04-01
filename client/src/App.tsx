@@ -1,14 +1,10 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
-import { PageType } from "@/components/layout/BottomNavigation";
 import ShowcaseScreen from "@/components/ShowcaseScreen";
 import { Button } from "@/components/ui/button";
-import IngredientsProivder from "@/providers/IngredientsContextProvider";
-import MemberContextsProvider from "@/providers/MemberContextsProvider";
 import { disconnectLocalServer, initLocalServerWebSocket } from "@/services/websocketService";
+import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-
-// Extend PageType to include a showcase option
-export type ExtendedPageType = PageType | "showcase";
+import { CurrentMemberIdProvider } from "./contexts/CurrentMemberIdContext";
 
 // ShowcaseToggleButton component
 function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: string }) {
@@ -39,23 +35,22 @@ function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: 
   );
 }
 
-// Main App with option to show showcase
 function App() {
-  // Set showcase mode as default
   const [isShowcase, setIsShowcase] = useState(true);
 
-  // Initialize WebSocket connection when the app starts
+  // Initialize WebSocket connection
   useEffect(() => {
     initLocalServerWebSocket();
-
     return () => {
       disconnectLocalServer();
     };
   }, []);
 
+  const queryClient = useQueryClient();
+
   return (
-    <MemberContextsProvider>
-      <IngredientsProivder>
+    <QueryClientProvider client={queryClient}>
+      <CurrentMemberIdProvider>
         {isShowcase ? (
           <ShowcaseScreen />
         ) : (
@@ -79,8 +74,8 @@ function App() {
           onClick={() => setIsShowcase((prev) => !prev)}
           title="toggle showcase"
         />
-      </IngredientsProivder>
-    </MemberContextsProvider>
+      </CurrentMemberIdProvider>
+    </QueryClientProvider>
   );
 }
 
