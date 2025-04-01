@@ -26,12 +26,17 @@ export async function insertIngredient(ingredient: Ingredient, memberId: string)
   });
 }
 
-export async function deleteIngredient(ingredientId: string, memberId: string): Promise<string> {
+export async function deleteIngredient(
+  ingredientId: string,
+  memberId: string
+): Promise<{ message: string }> {
   const response = await APIServerFetcher.delete(`/ingredients`, {
     data: {
       member_id: memberId,
       ingredient_id_list: [ingredientId],
     },
   });
-  return response.data.content;
+
+  // 응답 데이터 구조가 content 또는 message로 반환되면 해당 값을 사용
+  return { message: response.data.content || response.data }; // message 반환
 }

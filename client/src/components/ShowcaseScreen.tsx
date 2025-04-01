@@ -12,7 +12,7 @@ import { useEffect, useState, type DragEvent } from "react";
 const showcaseIngredients = [
   {
     ingredient_id: "99999999-0000-0000-0000-000000000001",
-    name: "showcase1",
+    name: "두부",
     image_path: "showcase1",
   },
   {
@@ -43,6 +43,13 @@ function ShowcaseScreen() {
 
   const [insideIngredients, setInsideIngredients] = useState<Ingredient[]>([]);
   const [outsideIngredients, setOutsideIngredients] = useState<Ingredient[]>([]);
+
+  const [dialogMessage, setDialogMessage] = useState<string>(""); // Message to show in dialog
+  const [showDialog, setShowDialog] = useState<boolean>(false); // Whether the dialog is visible
+
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+  };
 
   useEffect(() => {
     const newInsideIngredients: Ingredient[] = [];
@@ -109,23 +116,38 @@ function ShowcaseScreen() {
       setOutsideIngredients((prev) => [...prev, ingredient]);
       setIngredients(ingredients.filter((item) => item.ingredient_id !== ingredient.ingredient_id));
 
-      // Call API to delete ingredient
-      await deleteIngredient(ingredient.ingredient_id, currentMember.member_id);
+      // API 호출로 재료 삭제
+      const response = await deleteIngredient(ingredient.ingredient_id, currentMember.member_id);
+
+      console.log("response: ", response);
+
+      // 응답에서 받은 메시지 사용
+      const successMessage = response.message || "Ingredient successfully removed from the fridge!";
+
+      // API 응답을 받은 후에 다이얼로그를 띄우기
+      setDialogMessage(successMessage);
+      setShowDialog(true);
     } catch (error) {
+      // Log the error for debugging
+      console.error("Error occurred while removing ingredient:", error);
+
       // If API call fails, revert the optimistic update
-      console.error("Failed to take out ingredient:", error);
       setInsideIngredients((prev) => [...prev, ingredient]);
       setOutsideIngredients((prev) =>
         prev.filter((item) => item.ingredient_id !== ingredient.ingredient_id)
       );
       setIngredients([...ingredients, ingredient]);
+
+      // Show error message in dialog after failure
+      setDialogMessage("Failed to remove ingredient. Please try again.");
+      setShowDialog(true);
     }
   };
 
   return (
     <div className="min-h-screen relative bg-blue-50">
       <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5">
-        {/* 왼쪽 영역 - 냉장고와 드롭존 */}
+        {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
           <Fridge
             handleDrop={handleDrop}
@@ -137,13 +159,19 @@ function ShowcaseScreen() {
               style={{ background: "none", fill: "none" }}
             >
               <div className="flex items-center justify-center">
-                <FridgeDisplay targetWidth={375} targetHeight={667} />
+                <FridgeDisplay
+                  targetWidth={375}
+                  targetHeight={667}
+                  showDialog={showDialog}
+                  dialogMessage={dialogMessage}
+                  onCloseDialog={handleCloseDialog}
+                />
               </div>
             </div>
           </Fridge>
         </div>
 
-        {/* 오른쪽 영역 - 컨트롤 및 재료 식탁 */}
+        {/* Right Area - Controls and Ingredient Table */}
         <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
           <div className="h-1/3">
             <WebcamView />
