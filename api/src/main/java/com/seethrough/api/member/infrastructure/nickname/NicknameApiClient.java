@@ -21,7 +21,7 @@ public class NicknameApiClient {
 
 	public Mono<String> getNickname() {
 		return nicknameWebClient.get()
-			.uri("/?format=text&count=1")
+			.uri("/?format=text&count=1&max_length=6")
 			.retrieve()
 			.bodyToMono(String.class)
 			.timeout(Duration.ofMillis(TIMEOUT_OF_MILLIS))

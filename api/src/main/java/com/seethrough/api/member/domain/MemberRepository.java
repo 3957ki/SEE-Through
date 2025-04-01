@@ -19,4 +19,8 @@ public interface MemberRepository {
 	boolean existsByMemberId(UUID memberIdObj);
 
 	List<Member> findMembersByLastLoginAtAfter(LocalDateTime date);
+
+	List<Member> findAllMembers();
+
+	Integer findMaxNewMemberNumber();
 }

@@ -1,112 +1,74 @@
-import { getMealsByDate, refreshMeal } from "@/api/meals";
+import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
+import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import { useMaterialContext } from "@/contexts/MaterialContext";
-import Material from "@/interfaces/Material";
+import { useDialog } from "@/contexts/DialogContext";
+import { useIngredientsContext } from "@/contexts/IngredientsContext";
+import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useEffect, useState } from "react";
-import {
-  BsArrowClockwise,
-  BsCalendarEvent,
-  BsHandThumbsDown,
-  BsHandThumbsUp,
-} from "react-icons/bs";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
 
-// Material Grid Section Components
-function MaterialBlock({ material }: { material: Material }) {
-  return (
-    <div className="aspect-square bg-white rounded-md overflow-hidden border">
-      <img
-        src={material.image_path ?? "/placeholder.svg"}
-        alt={material.name ?? "Material image"}
-        className="w-full h-full object-cover"
-      />
-    </div>
+function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
+  const { loadMoreIngredients, hasMore, isLoading } = useIngredientsContext();
+  const { showDialog, hideDialog } = useDialog();
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastIngredientRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreIngredients();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore, loadMoreIngredients]
   );
-}
 
-function MaterialsSection({ materials }: { materials: Material[] }) {
-  const MAX_MATERIALS = 10;
+  const handleIngredientClick = (ingredient: Ingredient) => {
+    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
+  };
 
   return (
     <Section>
       <SectionTitle>재료 목록</SectionTitle>
       <SectionContent>
         <div className="grid grid-cols-5 gap-1">
-          {materials.slice(0, MAX_MATERIALS).map((material) => (
-            <MaterialBlock key={material.ingredient_id} material={material} />
+          {ingredients.map((ingredient, index) => (
+            <div
+              key={ingredient.ingredient_id}
+              ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
+            >
+              <div
+                className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleIngredientClick(ingredient)}
+              >
+                <img
+                  src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
+                  alt={ingredient.name ?? "Ingredient image"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
           ))}
         </div>
+        {isLoading && <div className="text-center py-4">로딩 중...</div>}
       </SectionContent>
     </Section>
   );
 }
 
-function MealCard({
-  title,
-  color,
-  items,
-  onRefresh,
-  isRefreshing,
-}: {
-  title: string;
-  color: string;
-  items: string[];
-  onRefresh: () => void;
-  isRefreshing: boolean;
-}) {
-  return (
-    <div className={`${color} rounded-xl p-4 w-64 min-w-64 text-white relative`}>
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-medium text-lg">{title}</h3>
-        <button onClick={onRefresh} disabled={isRefreshing}>
-          <BsArrowClockwise
-            className={`w-5 h-5 ${isRefreshing ? "animate-spin text-white/70" : "text-white"}`}
-          />
-        </button>
-      </div>
-      {items.map((item, index) => (
-        <p key={index} className="text-sm">
-          {item}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-function FeedbackButtons() {
-  const [feedback, setFeedback] = useState<"like" | "dislike" | null>(null);
-
-  return (
-    <div className="px-4 py-4 text-center">
-      <p className="text-sm mb-2">이 식단은 도움이 되나요?</p>
-      <div className="flex justify-center gap-6">
-        <button
-          className={`p-2 transition-all ${feedback === "like" ? "bg-orange-100 rounded-full scale-110" : ""}`}
-          onClick={() => setFeedback("like")}
-        >
-          <BsHandThumbsUp
-            className={`w-6 h-6 ${feedback === "like" ? "text-orange-500" : "text-gray-700"}`}
-          />
-        </button>
-        <button
-          className={`p-2 transition-all ${feedback === "dislike" ? "bg-orange-100 rounded-full scale-110" : ""}`}
-          onClick={() => setFeedback("dislike")}
-        >
-          <BsHandThumbsDown
-            className={`w-6 h-6 ${feedback === "dislike" ? "text-orange-500" : "text-gray-700"}`}
-          />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Meals() {
-  const { currentMember } = useCurrentMember();
+function useMeals(currentMember: any) {
   const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
   const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+  const [mealError, setMealError] = useState(false); // 404 오류 상태 추가
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchMeals = async () => {
@@ -116,13 +78,22 @@ function Meals() {
       const tomorrow = new Date();
       tomorrow.setDate(today.getDate() + 1);
 
-      const [todayMeals, tomorrowMeals] = await Promise.all([
-        getMealsByDate(currentMember.member_id, today),
-        getMealsByDate(currentMember.member_id, tomorrow),
-      ]);
+      try {
+        const [todayMeals, tomorrowMeals] = await Promise.all([
+          getMealsByDate(currentMember.member_id, today),
+          getMealsByDate(currentMember.member_id, tomorrow),
+        ]);
 
-      setMealsToday(todayMeals);
-      setMealsTomorrow(tomorrowMeals);
+        setMealsToday(todayMeals);
+        setMealsTomorrow(tomorrowMeals);
+        setMealError(false); // 정상적으로 데이터가 오면 오류 상태 초기화
+      } catch (err) {
+        if (err.response?.status === 404) {
+          setMealError(true); // 404 오류가 발생하면 오류 상태 설정
+        } else {
+          console.error("식단 요청 실패", err);
+        }
+      }
     };
 
     fetchMeals();
@@ -134,17 +105,14 @@ function Meals() {
     setRefreshingMealId(mealId);
     try {
       const updated = await refreshMeal(mealId);
+      const targetMeals = [mealsToday, mealsTomorrow].find(
+        (meals) =>
+          meals?.breakfast.meal_id === mealId ||
+          meals?.lunch.meal_id === mealId ||
+          meals?.dinner.meal_id === mealId
+      );
 
-      // 업데이트 대상이 오늘 식단인지 내일 식단인지 판단
-      const setMealsFn =
-        [mealsToday, mealsTomorrow].find(
-          (meals) =>
-            meals?.breakfast.meal_id === mealId ||
-            meals?.lunch.meal_id === mealId ||
-            meals?.dinner.meal_id === mealId
-        ) === mealsToday
-          ? setMealsToday
-          : setMealsTomorrow;
+      const setMealsFn = targetMeals === mealsToday ? setMealsToday : setMealsTomorrow;
 
       setMealsFn((prev) => {
         if (!prev) return prev;
@@ -161,11 +129,89 @@ function Meals() {
     }
   };
 
-  if (!mealsToday || !mealsTomorrow) return null;
+  const createMeals = async () => {
+    console.log("식단 생성 시작...");
+    setLoading(true); // 식단 생성 시작 시 로딩 상태 활성화
+    try {
+      const createdMeals = await getTodayMeals(currentMember.member_id); // 식단 생성 요청
+      console.log("식단 생성 완료:", createdMeals);
+      setMealsToday(createdMeals); // 오늘 식단 상태 업데이트
+      setMealError(false); // 식단 생성 성공시 오류 상태 초기화
 
+      // 식단 생성 후 getMealsByDate로 다시 요청하여 최신 식단 정보를 가져옴
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+
+      const [todayMeals, tomorrowMeals] = await Promise.all([
+        getMealsByDate(currentMember.member_id, today),
+        getMealsByDate(currentMember.member_id, tomorrow),
+      ]);
+
+      setMealsToday(todayMeals);
+      setMealsTomorrow(tomorrowMeals);
+    } catch (err) {
+      console.error("식단 생성 실패", err);
+    } finally {
+      setLoading(false); // 식단 생성 완료 후 로딩 상태 비활성화
+      console.log("로딩 상태 비활성화");
+    }
+  };
+
+  return {
+    mealsToday,
+    mealsTomorrow,
+    handleRefresh,
+    refreshingMealId,
+    mealError,
+    createMeals,
+    loading,
+  };
+}
+
+function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
+  const { currentMember } = useCurrentMember();
+  const {
+    mealsToday,
+    mealsTomorrow,
+    handleRefresh,
+    refreshingMealId,
+    mealError,
+    createMeals,
+    loading,
+  } = useMeals(currentMember);
   const hour = new Date().getHours();
 
-  // 조건에 따라 어떤 식단 보여줄지 결정
+  useEffect(() => {
+    console.log("Meals 컴포넌트 렌더링, 로딩 상태:", loading);
+  }, [loading]);
+
+  if (mealError) {
+    return (
+      <div className="mt-2 px-4 flex gap-4">
+        {/* "식단 생성하기" 버튼 */}
+        {!loading ? (
+          <button
+            onClick={createMeals}
+            className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+          >
+            식단 생성하기
+          </button>
+        ) : (
+          <div className="w-full flex justify-center items-center">
+            {/* Tailwind로 로딩 스피너 및 메시지 표시 */}
+            <div className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg">
+              <div className="w-10 h-10 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+              <p className="text-base font-medium text-gray-800">AI가 일주일 식단 생성중</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (!mealsToday || !mealsTomorrow) return null;
+
   const selectedMeals = (() => {
     if (hour >= 5 && hour < 11) {
       return [
@@ -188,23 +234,58 @@ function Meals() {
   return (
     <div className="mt-2 px-4 flex gap-4">
       {selectedMeals.map(({ title, data, color }) => (
-        <div key={data.meal_id} className={`rounded-xl p-4 w-full text-white relative ${color}`}>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-lg">{title}</h3>
+        <div
+          key={data.meal_id}
+          className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
+          onClick={() => onShowMealPage?.()}
+        >
+          {/* 새로고침 로딩 스피너 */}
+          {refreshingMealId === data.meal_id && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
+              <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-white bg-opacity-90 rounded-lg shadow-lg">
+                <div className="w-12 h-12 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+                <p className="text-base font-medium text-gray-800 text-center">AI 생성중</p>
+              </div>
+            </div>
+          )}
+
+          {/* 전체 로딩 스피너 */}
+          {loading && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
+              <div
+                className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="w-16 h-16 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
+                <p className="text-base font-medium text-gray-800 mt-4">AI 생성중</p>
+              </div>
+            </div>
+          )}
+
+          {/* 제목 + 버튼 */}
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-base font-semibold">{title}</h3>
             <button
-              onClick={() => handleRefresh(data.meal_id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRefresh(data.meal_id);
+              }}
               disabled={refreshingMealId === data.meal_id}
+              className="flex items-center gap-1"
             >
-              <BsArrowClockwise
-                className={`w-5 h-5 ${refreshingMealId === data.meal_id ? "animate-spin text-white/70" : "text-white"}`}
-              />
+              <BsArrowClockwise className="w-5 h-5 text-white" />
             </button>
           </div>
-          {data.menu.map((item, index) => (
-            <p key={index} className="text-sm">
-              {item}
-            </p>
-          ))}
+
+          {/* 메뉴 목록 */}
+          <ul className="space-y-1 text-sm">
+            {data.menu.map((item, index) => (
+              <li key={index} className="truncate">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </div>
@@ -224,31 +305,31 @@ function GreetingSection({ name }: { name?: string }) {
 }
 
 // Today's Diet Recommendation Section
-function TodaysDietSection() {
+function TodaysDietSection({ onShowMealPage }: { onShowMealPage?: () => void }) {
   return (
     <Section>
       <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>오늘의 추천 식단</SectionTitle>
-      <Meals />
+      <Meals onShowMealPage={onShowMealPage} />
     </Section>
   );
 }
 
-function MainPage() {
+function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
   const { currentMember } = useCurrentMember();
-  const { mainMaterials, fetchMainMaterials } = useMaterialContext();
+  const { ingredients } = useIngredientsContext();
 
   useEffect(() => {
     if (currentMember) {
       console.log(currentMember);
     }
-  }, [currentMember, fetchMainMaterials]);
+  }, [currentMember]);
 
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
-      <TodaysDietSection />
+      <TodaysDietSection onShowMealPage={onShowMealPage} />
       <SectionDivider />
-      <MaterialsSection materials={mainMaterials} />
+      <IngredientsSection ingredients={ingredients} />
     </div>
   );
 }

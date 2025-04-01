@@ -6,6 +6,9 @@ from app.api.risky_check import router as risky_check_router
 from app.api.comment import router as comment_router
 from app.api.risky_food_by_ingredient import router as risky_food_by_ingredient_router
 from app.api.meal_plan import router as meal_plan_router
+from app.api.menu_vector import router as menu_vector_router
+from app.api.meal_plan_rag import router as meal_plan_rag_router
+from app.api.disease_vector import router as disease_vector_router
 from app.api.dbtest import router as dbtest_router
 import logging
 
@@ -28,8 +31,12 @@ app.include_router(risky_check_router, prefix="/llm")
 app.include_router(comment_router, prefix="/llm")
 app.include_router(risky_food_by_ingredient_router, prefix="/llm")
 app.include_router(meal_plan_router, prefix="/llm")
+app.include_router(menu_vector_router, prefix="/llm")
+app.include_router(meal_plan_rag_router, prefix="/llm")
+app.include_router(disease_vector_router, prefix="/llm")
 app.include_router(dbtest_router, prefix="/test")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

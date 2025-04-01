@@ -13,8 +13,8 @@ export interface Log {
 // 그룹화된 로그 인터페이스
 export interface GroupedLogs {
   [date: string]: {
-    material: string;
-    material_image: string;
+    ingredient: string;
+    ingredient_image: string;
     user_name: string;
     user_image: string;
     type: string;

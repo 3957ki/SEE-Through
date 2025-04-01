@@ -80,4 +80,26 @@ public class MemberRepositoryImpl implements MemberRepository {
 
 		return result;
 	}
+
+	@Override
+	public List<Member> findAllMembers() {
+		log.debug("[Repository] findAllMembers 호출");
+
+		List<Member> result = memberJpaRepository.findAll();
+
+		log.debug("[Repository] 구성원 수: {}", result.size());
+
+		return result;
+	}
+
+	@Override
+	public Integer findMaxNewMemberNumber() {
+		log.debug("[Repository] findMaxNewMemberNumber 호출");
+
+		Integer result = memberJpaRepository.findMaxUserNumber();
+
+		log.debug("[Repository] 신규 구성원 숫자: {}", result);
+
+		return result;
+	}
 }

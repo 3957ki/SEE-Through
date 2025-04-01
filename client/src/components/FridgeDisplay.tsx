@@ -29,7 +29,7 @@ function FridgeDisplay({
 
   // 각 페이지
   const pages = {
-    main: <MainPage />,
+    main: <MainPage onShowMealPage={() => handleNavigate("meal")} />,
     logs: <LogPage />,
     monitoring: <MonitoringPage currentPin={currentPin} onPinChange={setCurrentPin} />,
     example: <ExamplePage />,

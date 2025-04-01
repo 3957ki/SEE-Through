@@ -9,7 +9,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.seethrough.api.alert.application.service.AlertService;
 import com.seethrough.api.alert.domain.event.CreateAlertByMemberEvent;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
@@ -18,7 +17,6 @@ import com.seethrough.api.member.application.mapper.MemberDtoMapper;
 import com.seethrough.api.member.domain.Member;
 import com.seethrough.api.member.domain.MemberRepository;
 import com.seethrough.api.member.exception.MemberNotFoundException;
-import com.seethrough.api.member.infrastructure.nickname.NicknameApiService;
 import com.seethrough.api.member.presentation.dto.request.DislikedFoodsRequest;
 import com.seethrough.api.member.presentation.dto.request.LoginMemberRequest;
 import com.seethrough.api.member.presentation.dto.request.PreferredFoodsRequest;
@@ -39,8 +37,6 @@ public class MemberService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 	private final MemberRepository memberRepository;
 	private final MemberDtoMapper memberDtoMapper;
-	private final AlertService alertService;
-	private final NicknameApiService nicknameApiService;
 
 	@Transactional
 	public LoginMemberResult login(LoginMemberRequest request) {
@@ -62,20 +58,17 @@ public class MemberService {
 
 			isNewMember = true;
 
-			Member.MemberBuilder newMemberBuilder = Member.builder()
+			Integer maxNumber = memberRepository.findMaxNewMemberNumber();
+			int nextNumber = (maxNumber != null) ? maxNumber + 1 : 1;
+			String name = "신규 사용자" + nextNumber;
+
+			member = Member.builder()
 				.memberId(UUID.fromString(request.getMemberId()))
+				.name(name)
 				.age(request.getAge())
 				.imagePath(request.getImagePath())
-				.recognitionTimes(1);
-
-			String name = nicknameApiService.getNicknameSync();
-
-			if (name != null) {
-				log.debug("[Service] 랜덤 닉네임 생성 완료: {}", name);
-				newMemberBuilder.name(name);
-			}
-
-			member = newMemberBuilder.build();
+				.recognitionTimes(1)
+				.build();
 
 			memberRepository.save(member);
 		}
@@ -124,6 +117,8 @@ public class MemberService {
 		member.update(
 			request.getName(),
 			request.getBirth(),
+			request.getColor(),
+			request.getFontSize(),
 			request.getPreferredFoods(),
 			request.getDislikedFoods(),
 			request.getAllergies(),
@@ -236,6 +231,13 @@ public class MemberService {
 
 	public List<Member> findMembersByLastLoginAtAfter(LocalDateTime date) {
 		return memberRepository.findMembersByLastLoginAtAfter(date);
+	}
+
+	@Transactional
+	public void updateAllMembersAge() {
+		List<Member> members = memberRepository.findAllMembers();
+
+		members.forEach(Member::calculateAge);
 	}
 
 	private Member findMember(UUID memberId) {
