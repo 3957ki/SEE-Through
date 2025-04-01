@@ -7,19 +7,12 @@ import {
   useOptimisticIngredientUpdates,
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
-import { useState, type DragEvent } from "react";
+import { type DragEvent } from "react";
 
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
   const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
-
-  const [dialogMessage, setDialogMessage] = useState<string>("");
-  const [showDialog, setShowDialog] = useState<boolean>(false);
-
-  const handleCloseDialog = () => {
-    setShowDialog(false);
-  };
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -34,17 +27,9 @@ function ShowcaseScreen() {
 
       // Use the mutation for optimistic updates
       addIngredient.mutate(ingredient);
-
-      // Show success message
-      setDialogMessage("Ingredient successfully added to the fridge!");
-      setShowDialog(true);
     } catch (error) {
       // Log the error for debugging
       console.error("Failed to handle drop:", error);
-
-      // Show error message in dialog after failure
-      setDialogMessage("Failed to add ingredient. Please try again.");
-      setShowDialog(true);
     }
   };
 
@@ -54,17 +39,9 @@ function ShowcaseScreen() {
     try {
       // Use the mutation for optimistic updates
       removeIngredient.mutate(ingredient.ingredient_id);
-
-      // Show success message
-      setDialogMessage("Ingredient successfully removed from the fridge!");
-      setShowDialog(true);
     } catch (error) {
       // Log the error for debugging
       console.error("Error occurred while removing ingredient:", error);
-
-      // Show error message in dialog after failure
-      setDialogMessage("Failed to remove ingredient. Please try again.");
-      setShowDialog(true);
     }
   };
 
@@ -99,21 +76,6 @@ function ShowcaseScreen() {
       <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none">
         <Table outsideIngredients={outsideIngredients} />
       </div>
-
-      {/* Simple Dialog for success/error messages */}
-      {showDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-5 rounded-lg max-w-md">
-            <p className="mb-4">{dialogMessage}</p>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={handleCloseDialog}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
