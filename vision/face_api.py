@@ -16,7 +16,6 @@ import sys
 from contextlib import asynccontextmanager
 import traceback
 
-
 # 로그 설정
 logger = logging.getLogger("face_api")
 logger.setLevel(logging.DEBUG)
@@ -73,7 +72,7 @@ def save_image(face_region, temp_file_path, user_image_path):
 
 
 # 얼굴 인식 API
-@vision_router.websocket("/find_faces/")
+@vision_router.websocket("/find-faces")
 async def websocket_find_faces(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -86,7 +85,7 @@ async def websocket_find_faces(websocket: WebSocket):
                 "uuid"
             )  # 프론트에 현재 UUID가 있다면 IOU 크기가 작을 때 UUID를 담을 것, 현재 UUID가 없다면 담으면 안됨
 
-            logger.info("얼굴 인식 요청")
+            logger.info(f"얼굴 인식 요청 level: {level} uuid: {provided_uuid}")
 
             # Base64 디코딩하여 이미지 변환
             image_data = base64.b64decode(image_base64)
@@ -105,6 +104,7 @@ async def websocket_find_faces(websocket: WebSocket):
                     model_name=model,
                     detector_backend=detector_backend,
                     silent=True,
+                    threshold=0.3,
                 )
 
                 result = []
@@ -144,6 +144,7 @@ async def websocket_find_faces(websocket: WebSocket):
                         if provided_uuid:
                             # uuid가 같다면 강제로 신규 등록
                             if provided_uuid == detected_uuid:
+                                logger.info("uuid가 같음")
                                 user_id = str(uuid.uuid4())
                                 is_new = True
 
@@ -186,6 +187,7 @@ async def websocket_find_faces(websocket: WebSocket):
 
                     # 인식 결과가 없다면
                     else:
+                        logger.info("인식 결과 없음")
                         user_id = provided_uuid if provided_uuid else str(uuid.uuid4())
                         is_new = True
 
@@ -214,7 +216,6 @@ async def websocket_find_faces(websocket: WebSocket):
 
                         result = [{"identity": user_id}]
 
-                logger.info(f"응답 결과: {result}")
                 await websocket.send_json({"result": result, "is_new": is_new})
 
             except Exception as e:
@@ -227,7 +228,7 @@ async def websocket_find_faces(websocket: WebSocket):
 
 
 # 사용자 얼굴 이미지 Get
-@vision_router.get("/get_faces/")
+@vision_router.get("/get-faces")
 async def get_faces(user_id: str):
     # 사용자 이미지 경로 설정
     user_image_path = os.path.join(db_path, f"{user_id}.jpg")
