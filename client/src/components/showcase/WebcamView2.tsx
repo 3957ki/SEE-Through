@@ -13,8 +13,8 @@ import { useEffect, useRef, useState } from "react";
 
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
-const SMALL_FACE_CUT = 15000;
-const LARGE_FACE_CUT = 30000;
+const SMALL_FACE_CUT = 10000;
+const LARGE_FACE_CUT = 25000;
 const IOU_CUT = 0.5;
 
 function WebcamView() {
@@ -89,7 +89,7 @@ function WebcamView() {
       }
     }
 
-    // 레벨 2: 로그는 딱 한 번만 출력, 타이머 정리
+    // 레벨 2: 로그는 딱 한 번만 출력, 타이머 정리 (IOU 값에 따른 요청 분기로 수정 예정)
     else if (newLevel === 2) {
       if (isLocalServerConnected()) {
         console.log("[레벨 2] 요청");
@@ -98,75 +98,34 @@ function WebcamView() {
     }
   };
 
-  const requestQueue = useRef<{
-    pending: boolean;
-    nextRequest: null | { level: number; uuid: any };
-  }>({
-    pending: false,
-    nextRequest: null,
-  });
-
   // 이미지 요청 보내는 함수
   function sendNextFrame(level: number, uuid: any) {
-    if (processingTimeoutRef.current) {
-      clearTimeout(processingTimeoutRef.current);
-      processingTimeoutRef.current = null;
-    }
-
     if (!isLocalServerConnected()) {
       return;
     }
     console.log(`이미지 요청 보내기 level: ${level} uuid: ${uuid}`);
 
-    if (requestQueue.current.pending) {
-      // 다음 요청으로 저장
-      requestQueue.current.nextRequest = { level, uuid };
-      return;
-    }
-
-    // 진행 중으로 표시
-    requestQueue.current.pending = true;
-
     const video = videoRef.current;
     if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-      const tempCanvas = tempCanvasRef.current;
-      if (tempCanvas) {
-        const tempCtx = tempCanvas.getContext("2d");
-        if (tempCtx) {
-          tempCtx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
-          lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
-          const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = VIDEO_WIDTH;
+      tempCanvas.height = VIDEO_HEIGHT;
+      const tempCtx = tempCanvas.getContext("2d");
 
-          processingTimeoutRef.current = window.setTimeout(() => {
-            console.warn("[WebSocket] 응답 타임아웃");
-            requestQueue.current.pending = false;
+      if (tempCtx) {
+        tempCtx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+        lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+        const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
-            // 큐에 다음 항목이 있으면 처리
-            if (requestQueue.current.nextRequest) {
-              const { level, uuid } = requestQueue.current.nextRequest;
-              requestQueue.current.nextRequest = null;
-              sendNextFrame(level, uuid);
-            }
-          }, 5000);
+        processingTimeoutRef.current = window.setTimeout(() => {
+          console.warn("[WebSocket] 응답 타임아웃");
+          sendNextFrame(level, uuid); // timeout 후에도 계속 시도
+        }, 5000);
 
-          sendToLocalServer({ image: frameData, level: level, uuid: uuid });
-        }
+        sendToLocalServer({ image: frameData, level: level, uuid: uuid });
       }
     }
   }
-
-  // 초기화 중에 한 번만 생성
-  const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    tempCanvasRef.current = document.createElement("canvas");
-    tempCanvasRef.current.width = VIDEO_WIDTH;
-    tempCanvasRef.current.height = VIDEO_HEIGHT;
-
-    return () => {
-      tempCanvasRef.current = null;
-    };
-  }, []);
 
   // 웹캠 인식 시작
   useEffect(() => {
@@ -216,9 +175,9 @@ function WebcamView() {
             const iou = calculateIOU(currentBox, prevBox);
             iouText = `IOU: ${iou.toFixed(2)}`;
 
-            if (nextFaceLevel.level === 2 && iou < IOU_CUT && !requestQueue.current.pending) {
+            if (iou < IOU_CUT) {
               console.log("[IOU] 낮은 IOU 감지됨:", iou.toFixed(2));
-              // sendNextFrame(nextFaceLevel.level, currentMemberRef.current?.member_id);
+              sendNextFrame(nextFaceLevel.level, currentMemberRef.current?.member_id);
             }
           }
 
@@ -347,34 +306,18 @@ function WebcamView() {
   };
 
   const cleanup = () => {
-    // 애니메이션 프레임 중지
-    if (requestRef.current) {
-      cancelAnimationFrame(requestRef.current);
-    }
-
-    // 미디어 스트림 중지
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach((track) => track.stop());
     }
 
-    // 모든 타임아웃 및 인터벌 정리
     if (connectionCheckIntervalRef.current) {
       window.clearInterval(connectionCheckIntervalRef.current);
-      connectionCheckIntervalRef.current = null;
     }
     if (processingTimeoutRef.current) {
       window.clearTimeout(processingTimeoutRef.current);
-      processingTimeoutRef.current = null;
     }
-
-    // 웹소켓 연결 해제
     disconnectLocalServer();
-
-    // 상태 재설정
-    isInitializedRef.current = false;
-    prevBoundingBoxRef.current = null;
-    lastProcessedFrameRef.current = null;
   };
 
   useEffect(() => {
@@ -411,6 +354,8 @@ function WebcamView() {
 
   // 얼굴 레벨에 따른 기능
   useEffect(() => {
+    let shouldContinue = true;
+
     // 웹소켓 메시지 핸들러
     async function handleFaceRecognition(result: any) {
       if (processingTimeoutRef.current) {
@@ -419,8 +364,6 @@ function WebcamView() {
       }
 
       console.log("[WebSocket] 응답 수신:", result);
-
-      requestQueue.current.pending = false;
 
       const isNew = result?.is_new;
       const detected = result?.result?.[0];
@@ -467,15 +410,10 @@ function WebcamView() {
         setCurrentMemberRef.current(null);
       }
 
-      // 큐에 다음 항목이 있으면 처리
-      if (requestQueue.current.nextRequest) {
-        const { level, uuid } = requestQueue.current.nextRequest;
-        requestQueue.current.nextRequest = null;
-        sendNextFrame(level, uuid);
-      } else if (faceLevelRef.current.level === 1) {
-        // 레벨이 1인 경우에만 자동으로 계속
+      // 레벨 1이라면 다음 프레임 0.1초 후 전송
+      if (shouldContinue && faceLevelRef.current.level === 1) {
         setTimeout(() => {
-          if (faceLevelRef.current.level === 1) {
+          if (shouldContinue && faceLevelRef.current.level === 1) {
             sendNextFrame(1, null);
           }
         }, 100);
@@ -485,6 +423,7 @@ function WebcamView() {
     onLocalServerMessage(handleFaceRecognition);
 
     return () => {
+      shouldContinue = false;
       offLocalServerMessage(handleFaceRecognition);
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);

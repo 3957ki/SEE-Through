@@ -267,6 +267,9 @@ def find(
         anti_spoofing=anti_spoofing,
     )
 
+    if len(source_objs) == 0:
+        raise ValueError("No face")
+
     if batched:
         return find_batched(
             representations,
