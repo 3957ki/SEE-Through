@@ -43,7 +43,6 @@ function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: 
 function App() {
   // Set showcase mode as default
   const [isShowcase, setIsShowcase] = useState(true);
-  const [scale, setScale] = useState(1);
 
   // Initialize WebSocket connection when the app starts
   useEffect(() => {
@@ -54,33 +53,24 @@ function App() {
     };
   }, []);
 
-  // Calculate appropriate scale based on viewport dimensions
-  useEffect(() => {
-    if (!isShowcase) {
-      const handleResize = () => {
-        const targetWidth = 720;
-        const targetHeight = 1280;
-        const widthScale = (window.innerWidth * 0.85) / targetWidth;
-        const heightScale = (window.innerHeight * 0.85) / targetHeight;
-        setScale(Math.min(widthScale, heightScale));
-      };
-
-      handleResize();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, [isShowcase]);
-
   return (
     <MemberContextsProvider>
       <IngredientsProivder>
         {isShowcase ? (
           <ShowcaseScreen />
         ) : (
-          <div className="w-screen h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
-            <div className="relative max-h-full max-w-full flex items-center justify-center">
-              <div style={{ transform: `scale(${scale})` }}>
-                <FridgeDisplay targetWidth={720} targetHeight={1280} />
+          <div className="w-screen h-screen bg-gray-100 flex items-center justify-center overflow-hidden">
+            <div className="relative w-full h-full max-w-screen max-h-screen flex items-center justify-center">
+              <div
+                style={{
+                  width: "min(100vw, calc(100vh * 720/1280))",
+                  height: "min(100vh, calc(100vw * 1280/720))",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  position: "relative",
+                }}
+              >
+                <FridgeDisplay />
               </div>
             </div>
           </div>

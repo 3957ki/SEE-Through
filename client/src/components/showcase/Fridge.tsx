@@ -1,15 +1,45 @@
+import FridgeDisplay from "@/components/FridgeDisplay";
 import Ingredient from "@/interfaces/Ingredient";
-import { useState, type CSSProperties, type DragEvent, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type DragEvent } from "react";
+
+// Constants for FridgeDisplay dimensions
+const FRIDGE_DISPLAY_WIDTH = 600;
+const DISPLAY_CONTAINER_WIDTH = 400;
+const ASPECT_RATIO = 9 / 16; // height / width
+const FRIDGE_DISPLAY_HEIGHT = FRIDGE_DISPLAY_WIDTH / ASPECT_RATIO;
+const DISPLAY_CONTAINER_HEIGHT = DISPLAY_CONTAINER_WIDTH / ASPECT_RATIO;
+const SCALE_FACTOR = DISPLAY_CONTAINER_WIDTH / FRIDGE_DISPLAY_WIDTH;
 
 interface FridgeProps {
-  children?: ReactNode;
   handleDrop: (e: DragEvent<HTMLDivElement>) => void;
   insideIngredients: Ingredient[];
   ingredientOnClick: (ingredient: Ingredient) => void;
 }
 
-function Fridge({ children, handleDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
+function Fridge({ handleDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
+
+  useEffect(() => {
+    const calculateScale = () => {
+      const container = document.querySelector(".fridge-display-container") as HTMLElement;
+      if (!container) return;
+
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const targetWidth = 720;
+      const targetHeight = 1280;
+
+      const scaleX = containerWidth / targetWidth;
+      const scaleY = containerHeight / targetHeight;
+      const scale = Math.min(scaleX, scaleY);
+
+      container.style.setProperty("--scale-factor", scale.toString());
+    };
+
+    calculateScale();
+    window.addEventListener("resize", calculateScale);
+    return () => window.removeEventListener("resize", calculateScale);
+  }, []);
 
   // Grid layout constants
   const GRID_COLUMNS = 3;
@@ -292,25 +322,46 @@ function Fridge({ children, handleDrop, insideIngredients, ingredientOnClick }: 
           <rect x="492.5" y="7.5" width="481" height="944" stroke="black" />
         </g>
         {/* 오른쪽 도어에 children 렌더링 */}
-        <foreignObject
-          x="492"
-          y="7"
-          width="482"
-          height="945"
-          style={{ background: "none", fill: "none" }}
-        >
+        <foreignObject x="492" y="7" width="482" height="945">
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
               width: "100%",
               height: "100%",
-              background: "none",
-              backgroundColor: "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
           >
-            {children}
+            <div
+              style={{
+                width: `${DISPLAY_CONTAINER_WIDTH}px`,
+                height: `${DISPLAY_CONTAINER_HEIGHT}px`,
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  transform: `scale(${SCALE_FACTOR})`,
+                  transformOrigin: "top left",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${FRIDGE_DISPLAY_WIDTH}px`,
+                    height: `${FRIDGE_DISPLAY_HEIGHT}px`,
+                  }}
+                >
+                  <FridgeDisplay />
+                </div>
+              </div>
+            </div>
           </div>
         </foreignObject>
         <defs>
