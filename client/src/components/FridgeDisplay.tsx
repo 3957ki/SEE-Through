@@ -12,26 +12,11 @@ import LogPage from "./pages/LogPage";
 import MonitoringPage from "./pages/MonitoringPage";
 
 interface FridgeDisplayProps {
-  containerRef?: RefObject<HTMLElement>;
   className?: string;
-  targetWidth?: number;
-  targetHeight?: number;
-  showDialog: boolean; // Add showDialog here
-  dialogMessage: string; // Add dialogMessage here
-  onCloseDialog: () => void; // Add onCloseDialog here
 }
 
-function FridgeDisplay({
-  containerRef,
-  className = "",
-  targetWidth = 375,
-  targetHeight = 667,
-  showDialog, // Destructure showDialog prop
-  dialogMessage, // Destructure dialogMessage prop
-  onCloseDialog, // Destructure onCloseDialog prop
-}: FridgeDisplayProps) {
-  const localRef = useRef<HTMLDivElement>(null);
-  const fridgeDisplayRef = containerRef || localRef;
+function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
+  const displayRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
 
@@ -56,28 +41,26 @@ function FridgeDisplay({
 
   return (
     <div
-      className={cn(
-        "bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative",
-        className
-      )}
-      style={{
-        width: `${targetWidth}px`,
-        height: `${targetHeight}px`,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-      }}
+      ref={displayRef}
+      className={cn("w-full h-full flex items-center justify-center", className)}
     >
-      <DialogContextProvider portalTargetContainerRef={fridgeDisplayRef as RefObject<HTMLElement>}>
-        <div className="w-full shrink-0">
-          <Header />
-        </div>
+      <div
+        className="bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative"
+        style={{
+          width: "100%",
+          height: "100%",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          fontSize: "calc(16px * 0.3)", // Scale down font size
+        }}
+      >
+        <DialogContextProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
+          <div className="w-full shrink-0">
+            <Header />
+          </div>
 
-        <div
-          ref={localRef}
-          className="flex-1 overflow-auto"
-          style={{ height: `calc(100% - 56px - 56px)` }}
-        >
-          <div className="px-1">{pages[currentPage]}</div>
-        </div>
+          <div className="flex-1 overflow-auto" style={{ height: `calc(100% - 56px - 56px)` }}>
+            <div className="px-1">{pages[currentPage]}</div>
+          </div>
 
         <div className="w-full bg-white border-t">
           <BottomNavigation

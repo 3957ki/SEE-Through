@@ -1,5 +1,4 @@
 import { deleteIngredient, insertIngredient } from "@/api/ingredients";
-import FridgeDisplay from "@/components/FridgeDisplay";
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
@@ -13,7 +12,7 @@ const showcaseIngredients = [
   {
     ingredient_id: "99999999-0000-0000-0000-000000000001",
     name: "두부",
-    image_path: "showcase1",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/tofu.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000002",
@@ -153,22 +152,7 @@ function ShowcaseScreen() {
             handleDrop={handleDrop}
             insideIngredients={insideIngredients}
             ingredientOnClick={takeoutIngredient}
-          >
-            <div
-              className="w-full h-full overflow-hidden flex items-center justify-center bg-gray-50"
-              style={{ background: "none", fill: "none" }}
-            >
-              <div className="flex items-center justify-center">
-                <FridgeDisplay
-                  targetWidth={375}
-                  targetHeight={667}
-                  showDialog={showDialog}
-                  dialogMessage={dialogMessage}
-                  onCloseDialog={handleCloseDialog}
-                />
-              </div>
-            </div>
-          </Fridge>
+          />
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
