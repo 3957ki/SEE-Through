@@ -61,10 +61,24 @@ app.add_middleware(
 
 
 # 이미지 저장 함수
-def save_image(face_region, temp_file_path, user_image_path):
+def save_image(face_region, temp_file_path, user_image_path, padding_ratio=0.5):
     try:
         original_image = Image.open(temp_file_path)
-        cropped_face = original_image.crop(face_region)
+        width, height = original_image.size
+
+        x1, y1, x2, y2 = face_region
+        face_width = x2 - x1
+        face_height = y2 - y1
+
+        pad_w = int(face_width * padding_ratio)
+        pad_h = int(face_height * padding_ratio)
+
+        x1 = max(0, x1 - pad_w)
+        y1 = max(0, y1 - pad_h)
+        x2 = min(width, x2 + pad_w)
+        y2 = min(height, y2 + pad_h)
+
+        cropped_face = original_image.crop((x1, y1, x2, y2))
         cropped_face.save(user_image_path, format="JPEG")
     except Exception as e:
         logger.warning(f"얼굴 이미지 자르기 실패: {e}, 원본 이미지 저장")

@@ -437,7 +437,7 @@ function WebcamView() {
           const newMember = await createAndGetMember({
             member_id: memberId,
             age: 0,
-            image_path: "null",
+            image_path: `${import.meta.env.VITE_LOCAL_SERVER_URL}/vision/get-faces?user_id=${memberId}`,
           });
           const members = await getMembers();
           setMembersRef.current(members);
