@@ -1,3 +1,4 @@
+import CommentDialog from "@/components/dialog/CommentDialog";
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import ExamplePage from "@/components/pages/ExamplePage";
@@ -9,11 +10,15 @@ import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
 import LogPage from "./pages/LogPage";
 import MonitoringPage from "./pages/MonitoringPage";
+
 interface FridgeDisplayProps {
   containerRef?: RefObject<HTMLElement>;
   className?: string;
   targetWidth?: number;
   targetHeight?: number;
+  showDialog: boolean; // Add showDialog here
+  dialogMessage: string; // Add dialogMessage here
+  onCloseDialog: () => void; // Add onCloseDialog here
 }
 
 function FridgeDisplay({
@@ -21,6 +26,9 @@ function FridgeDisplay({
   className = "",
   targetWidth = 375,
   targetHeight = 667,
+  showDialog, // Destructure showDialog prop
+  dialogMessage, // Destructure dialogMessage prop
+  onCloseDialog, // Destructure onCloseDialog prop
 }: FridgeDisplayProps) {
   const localRef = useRef<HTMLDivElement>(null);
   const fridgeDisplayRef = containerRef || localRef;
@@ -80,6 +88,8 @@ function FridgeDisplay({
             isFixed={false}
           />
         </div>
+        {/* Show the CommentDialog if showDialog is true */}
+        {showDialog && <CommentDialog message={dialogMessage} onClose={onCloseDialog} />}
       </DialogContextProvider>
     </div>
   );
