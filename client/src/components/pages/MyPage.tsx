@@ -17,7 +17,7 @@ import { ko } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
-const MEASUREMENT_TYPES = ["질병", "알러지", "선호 음식", "비선호 음식"] as const;
+const MEASUREMENT_TYPES = ["선호 음식", "비선호 음식", "질병", "알러지"] as const;
 
 type MeasurementType = (typeof MEASUREMENT_TYPES)[number];
 
@@ -251,7 +251,7 @@ export default function MyPage() {
         <div className="flex gap-4">
           <div className="flex-1 flex items-center gap-2">
             <label htmlFor="colorBlind" className="flex items-center gap-2 cursor-pointer">
-              <span className="text-sm">색맹 여부</span>
+              <span className="text-sm text-gray-500 mb-1">색맹 여부</span>
               <Checkbox
                 id="colorBlind"
                 checked={isColorBlind}
@@ -261,9 +261,9 @@ export default function MyPage() {
           </div>
 
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm whitespace-nowrap">폰트 크기</span>
+            <span className="text-sm text-gray-500 mb-1">폰트 크기</span>
             <Select value={fontSize} onValueChange={setFontSize}>
-              <SelectTrigger className="w-[100px] h-9">
+              <SelectTrigger className="w-[80px] h-9">
                 <SelectValue placeholder="폰트 크기" className="text-sm" />
               </SelectTrigger>
               <SelectContent sideOffset={0} align="center">
@@ -282,16 +282,17 @@ export default function MyPage() {
         </div>
 
         {/* Measurement Type Selection */}
-        <div className="flex gap-2 border-b">
+        <div className="flex border-b">
           {MEASUREMENT_TYPES.map((type) => (
             <button
               type="button"
               key={type}
-              className={`py-2 px-4 ${
+              className={`py-2 px-2 text-sm ${
                 measurementType === type
                   ? "text-orange-500 border-b-2 border-orange-500"
                   : "text-gray-500"
               }`}
+              style={{ flex: type.length }}
               onClick={() => setMeasurementType(type)}
             >
               {type}
@@ -301,6 +302,9 @@ export default function MyPage() {
 
         {/* Input Fields */}
         <div className="space-y-4">
+          <Button variant="outline" className="w-full" onClick={handleShowAddDialog}>
+            {measurementType} 추가
+          </Button>
           <div className="grid grid-cols-2 gap-4">
             {getCurrentList().map((item, index) => (
               <div
@@ -321,9 +325,6 @@ export default function MyPage() {
               </div>
             ))}
           </div>
-          <Button variant="outline" className="w-full" onClick={handleShowAddDialog}>
-            {measurementType} 추가
-          </Button>
         </div>
 
         <div className="flex gap-2 mt-4">
