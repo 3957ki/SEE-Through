@@ -63,8 +63,7 @@ function IngredientsSection({ ingredients }: { ingredients: Ingredient[] }) {
   );
 }
 
-function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
-  const { currentMember } = useCurrentMember();
+function useMeals(currentMember: any) {
   const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
   const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
@@ -72,7 +71,6 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
   useEffect(() => {
     const fetchMeals = async () => {
       if (!currentMember) return;
-
       const today = new Date();
       const tomorrow = new Date();
       tomorrow.setDate(today.getDate() + 1);
@@ -95,17 +93,14 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
     setRefreshingMealId(mealId);
     try {
       const updated = await refreshMeal(mealId);
+      const targetMeals = [mealsToday, mealsTomorrow].find(
+        (meals) =>
+          meals?.breakfast.meal_id === mealId ||
+          meals?.lunch.meal_id === mealId ||
+          meals?.dinner.meal_id === mealId
+      );
 
-      // 업데이트 대상이 오늘 식단인지 내일 식단인지 판단
-      const setMealsFn =
-        [mealsToday, mealsTomorrow].find(
-          (meals) =>
-            meals?.breakfast.meal_id === mealId ||
-            meals?.lunch.meal_id === mealId ||
-            meals?.dinner.meal_id === mealId
-        ) === mealsToday
-          ? setMealsToday
-          : setMealsTomorrow;
+      const setMealsFn = targetMeals === mealsToday ? setMealsToday : setMealsTomorrow;
 
       setMealsFn((prev) => {
         if (!prev) return prev;
@@ -122,11 +117,15 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
     }
   };
 
-  if (!mealsToday || !mealsTomorrow) return null;
-
+  return { mealsToday, mealsTomorrow, handleRefresh, refreshingMealId };
+}
+function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
+  const { currentMember } = useCurrentMember();
+  const { mealsToday, mealsTomorrow, handleRefresh, refreshingMealId } = useMeals(currentMember);
   const hour = new Date().getHours();
 
-  // 조건에 따라 어떤 식단 보여줄지 결정
+  if (!mealsToday || !mealsTomorrow) return null;
+
   const selectedMeals = (() => {
     if (hour >= 5 && hour < 11) {
       return [
@@ -168,43 +167,6 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
                   <div className="dot right-dot"></div>
                 </div>
                 <p className="text-base font-medium text-gray-800">AI 생성중</p>
-
-                <style>
-                  {`
-          .sambyul-spinner {
-            animation: spinSambyul 1s linear infinite;
-          }
-
-          .dot {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #1f2937; /* Tailwind의 text-gray-800 */
-            border-radius: 9999px;
-          }
-
-          .top-dot {
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-          }
-
-          .left-dot {
-            bottom: 10%;
-            left: 10%;
-          }
-
-          .right-dot {
-            bottom: 10%;
-            right: 10%;
-          }
-
-          @keyframes spinSambyul {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-                </style>
               </div>
             </div>
           )}
