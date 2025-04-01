@@ -110,7 +110,7 @@ def find(
 
     # 인식된 얼굴이 없을 때
     if len(source_objs) == 0:
-        return []
+        raise ValueError("No face")
 
     # Should we have no representations bailout
     if len(representations) == 0:
@@ -161,7 +161,7 @@ def find(
         result_df["source_w"] = source_region["w"]
         result_df["source_h"] = source_region["h"]
 
-        best_match_id = None
+        # best_match_id = None
         best_distance = float("inf")
 
         distances = []
@@ -189,7 +189,7 @@ def find(
             # **✅ 여기서 바로 가장 가까운 user_id를 저장**
             if distance < best_distance:
                 best_distance = distance
-                best_match_id = instance["identity"]  # 가장 가까운 identity 저장
+                # best_match_id = instance["identity"]  # 가장 가까운 identity 저장
 
             # ---------------------------
         target_threshold = threshold or verification.find_threshold(
@@ -208,26 +208,26 @@ def find(
 
         resp_obj.append(result_df)
 
-        # 바로 여기에서 가장 가까운 user_id를 사용하여 즉시 임베딩 업데이트
-        if best_match_id:
-            new_embedding = np.array(target_representation)
-            existing_rep = next(
-                (rep for rep in representations if rep["identity"] == best_match_id),
-                None,
-            )
+        # # 바로 여기에서 가장 가까운 user_id를 사용하여 즉시 임베딩 업데이트
+        # if best_match_id:
+        #     new_embedding = np.array(target_representation)
+        #     existing_rep = next(
+        #         (rep for rep in representations if rep["identity"] == best_match_id),
+        #         None,
+        #     )
 
-            # 인식된 횟수가 5번이 안됐다면 업데이트
-            if existing_rep and existing_rep["count"] != 5:
-                existing_rep["count"] += 1
+        # # 인식된 횟수가 5번이 안됐다면 업데이트
+        # if existing_rep and existing_rep["count"] != 5:
+        #     existing_rep["count"] += 1
 
-                alpha = 0.1  # 새로운 얼굴 반영 비율
-                existing_rep["embedding"] = (1 - alpha) * np.array(
-                    existing_rep["embedding"]
-                ) + alpha * new_embedding
+        #     alpha = 0.1  # 새로운 얼굴 반영 비율
+        #     existing_rep["embedding"] = (1 - alpha) * np.array(
+        #         existing_rep["embedding"]
+        #     ) + alpha * new_embedding
 
-                # 변경된 representations를 Pickle 파일에 저장
-                with open(datastore_path, "wb") as f:
-                    pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
+        #     # 변경된 representations를 Pickle 파일에 저장
+        #     with open(datastore_path, "wb") as f:
+        #         pickle.dump(representations, f, pickle.HIGHEST_PROTOCOL)
 
     # -----------------------------------
 

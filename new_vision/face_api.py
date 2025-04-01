@@ -112,10 +112,11 @@ async def websocket_find_faces(websocket: WebSocket):
                 # 얼굴 인식 수행
                 dfs = DeepFace.find(
                     img_path=temp_file_path,
-                    db_path=db_path,
+                    db_path=profile_path,
                     model_name=model,
                     detector_backend=detector_backend,
                     silent=True,
+                    threshold=0.3,
                 )
 
                 result = []

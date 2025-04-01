@@ -268,7 +268,7 @@ def find(
     )
 
     if len(source_objs) == 0:
-        return []
+        raise ValueError("No face")
 
     if batched:
         return find_batched(
