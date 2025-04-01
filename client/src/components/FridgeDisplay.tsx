@@ -1,4 +1,3 @@
-import CommentDialog from "@/components/dialog/CommentDialog";
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import ExamplePage from "@/components/pages/ExamplePage";
@@ -62,18 +61,17 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
             <div className="px-1">{pages[currentPage]}</div>
           </div>
 
-        <div className="w-full bg-white border-t">
-          <BottomNavigation
-            currentPin={currentPin}
-            onSuccess={handlePinSuccess}
-            currentPage={currentPage}
-            onNavigate={handleNavigate}
-            isFixed={false}
-          />
-        </div>
-        {/* Show the CommentDialog if showDialog is true */}
-        {showDialog && <CommentDialog message={dialogMessage} onClose={onCloseDialog} />}
-      </DialogContextProvider>
+          <div className="w-full bg-white border-t">
+            <BottomNavigation
+              currentPin={currentPin}
+              onSuccess={handlePinSuccess}
+              currentPage={currentPage}
+              onNavigate={handleNavigate}
+              isFixed={false}
+            />
+          </div>
+        </DialogContextProvider>
+      </div>
     </div>
   );
 }
