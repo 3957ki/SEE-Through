@@ -1,6 +1,7 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
 import Ingredient from "@/interfaces/Ingredient";
 import { useEffect, useState, type CSSProperties, type DragEvent } from "react";
+import ShowcaseIngredient from "./ShowcaseIngredient";
 
 // Constants for FridgeDisplay dimensions
 const FRIDGE_DISPLAY_WIDTH = 600;
@@ -171,21 +172,19 @@ function Fridge({ handleDrop, insideIngredients, ingredientOnClick }: FridgeProp
               {insideIngredients.map((item) => (
                 <div
                   key={`${item.ingredient_id}`}
-                  onClick={() => ingredientOnClick(item)}
                   style={{
                     width: `${GRID_CELL_WIDTH}px`,
                     height: `${GRID_CELL_HEIGHT}px`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: "rgba(59, 130, 246, 0.3)",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    transition: "background-color 0.2s",
                   }}
-                  className="hover:bg-blue-400"
                 >
-                  {item.name}
+                  <ShowcaseIngredient
+                    ingredient={item}
+                    onClick={ingredientOnClick}
+                    className="w-full h-full fridge"
+                  />
                 </div>
               ))}
             </div>

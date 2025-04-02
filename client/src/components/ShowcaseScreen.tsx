@@ -1,6 +1,7 @@
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
+import WebcamView from "@/components/showcase/WebcamView";
 import Ingredient from "@/interfaces/Ingredient";
 import { useCurrentMember } from "@/queries/members";
 import {
@@ -8,7 +9,6 @@ import {
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
 import { type DragEvent } from "react";
-import WebcamView from "./showcase/WebcamView";
 
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
@@ -26,8 +26,19 @@ function ShowcaseScreen() {
       ingredient = JSON.parse(ingredientData);
       if (!ingredient) return;
 
-      // Use the mutation for optimistic updates
-      addIngredient.mutate(ingredient);
+      // Get the source of the drag (fridge or table)
+      const source = e.dataTransfer.getData("text/plain").includes("from-fridge")
+        ? "fridge"
+        : "table";
+
+      // If dragging from fridge to table, remove from fridge and add to table
+      if (source === "fridge") {
+        removeIngredient.mutate(ingredient.ingredient_id);
+      }
+      // If dragging from table to fridge, remove from table and add to fridge
+      else if (source === "table") {
+        addIngredient.mutate(ingredient);
+      }
     } catch (error) {
       // Log the error for debugging
       console.error("Failed to handle drop:", error);
@@ -77,7 +88,7 @@ function ShowcaseScreen() {
 
       {/* Table positioned outside the flex container */}
       <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none">
-        <Table outsideIngredients={outsideIngredients} />
+        <Table outsideIngredients={outsideIngredients} handleDrop={handleDrop} />
       </div>
     </div>
   );
