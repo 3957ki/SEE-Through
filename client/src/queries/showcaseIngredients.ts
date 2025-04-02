@@ -1,7 +1,5 @@
 import { deleteIngredient, getIngredient, insertIngredient } from "@/api/ingredients";
-import { getLogs } from "@/api/logs";
 import { Ingredient } from "@/interfaces/Ingredient";
-import { logs } from "@/queries/logs";
 import { useCurrentMember } from "@/queries/members";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
@@ -70,35 +68,6 @@ export function useOptimisticIngredientUpdates() {
   const queryClient = useQueryClient();
   const { data: currentMember } = useCurrentMember();
 
-  // Helper function to update logs for a specific member ID
-  const updateLogsForMember = async (memberId?: string) => {
-    try {
-      const freshLogs = await getLogs(1, 10, memberId);
-
-      // Get the existing infinite query data
-      const existingData = queryClient.getQueryData(logs.all(10, memberId).queryKey);
-
-      if (existingData) {
-        // If there's existing data, update the first page
-        queryClient.setQueryData(logs.all(10, memberId).queryKey, {
-          ...existingData,
-          pages: [freshLogs, ...(existingData as any).pages.slice(1)],
-        });
-      } else {
-        // If no existing data, set as new infinite query data
-        queryClient.setQueryData(logs.all(10, memberId).queryKey, {
-          pages: [freshLogs],
-          pageParams: [1],
-        });
-      }
-    } catch (error) {
-      console.error(
-        `Failed to fetch updated logs for ${memberId ? "member " + memberId : "all users"}:`,
-        error
-      );
-    }
-  };
-
   const addIngredient = useMutation({
     mutationFn: async (ingredient: Ingredient) => {
       if (!currentMember) {
@@ -150,10 +119,6 @@ export function useOptimisticIngredientUpdates() {
             return queryKey[0] === "logs";
           },
         });
-
-        // Then explicitly fetch fresh data
-        await updateLogsForMember(currentMember.member_id); // User's own logs
-        await updateLogsForMember(undefined); // All users' logs
       }
     },
   });
@@ -206,10 +171,6 @@ export function useOptimisticIngredientUpdates() {
             return queryKey[0] === "logs";
           },
         });
-
-        // Then explicitly fetch fresh data
-        await updateLogsForMember(currentMember.member_id); // User's own logs
-        await updateLogsForMember(undefined); // All users' logs
       }
     },
   });
