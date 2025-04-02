@@ -44,7 +44,7 @@ export default function Table({ outsideIngredients, onDrop }: TableProps) {
 
       {/* Ingredients container */}
       <div
-        className="absolute inset-0 flex flex-wrap justify-center items-center gap-4 p-4"
+        className="absolute inset-0 flex flex-wrap justify-start items-end p-[5%] pb-[13%]"
         onDragOver={handleDragOver}
         onDrop={handleDropEvent}
       >
