@@ -23,8 +23,8 @@ export default function ShowcaseIngredient({
       e.dataTransfer.setData("application/x-ingredient", JSON.stringify(ingredient));
       // Add source information to help identify where the drag started
       e.dataTransfer.setData(
-        "text/plain",
-        `from-${className.includes("fridge") ? "fridge" : "table"}`
+        "application/x-source",
+        className.includes("fridge") ? "fridge" : "table"
       );
 
       // Use the native drag ghost
@@ -44,7 +44,7 @@ export default function ShowcaseIngredient({
     }
   };
 
-  const handleDragEnd = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragEnd = () => {
     console.log("ShowcaseIngredient: Drag end", ingredient.name);
     // Restore the original element's opacity
     if (ingredientRef.current) {
@@ -59,16 +59,15 @@ export default function ShowcaseIngredient({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={() => onClick?.(ingredient)}
-      className={`p-2 bg-blue-300 rounded cursor-grab hover:shadow-lg transition-all duration-200 ${className}`}
+      className={`cursor-grab hover:scale-120 transition-all duration-200 ${className}`}
       role="button"
       aria-label={`${draggable ? "Drag " : ""}${ingredient.name || "Unnamed ingredient"}`}
     >
       <img
         src={ingredient.image_path}
         alt={ingredient.name || "Unnamed ingredient"}
-        className="w-16 h-16 object-contain"
+        className="w-32 h-32 object-contain"
       />
-      <span className="block text-center mt-1">{ingredient.name}</span>
     </div>
   );
 }

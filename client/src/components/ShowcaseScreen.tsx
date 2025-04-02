@@ -8,51 +8,35 @@ import {
   useOptimisticIngredientUpdates,
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
-import { type DragEvent } from "react";
 
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
   const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
 
-  const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    let ingredient: Ingredient | null = null;
-
+  const handleFridgeDrop = async (ingredient: Ingredient) => {
+    if (!currentMember) return;
     try {
-      const ingredientData = e.dataTransfer.getData("application/x-ingredient");
-      if (!ingredientData || !currentMember) return;
-
-      ingredient = JSON.parse(ingredientData);
-      if (!ingredient) return;
-
-      // Get the source of the drag (fridge or table)
-      const source = e.dataTransfer.getData("text/plain").includes("from-fridge")
-        ? "fridge"
-        : "table";
-
-      // If dragging from fridge to table, remove from fridge and add to table
-      if (source === "fridge") {
-        removeIngredient.mutate(ingredient.ingredient_id);
-      }
-      // If dragging from table to fridge, remove from table and add to fridge
-      else if (source === "table") {
-        addIngredient.mutate(ingredient);
-      }
+      addIngredient.mutate(ingredient);
     } catch (error) {
-      // Log the error for debugging
-      console.error("Failed to handle drop:", error);
+      console.error("Failed to add ingredient to fridge:", error);
+    }
+  };
+
+  const handleTableDrop = async (ingredient: Ingredient) => {
+    if (!currentMember) return;
+    try {
+      removeIngredient.mutate(ingredient.ingredient_id);
+    } catch (error) {
+      console.error("Failed to remove ingredient from fridge:", error);
     }
   };
 
   const takeoutIngredient = async (ingredient: Ingredient): Promise<void> => {
     if (!currentMember) return;
-
     try {
-      // Use the mutation for optimistic updates
       removeIngredient.mutate(ingredient.ingredient_id);
     } catch (error) {
-      // Log the error for debugging
       console.error("Error occurred while removing ingredient:", error);
     }
   };
@@ -69,7 +53,7 @@ function ShowcaseScreen() {
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
           <Fridge
-            handleDrop={handleDrop}
+            onDrop={handleFridgeDrop}
             insideIngredients={insideIngredients}
             ingredientOnClick={takeoutIngredient}
           />
@@ -88,7 +72,7 @@ function ShowcaseScreen() {
 
       {/* Table positioned outside the flex container */}
       <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none">
-        <Table outsideIngredients={outsideIngredients} handleDrop={handleDrop} />
+        <Table outsideIngredients={outsideIngredients} onDrop={handleTableDrop} />
       </div>
     </div>
   );

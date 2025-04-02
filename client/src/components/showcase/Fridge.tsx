@@ -12,13 +12,32 @@ const DISPLAY_CONTAINER_HEIGHT = DISPLAY_CONTAINER_WIDTH / ASPECT_RATIO;
 const SCALE_FACTOR = DISPLAY_CONTAINER_WIDTH / FRIDGE_DISPLAY_WIDTH;
 
 interface FridgeProps {
-  handleDrop: (e: DragEvent<HTMLDivElement>) => void;
+  onDrop: (ingredient: Ingredient) => void;
   insideIngredients: Ingredient[];
   ingredientOnClick: (ingredient: Ingredient) => void;
 }
 
-function Fridge({ handleDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
+function Fridge({ onDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
+
+  const handleFridgeDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    try {
+      const source = e.dataTransfer.getData("application/x-source");
+      // Only handle drops from table
+      if (source === "table") {
+        const ingredientData = e.dataTransfer.getData("application/x-ingredient");
+        if (!ingredientData) return;
+
+        const ingredient = JSON.parse(ingredientData);
+        if (!ingredient) return;
+
+        onDrop(ingredient);
+      }
+    } catch (error) {
+      console.error("Failed to handle drop on fridge:", error);
+    }
+  };
 
   useEffect(() => {
     const calculateScale = () => {
@@ -41,11 +60,6 @@ function Fridge({ handleDrop, insideIngredients, ingredientOnClick }: FridgeProp
     window.addEventListener("resize", calculateScale);
     return () => window.removeEventListener("resize", calculateScale);
   }, []);
-
-  // Grid layout constants
-  const GRID_COLUMNS = 3;
-  const GRID_CELL_WIDTH = 100;
-  const GRID_CELL_HEIGHT = 100;
 
   const toggleDoor = () => {
     setLeftDoorOpen(!leftDoorOpen);
@@ -148,45 +162,73 @@ function Fridge({ handleDrop, insideIngredients, ingredientOnClick }: FridgeProp
           />
         </g>
         {leftDoorOpen && (
-          <foreignObject
-            x="280"
-            y="300"
-            width="400"
-            height="500"
-            transform="translate(-100, -100)"
-            style={{ pointerEvents: "all" }}
-          >
+          <foreignObject x="130" y="110" width="358" height="590" style={{ pointerEvents: "all" }}>
             <div
               onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
+              onDrop={handleFridgeDrop}
               style={{
                 width: "100%",
                 height: "100%",
                 position: "relative",
-                display: "grid",
-                gridTemplateColumns: `repeat(${GRID_COLUMNS}, ${GRID_CELL_WIDTH}px)`,
+                display: "flex",
+                flexDirection: "column",
                 gap: "10px",
-                padding: "20px",
+                paddingTop: "20%",
+                paddingLeft: "5%",
               }}
             >
-              {insideIngredients.map((item) => (
-                <div
-                  key={`${item.ingredient_id}`}
-                  style={{
-                    width: `${GRID_CELL_WIDTH}px`,
-                    height: `${GRID_CELL_HEIGHT}px`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ShowcaseIngredient
-                    ingredient={item}
-                    onClick={ingredientOnClick}
-                    className="w-full h-full fridge"
-                  />
-                </div>
-              ))}
+              {/* Top row - empty */}
+              <div style={{ height: "35%" }} />
+
+              {/* Middle row - 2 items centered */}
+              <div
+                style={{
+                  height: "33%",
+                  display: "flex",
+                  paddingLeft: "15%",
+                  alignItems: "flex-end",
+                  minWidth: "min-content",
+                  flexShrink: 0,
+                }}
+              >
+                {insideIngredients.slice(3, 5).map((item) => (
+                  <div key={`${item.ingredient_id}`}>
+                    <ShowcaseIngredient
+                      ingredient={item}
+                      onClick={ingredientOnClick}
+                      className="fridge"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom row - 3 items */}
+              <div
+                style={{
+                  height: "32%",
+                  display: "flex",
+                  paddingLeft: "5%",
+                  alignItems: "flex-end",
+                  minWidth: "min-content",
+                  flexShrink: 0,
+                }}
+              >
+                {insideIngredients.slice(0, 3).map((item, index) => (
+                  <div
+                    key={`${item.ingredient_id}`}
+                    style={{
+                      flexShrink: 0,
+                      marginLeft: index > 0 ? "-3%" : "0",
+                    }}
+                  >
+                    <ShowcaseIngredient
+                      ingredient={item}
+                      onClick={ingredientOnClick}
+                      className="fridge"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </foreignObject>
         )}

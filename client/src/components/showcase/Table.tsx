@@ -5,19 +5,32 @@ import ShowcaseIngredient from "./ShowcaseIngredient";
 
 interface TableProps {
   outsideIngredients: Ingredient[];
-  handleDrop: (e: DragEvent<HTMLDivElement>) => void;
+  onDrop: (ingredient: Ingredient) => void;
 }
 
-export default function Table({ outsideIngredients, handleDrop }: TableProps) {
+export default function Table({ outsideIngredients, onDrop }: TableProps) {
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    console.log("Table: Drag over");
     e.preventDefault();
     e.stopPropagation();
   };
 
   const handleDropEvent = (e: DragEvent<HTMLDivElement>) => {
-    console.log("Table: Drop event received");
-    handleDrop(e);
+    e.preventDefault();
+    try {
+      const source = e.dataTransfer.getData("application/x-source");
+      // Only handle drops from fridge
+      if (source === "fridge") {
+        const ingredientData = e.dataTransfer.getData("application/x-ingredient");
+        if (!ingredientData) return;
+
+        const ingredient = JSON.parse(ingredientData);
+        if (!ingredient) return;
+
+        onDrop(ingredient);
+      }
+    } catch (error) {
+      console.error("Failed to handle drop on table:", error);
+    }
   };
 
   return (
