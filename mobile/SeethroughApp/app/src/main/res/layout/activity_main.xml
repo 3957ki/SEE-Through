@@ -93,6 +93,14 @@
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/device_image"
+                android:layout_width="32dp"
+                android:layout_height="78dp"
+                android:src="@drawable/refrigerator_universal_color_light"
+                android:contentDescription="Refrigerator Image"
+                android:scaleType="centerCrop" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

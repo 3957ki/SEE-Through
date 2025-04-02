@@ -24,6 +24,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.SeeThroughActivity"/>
+        <activity android:name=".ui.IngredientsActivity"/>
+        <activity android:name=".ui.InOutLogActivity"/>
     </application>
 
 </manifest>
