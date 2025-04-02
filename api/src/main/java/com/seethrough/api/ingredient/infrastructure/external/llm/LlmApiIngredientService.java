@@ -7,10 +7,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.seethrough.api.common.infrastructure.llm.LlmApiClient;
+import com.seethrough.api.common.infrastructure.LlmApiClient;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientEmbeddingListRequest;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.CommentResponse;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.IngredientEmbeddingListResponse;
+import com.seethrough.api.ingredient.presentation.dto.response.OutBoundCommentResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,7 @@ public class LlmApiIngredientService {
 			.block();
 	}
 
-	// TODO: Stream 형식으로 변경하기
-	public String createComment(UUID memberId, UUID ingredientId) {
+	public OutBoundCommentResponse createComment(UUID memberId, UUID ingredientId) {
 		log.info("[LlmApiIngredientService] 외부 API 식재료 출고 개인 알림 요청 시작: memberId = {}, ingredientId = {}", memberId, ingredientId);
 
 		String uri = UriComponentsBuilder.fromPath("/llm/food/comment")
@@ -47,7 +47,10 @@ public class LlmApiIngredientService {
 		return Optional.ofNullable(llmApiClient.sendRequestMono(HttpMethod.GET, uri, CommentResponse.class)
 				.doOnNext(response -> log.info("[LlmApiService] 외부 API 식재료 출고 개인 알림 응답: {}", response))
 				.block())
-			.map(CommentResponse::getComment)
+			.map(response -> OutBoundCommentResponse.builder()
+				.comment(response.getComment())
+				.isDanger(response.getCategory() <= 2)
+				.build())
 			.orElse(null);
 	}
 }

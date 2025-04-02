@@ -63,7 +63,7 @@ CREATE TABLE ingredients
     image_path       TEXT        NOT NULL,
     member_id        VARCHAR(36) NOT NULL,
     inbound_at       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expiration_at    TIMESTAMP   NULL,
+    expiration_at    TIMESTAMP,
     embedding_vector VECTOR(1536),
 
     PRIMARY KEY (ingredient_id),
@@ -98,6 +98,7 @@ CREATE TABLE alerts
     member_id     VARCHAR(36) NOT NULL,
     ingredient_id VARCHAR(36) NOT NULL,
     comment       TEXT        NOT NULL,
+    is_danger     BOOLEAN     NOT NULL DEFAULT TRUE,
 
     PRIMARY KEY (member_id, ingredient_id),
     FOREIGN KEY (member_id) REFERENCES members (member_id),

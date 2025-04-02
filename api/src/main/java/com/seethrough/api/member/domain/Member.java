@@ -55,11 +55,11 @@ public class Member {
 
 	@Builder.Default
 	@Column(name = "color", columnDefinition = "TEXT", nullable = false)
-	private String color = "bg-orange-400";
+	private String color = "정상";
 
 	@Builder.Default
 	@Column(name = "font_size", columnDefinition = "TEXT", nullable = false)
-	private String fontSize = "text-sm";
+	private String fontSize = "보통";
 
 	@Builder.Default
 	@Column(name = "preferred_foods", columnDefinition = "JSONB", nullable = false)
@@ -105,9 +105,11 @@ public class Member {
 	private LocalDateTime deletedAt;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ToString.Exclude
 	private List<Meal> meals;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ToString.Exclude
 	private List<Alert> alerts;
 
 	public void login(int age, String imagePath) {
@@ -144,6 +146,8 @@ public class Member {
 		this.dislikedFoods = dislikedFoods;
 		this.allergies = allergies;
 		this.diseases = diseases;
+
+		this.alerts.clear();
 	}
 
 	public void calculateAge() {
