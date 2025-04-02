@@ -105,9 +105,11 @@ public class Member {
 	private LocalDateTime deletedAt;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ToString.Exclude
 	private List<Meal> meals;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ToString.Exclude
 	private List<Alert> alerts;
 
 	public void login(int age, String imagePath) {
