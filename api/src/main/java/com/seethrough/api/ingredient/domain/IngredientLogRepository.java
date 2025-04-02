@@ -11,4 +11,6 @@ public interface IngredientLogRepository {
 	Slice<IngredientLog> findIngredientLogs(UUID memberId, Pageable pageable);
 
 	void saveAll(List<IngredientLog> ingredientLogs);
+
+	List<IngredientLog> findAllById(List<UUID> ingredientLogIdList);
 }

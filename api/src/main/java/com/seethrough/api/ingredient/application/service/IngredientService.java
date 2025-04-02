@@ -109,11 +109,12 @@ public class IngredientService {
 				obj.getExpirationAt()))
 			.toList();
 
-		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredients(ingredients);
+		// TODO: 임베딩벡터 수정하기
+		// Map<UUID, List<Float>> embeddings = createEmbeddingForIngredients(ingredients);
 
-		ingredients.stream()
-			.filter(ingredient -> embeddings.containsKey(ingredient.getIngredientId()))
-			.forEach(ingredient -> ingredient.setEmbeddingVector(embeddings.get(ingredient.getIngredientId())));
+		// ingredients.stream()
+		// 	.filter(ingredient -> embeddings.containsKey(ingredient.getIngredientId()))
+		// 	.forEach(ingredient -> ingredient.setEmbeddingVector(embeddings.get(ingredient.getIngredientId())));
 
 		ingredientRepository.saveAll(ingredients);
 
