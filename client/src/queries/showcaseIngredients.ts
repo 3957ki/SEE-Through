@@ -130,8 +130,8 @@ export function useOptimisticIngredientUpdates() {
       }
 
       // Make the actual API call to delete the ingredient, including showcase ingredients
-      await deleteIngredient(ingredientId, currentMember.member_id);
-      return ingredientId;
+      const result = await deleteIngredient(ingredientId, currentMember.member_id);
+      return { ingredientId, message: result.message };
     },
     onMutate: async (ingredientId) => {
       // Cancel any outgoing refetches

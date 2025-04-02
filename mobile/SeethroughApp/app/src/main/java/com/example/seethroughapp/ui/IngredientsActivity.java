@@ -1,18 +1,41 @@
 package com.example.seethroughapp.ui;
 
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.seethroughapp.R;
+import com.example.seethroughapp.adapter.IngredientAdapter;
+import com.example.seethroughapp.model.ingredient.Ingredient;
+import com.example.seethroughapp.viewmodel.SeeThroughViewModel;
+
+import java.util.List;
 
 public class IngredientsActivity extends AppCompatActivity {
+
+    private RecyclerView recyclerView;
+    private IngredientAdapter ingredientAdapter;
+    private SeeThroughViewModel viewModel;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ingredients);
 
+        recyclerView = findViewById(R.id.recyclerViewIngredients);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
+        viewModel = new ViewModelProvider(this).get(SeeThroughViewModel.class);
+        viewModel.getIngredients().observe(this, this::updateIngredients);
+
+        viewModel.fetchIngredients();
+    }
+
+    private void updateIngredients(List<Ingredient> ingredients) {
+        ingredientAdapter = new IngredientAdapter(ingredients);
+        recyclerView.setAdapter(ingredientAdapter);
     }
 }

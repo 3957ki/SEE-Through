@@ -1,6 +1,7 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
 import Ingredient from "@/interfaces/Ingredient";
 import { useEffect, useState, type CSSProperties, type DragEvent } from "react";
+import CommentDialog from "../dialog/CommentDialog";
 import ShowcaseIngredient from "./ShowcaseIngredient";
 
 // Constants for FridgeDisplay dimensions
@@ -15,9 +16,17 @@ interface FridgeProps {
   onDrop: (ingredient: Ingredient) => void;
   insideIngredients: Ingredient[];
   ingredientOnClick: (ingredient: Ingredient) => void;
+  commentMessage?: string | null;
+  onCloseComment?: () => void;
 }
 
-function Fridge({ onDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
+function Fridge({
+  onDrop,
+  insideIngredients,
+  ingredientOnClick,
+  commentMessage,
+  onCloseComment,
+}: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
 
   const handleFridgeDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -400,6 +409,9 @@ function Fridge({ onDrop, insideIngredients, ingredientOnClick }: FridgeProps) {
                   }}
                 >
                   <FridgeDisplay />
+                  {commentMessage && onCloseComment && (
+                    <CommentDialog message={commentMessage} onClose={onCloseComment} />
+                  )}
                 </div>
               </div>
             </div>

@@ -56,4 +56,8 @@ dependencies {
     // Lombok 추가
     implementation(libs.lombok)
     annotationProcessor(libs.lombok)
+
+    // Glide 추가
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
 }
