@@ -1,6 +1,6 @@
-package com.example.seethroughapp.model.ingredient;
+package com.example.seethroughapp.data.model.ingredient;
 
-import com.example.seethroughapp.model.SliceInfo;
+import com.example.seethroughapp.data.model.SliceInfo;
 
 import java.util.List;
 

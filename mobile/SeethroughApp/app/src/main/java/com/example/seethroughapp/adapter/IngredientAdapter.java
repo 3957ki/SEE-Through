@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.seethroughapp.R;
-import com.example.seethroughapp.model.ingredient.Ingredient;
+import com.example.seethroughapp.data.model.ingredient.Ingredient;
 
 import java.util.List;
 

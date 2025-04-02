@@ -2,18 +2,14 @@ package com.example.seethroughapp.ui;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.seethroughapp.R;
 import com.example.seethroughapp.adapter.InOutLogAdapter;
-import com.example.seethroughapp.adapter.IngredientAdapter;
-import com.example.seethroughapp.model.ingredient.Ingredient;
-import com.example.seethroughapp.model.inoutlog.InOutLog;
+import com.example.seethroughapp.data.model.inoutlog.InOutLog;
 import com.example.seethroughapp.viewmodel.SeeThroughViewModel;
 
 import java.util.List;

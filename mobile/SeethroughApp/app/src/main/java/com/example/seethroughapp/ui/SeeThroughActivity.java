@@ -5,14 +5,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.seethroughapp.R;
-import com.example.seethroughapp.model.ingredient.Ingredient;
-import com.example.seethroughapp.model.inoutlog.InOutLog;
+import com.example.seethroughapp.data.model.ingredient.Ingredient;
+import com.example.seethroughapp.data.model.inoutlog.InOutLog;
 import com.example.seethroughapp.viewmodel.SeeThroughViewModel;
 
 import java.util.List;

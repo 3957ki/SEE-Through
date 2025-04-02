@@ -1,4 +1,4 @@
-package com.example.seethroughapp.model.ingredient;
+package com.example.seethroughapp.data.model.ingredient;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -60,4 +61,8 @@ dependencies {
     // Glide 추가
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
+
+    // FCM 추가
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }

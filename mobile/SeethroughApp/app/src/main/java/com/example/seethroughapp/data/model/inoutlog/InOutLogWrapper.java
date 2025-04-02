@@ -1,7 +1,6 @@
-package com.example.seethroughapp.model.inoutlog;
+package com.example.seethroughapp.data.model.inoutlog;
 
-import com.example.seethroughapp.model.SliceInfo;
-import com.example.seethroughapp.model.ingredient.Ingredient;
+import com.example.seethroughapp.data.model.SliceInfo;
 
 import java.util.List;
 

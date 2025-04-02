@@ -12,6 +12,8 @@ okhttp = "4.9.0"
 retrofit = "2.9.0"
 lombok = "1.18.30"
 glide = "4.15.1"
+firebase-bom = "33.12.0"
+firebase-messaging = "23.3.1"
 
 [libraries]
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -32,6 +34,10 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok"}
 
 glide = {module = "com.github.bumptech.glide:glide", version.ref = "glide"}
 glide-compiler = {module = "com.github.bumptech.glide:compiler", version.ref = "glide"}
+
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebase-messaging" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
