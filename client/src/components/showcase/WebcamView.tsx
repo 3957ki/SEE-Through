@@ -1,6 +1,5 @@
-import { getMember, getMembers, getOrCreateMember } from "@/api/members";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
-import { useMembers } from "@/contexts/MembersContext";
+import { createAndGetMember } from "@/api/members";
+import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import {
   disconnectLocalServer,
   isLocalServerConnected,
@@ -24,17 +23,10 @@ function WebcamView() {
   const lastProcessedFrameRef = useRef<ImageData | null>(null);
   const isInitializedRef = useRef(false);
 
+  const { currentMemberId, setCurrentMemberId } = useCurrentMemberId();
+
   // 웹캠 관련 에러 메시지
   const [error, setError] = useState<string | null>(null);
-
-  // 멤버 관련 상태
-  const { setMembers } = useMembers();
-  const { currentMember, setCurrentMember } = useCurrentMember();
-
-  // Member refs for callbacks
-  const currentMemberRef = useRef(currentMember);
-  const setMembersRef = useRef(setMembers);
-  const setCurrentMemberRef = useRef(setCurrentMember);
 
   // Frame sending control
   const processingTimeoutRef = useRef<number | null>(null);
@@ -78,7 +70,7 @@ function WebcamView() {
     // 레벨 0: 로그, 타이머 정리, 2 로그 상태 초기화
     if (newLevel === 0) {
       console.log("[레벨 0] 얼굴 없음");
-      setCurrentMemberRef.current(null);
+      setCurrentMemberId("");
     }
 
     // 레벨 1: 주기적 요청, 2 로그 상태 초기화
@@ -284,13 +276,6 @@ function WebcamView() {
     };
   }, [faceDetector]);
 
-  // Update refs when values change
-  useEffect(() => {
-    currentMemberRef.current = currentMember;
-    setMembersRef.current = setMembers;
-    setCurrentMemberRef.current = setCurrentMember;
-  }, [currentMember, setMembers, setCurrentMember]);
-
   const init = async () => {
     if (isInitializedRef.current) return;
 
@@ -428,31 +413,28 @@ function WebcamView() {
 
       if (!memberId) {
         // 인식 결과 없음 → 무조건 null 처리
-        setCurrentMemberRef.current(null);
+        setCurrentMemberId("");
       }
       // 새로운 아이디라면
       else if (isNew) {
         try {
           // 신규 등록하기
-          const newMember = await getOrCreateMember({
+          const newMember = await createAndGetMember({
             member_id: memberId,
             age: 0,
             image_path: `${import.meta.env.VITE_LOCAL_SERVER_URL}/vision/get-faces?user_id=${memberId}`,
           });
-          const members = await getMembers();
-          setMembersRef.current(members);
-          setCurrentMemberRef.current(newMember);
+          setCurrentMemberId(newMember.member_id);
         } catch (err) {
           console.error("[WebSocket] 멤버 업데이트 실패:", err);
         }
       }
 
       // 새로운 아이디가 아닌데 현재 멤버 아이디와 다를 때
-      else if (memberId !== currentMemberRef.current?.member_id) {
+      else if (memberId !== currentMemberId) {
         try {
           // 인식된 멤버가 있을때 가져오기만 함
-          const newMember = await getMember(memberId);
-          setCurrentMemberRef.current(newMember);
+          setCurrentMemberId(memberId);
         } catch (err) {
           console.error("[WebSocket] 멤버 업데이트 실패:", err);
         }

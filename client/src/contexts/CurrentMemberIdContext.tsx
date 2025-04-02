@@ -1,4 +1,6 @@
 import { getMembers } from "@/api/members";
+import { members } from "@/queries/members";
+import { useQueryClient } from "@tanstack/react-query";
 import { createContext, ReactNode, use, useEffect, useMemo, useState } from "react";
 
 interface CurrentMemberIdContextType {
@@ -17,6 +19,7 @@ export function useCurrentMemberId() {
 }
 
 export function CurrentMemberIdProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [currentMemberId, setCurrentMemberId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,9 +44,12 @@ export function CurrentMemberIdProvider({ children }: { children: ReactNode }) {
   const currentMemberIdValue = useMemo(
     () => ({
       currentMemberId,
-      setCurrentMemberId,
+      setCurrentMemberId: (memberId: string) => {
+        setCurrentMemberId(memberId);
+        queryClient.invalidateQueries(members.all);
+      },
     }),
-    [currentMemberId]
+    [currentMemberId, queryClient]
   );
 
   if (isLoading) {

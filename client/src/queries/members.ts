@@ -9,6 +9,9 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useCallback } from "react";
 
 export const members = createQueryKeys("members", {
+  all: {
+    queryKey: null,
+  },
   list: {
     queryKey: null,
     queryFn: () => getMembers(),
@@ -44,13 +47,16 @@ export function useMembers() {
 export function useCurrentMember() {
   const { currentMemberId } = useCurrentMemberId();
 
-  if (!currentMemberId || currentMemberId === "") {
-    throw new Error("Current member ID is not set or is empty");
-  }
+  const { data, isLoading } = useQuery({
+    queryKey: currentMemberId ? members.current._ctx.detail(currentMemberId).queryKey : [],
+    queryFn: () => getMember(currentMemberId!),
+    enabled: !!currentMemberId,
+  });
 
-  const { data } = useQuery(members.current._ctx.detail(currentMemberId));
-
-  return { data: data as DetailedMember };
+  return {
+    data: data as DetailedMember | null,
+    isLoading: isLoading || !currentMemberId,
+  };
 }
 
 export function useCurrentMemberMealsOf(date: Date) {
