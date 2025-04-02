@@ -1,4 +1,4 @@
-package com.seethrough.api.common.infrastructure.llm;
+package com.seethrough.api.common.infrastructure;
 
 import java.time.Duration;
 

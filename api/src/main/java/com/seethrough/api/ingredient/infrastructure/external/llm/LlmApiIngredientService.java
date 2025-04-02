@@ -7,7 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.seethrough.api.common.infrastructure.llm.LlmApiClient;
+import com.seethrough.api.common.infrastructure.LlmApiClient;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.request.IngredientEmbeddingListRequest;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.CommentResponse;
 import com.seethrough.api.ingredient.infrastructure.external.llm.dto.response.IngredientEmbeddingListResponse;
