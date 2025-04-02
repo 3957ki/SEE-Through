@@ -1,4 +1,4 @@
-import { createAndGetMember, getMember, getMembers } from "@/api/members";
+import { getMember, getMembers, getOrCreateMember } from "@/api/members";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useMembers } from "@/contexts/MembersContext";
 import {
@@ -377,7 +377,7 @@ function WebcamView() {
       else if (isNew) {
         try {
           // 신규 등록하기
-          const newMember = await createAndGetMember({
+          const newMember = await getOrCreateMember({
             member_id: memberId,
             age: 0,
             image_path: "null",
@@ -402,13 +402,13 @@ function WebcamView() {
       }
 
       // 1단계인데 직전 멤버 id가 존재하고 현재 인식 결과가 없을 때 회원을 null로 갱신
-      else if (
-        faceLevelRef.current.level === 1 &&
-        currentMemberRef.current?.member_id &&
-        !memberId
-      ) {
-        setCurrentMemberRef.current(null);
-      }
+      // else if (
+      //   faceLevelRef.current.level === 1 &&
+      //   currentMemberRef.current?.member_id &&
+      //   !memberId
+      // ) {
+      //   setCurrentMemberRef.current(null);
+      // }
 
       // 레벨 1이라면 다음 프레임 0.1초 후 전송
       if (shouldContinue && faceLevelRef.current.level === 1) {

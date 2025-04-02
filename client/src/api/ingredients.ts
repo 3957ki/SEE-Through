@@ -14,9 +14,17 @@ export async function getIngredients(
   return response.data;
 }
 
-export async function getIngredient(ingredientId: string): Promise<DetailedIngredient> {
-  const response = await APIServerFetcher.get(`/ingredients/${ingredientId}`);
-  return response.data;
+export async function getIngredient(ingredientId: string): Promise<DetailedIngredient | null> {
+  try {
+    // Make the API call for all ingredients, including showcase ones
+    const response = await APIServerFetcher.get(`/ingredients/${ingredientId}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return null; // Return null when ingredient is not found
+    }
+    throw error; // Re-throw other errors
+  }
 }
 
 export async function insertIngredient(ingredient: Ingredient, memberId: string): Promise<void> {

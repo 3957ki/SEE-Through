@@ -1,16 +1,14 @@
+import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import {
   addDislikedFood,
   addPreferredFood,
-  getMealsByDate,
-  getTodayMeals,
-  refreshMeal,
   removeDislikedFood,
   removePreferredFood,
-} from "@/api/meals";
+} from "@/api/members";
 import { SectionTitle } from "@/components/ui/section";
 import { Spinner } from "@/components/ui/spinner";
-import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import type { MealPlanResponse } from "@/interfaces/Meal";
+import { useCurrentMember } from "@/queries/members";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -206,7 +204,7 @@ function MealSection({
 }
 
 export default function MealPage() {
-  const { currentMember } = useCurrentMember();
+  const { data: currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meals, setMeals] = useState<MealPlanResponse | null>(null);
   const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
@@ -221,11 +219,11 @@ export default function MealPage() {
 
     const initialFeedback: Record<string, "like" | "dislike"> = {};
 
-    preferred.forEach((food) => {
+    preferred.forEach((food: string) => {
       initialFeedback[food] = "like";
     });
 
-    disliked.forEach((food) => {
+    disliked.forEach((food: string) => {
       initialFeedback[food] = "dislike";
     });
 

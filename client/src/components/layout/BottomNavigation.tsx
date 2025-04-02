@@ -9,7 +9,7 @@ import {
 import PinModal from "../modal/PinModal";
 
 // Available pages for navigation
-export type PageType = "main" | "logs" | "monitoring" | "example" | "meal" | "my";
+export type PageType = "main" | "logs" | "monitoring" | "meal" | "my";
 
 // Bottom Navigation Component
 interface BottomNavigationProps {

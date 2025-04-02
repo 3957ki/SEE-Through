@@ -1,11 +1,10 @@
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
-import ExamplePage from "@/components/pages/ExamplePage";
 import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
 import MyPage from "@/components/pages/MyPage";
+import { DialogProvider } from "@/contexts/DialogContext";
 import { cn } from "@/lib/utils";
-import { DialogContextProvider } from "@/providers/DialogContextProvider";
 import { useRef, useState, type RefObject } from "react";
 import LogPage from "./pages/LogPage";
 import MonitoringPage from "./pages/MonitoringPage";
@@ -24,7 +23,6 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
     main: <MainPage onShowMealPage={() => handleNavigate("meal")} />,
     logs: <LogPage />,
     monitoring: <MonitoringPage currentPin={currentPin} onPinChange={setCurrentPin} />,
-    example: <ExamplePage />,
     meal: <MealPage />,
     my: <MyPage />,
   };
@@ -52,7 +50,7 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
           fontSize: "calc(16px * 0.3)", // Scale down font size
         }}
       >
-        <DialogContextProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
+        <DialogProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
           <div className="w-full shrink-0">
             <Header />
           </div>
@@ -70,7 +68,7 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
               isFixed={false}
             />
           </div>
-        </DialogContextProvider>
+        </DialogProvider>
       </div>
     </div>
   );

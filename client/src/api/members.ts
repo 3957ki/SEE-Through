@@ -33,3 +33,27 @@ export async function createAndGetMember(data: {
   const response = await APIServerFetcher.post<DetailedMember>("/members", data);
   return response.data;
 }
+
+export async function addPreferredFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.post(`/members/${memberId}/preferred-foods`, {
+    preferred_foods: [food],
+  });
+}
+
+export async function addDislikedFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.post(`/members/${memberId}/disliked-foods`, {
+    disliked_foods: [food],
+  });
+}
+
+export async function removePreferredFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.delete(`/members/${memberId}/preferred-foods`, {
+    data: { preferred_foods: [food] },
+  });
+}
+
+export async function removeDislikedFood(memberId: string, food: string): Promise<void> {
+  await APIServerFetcher.delete(`/members/${memberId}/disliked-foods`, {
+    data: { disliked_foods: [food] },
+  });
+}
