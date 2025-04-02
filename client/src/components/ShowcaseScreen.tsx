@@ -8,6 +8,7 @@ import {
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
 import { type DragEvent } from "react";
+import WebcamView from "./showcase/WebcamView";
 
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
@@ -65,7 +66,9 @@ function ShowcaseScreen() {
 
         {/* Right Area - Controls and Ingredient Table */}
         <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
-          <div className="h-1/3">{/* <WebcamView /> */}</div>
+          <div className="h-1/3">
+            <WebcamView />
+          </div>
           <div className="h-1/3">
             <UserInfoCard />
           </div>
