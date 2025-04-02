@@ -63,7 +63,7 @@ CREATE TABLE ingredients
     image_path       TEXT        NOT NULL,
     member_id        VARCHAR(36) NOT NULL,
     inbound_at       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expiration_at    TIMESTAMP   NULL,
+    expiration_at    TIMESTAMP,
     embedding_vector VECTOR(1536),
 
     PRIMARY KEY (ingredient_id),
