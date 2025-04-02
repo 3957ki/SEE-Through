@@ -98,6 +98,7 @@ CREATE TABLE alerts
     member_id     VARCHAR(36) NOT NULL,
     ingredient_id VARCHAR(36) NOT NULL,
     comment       TEXT        NOT NULL,
+    is_danger     BOOLEAN     NOT NULL DEFAULT TRUE,
 
     PRIMARY KEY (member_id, ingredient_id),
     FOREIGN KEY (member_id) REFERENCES members (member_id),

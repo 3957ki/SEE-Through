@@ -43,4 +43,8 @@ public class Alert {
 
 	@Column(name = "comment", columnDefinition = "TEXT", nullable = false)
 	private String comment;
+
+	@Builder.Default
+	@Column(name = "is_danger", columnDefinition = "BOOLEAN", nullable = false)
+	private boolean isDanger = true;
 }

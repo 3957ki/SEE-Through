@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.alert.application.service.AlertService;
-import com.seethrough.api.alert.domain.Alert;
 import com.seethrough.api.alert.domain.event.CreateAlertByIngredientEvent;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
@@ -30,6 +29,7 @@ import com.seethrough.api.ingredient.presentation.dto.request.InboundIngredients
 import com.seethrough.api.ingredient.presentation.dto.request.OutboundIngredientsRequest;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientDetailResponse;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientListResponse;
+import com.seethrough.api.ingredient.presentation.dto.response.OutBoundCommentResponse;
 import com.seethrough.api.member.application.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -125,7 +125,7 @@ public class IngredientService {
 	}
 
 	@Transactional
-	public String outboundIngredients(OutboundIngredientsRequest request) {
+	public OutBoundCommentResponse outboundIngredients(OutboundIngredientsRequest request) {
 		log.debug("[Service] outboundIngredients 호출");
 
 		UUID memberIdObj = memberService.checkMemberExists(request.getMemberId());
@@ -135,14 +135,15 @@ public class IngredientService {
 			.map(UUID::fromString)
 			.toList();
 
-		// TODO: 찾을 수 없는 식재료에 대한 에러 처리
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
 
-		// TODO: steram으로 수정 예정(호출 위치도 마지막으로 수정되어야 함)
-		String response = null;
+		OutBoundCommentResponse response = null;
 		if (ingredients.size() == 1) {
 			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
-				.map(Alert::getComment)
+				.map(alert -> OutBoundCommentResponse.builder()
+					.comment(alert.getComment())
+					.isDanger(alert.isDanger())
+					.build())
 				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
 		}
 

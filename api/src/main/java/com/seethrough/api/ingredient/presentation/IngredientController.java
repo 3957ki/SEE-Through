@@ -18,6 +18,7 @@ import com.seethrough.api.ingredient.presentation.dto.request.InboundIngredients
 import com.seethrough.api.ingredient.presentation.dto.request.OutboundIngredientsRequest;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientDetailResponse;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientListResponse;
+import com.seethrough.api.ingredient.presentation.dto.response.OutBoundCommentResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -143,10 +144,10 @@ public class IngredientController {
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<String> outboundIngredients(@Valid @RequestBody OutboundIngredientsRequest request) {
+	public ResponseEntity<OutBoundCommentResponse> outboundIngredients(@Valid @RequestBody OutboundIngredientsRequest request) {
 		log.info("[Controller - DELETE /api/ingredients] 식재료 출고 요청: request={}", request);
 
-		String result = ingredientService.outboundIngredients(request);
+		OutBoundCommentResponse result = ingredientService.outboundIngredients(request);
 
 		log.debug("[Controller] 식재료 출고 성공");
 
