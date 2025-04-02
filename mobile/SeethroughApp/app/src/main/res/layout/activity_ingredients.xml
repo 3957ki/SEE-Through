@@ -5,13 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.IngredientsActivity">
+    tools:context=".ui.IngredientsActivity"
+    android:background="@color/black">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewIngredients"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        tools:listitem="@layout/item_ingredient_card" />
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:clipToPadding="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
