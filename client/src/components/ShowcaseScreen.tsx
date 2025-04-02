@@ -6,6 +6,7 @@ import WebcamView from "@/components/showcase/WebcamView";
 import { useCurrentMember } from "@/contexts/CurrentMemberContext";
 import { useIngredientsContext } from "@/contexts/IngredientsContext";
 import Ingredient from "@/interfaces/Ingredient";
+import { speakWithOpenAI } from "@/lib/textToSpeech";
 import { useEffect, useState, type DragEvent } from "react";
 
 const showcaseIngredients = [
@@ -126,6 +127,7 @@ function ShowcaseScreen() {
       // API 응답을 받은 후에 다이얼로그를 띄우기
       setDialogMessage(successMessage);
       setShowDialog(true);
+      speakWithOpenAI(successMessage);
     } catch (error) {
       // Log the error for debugging
       console.error("Error occurred while removing ingredient:", error);
