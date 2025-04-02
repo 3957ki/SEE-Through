@@ -7,13 +7,13 @@ import {
   useOptimisticIngredientUpdates,
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
-import { type DragEvent } from "react";
+import { useState, type DragEvent } from "react";
 import WebcamView from "./showcase/WebcamView";
-
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
   const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
+  const [commentMessage, setCommentMessage] = useState<string | null>(null);
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -37,13 +37,14 @@ function ShowcaseScreen() {
   const takeoutIngredient = async (ingredient: Ingredient): Promise<void> => {
     if (!currentMember) return;
 
-    try {
-      // Use the mutation for optimistic updates
-      removeIngredient.mutate(ingredient.ingredient_id);
-    } catch (error) {
-      // Log the error for debugging
-      console.error("Error occurred while removing ingredient:", error);
-    }
+    removeIngredient.mutate(ingredient.ingredient_id, {
+      onSuccess: ({ message }) => {
+        setCommentMessage(message || `${ingredient.name} 재료가 출고되었습니다.`);
+      },
+      onError: () => {
+        setCommentMessage("재료 출고 중 오류가 발생했습니다.");
+      },
+    });
   };
 
   if (isLoading) {
@@ -61,6 +62,8 @@ function ShowcaseScreen() {
             handleDrop={handleDrop}
             insideIngredients={insideIngredients}
             ingredientOnClick={takeoutIngredient}
+            commentMessage={commentMessage}
+            onCloseComment={() => setCommentMessage(null)}
           />
         </div>
 
