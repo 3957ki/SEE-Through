@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:background="@android:color/white"
     tools:context=".ui.MainActivity">
 
     <!-- 상단바 -->
@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:text="우리 집"
         android:textSize="20sp"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:text="모든 기기"
             android:textSize="14sp"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:layout_marginEnd="16dp"/>
 
         <TextView
