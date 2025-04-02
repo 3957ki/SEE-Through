@@ -8,7 +8,7 @@ import {
   useShowcaseIngredients,
 } from "@/queries/showcaseIngredients";
 import { useState, type DragEvent } from "react";
-import WebcamView from "./showcase/WebcamView";
+import WebcamView from "./showcase/WebcamView2";
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
