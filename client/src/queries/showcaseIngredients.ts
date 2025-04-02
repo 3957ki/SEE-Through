@@ -12,23 +12,23 @@ export const showcaseIngredients = [
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000002",
-    name: "showcase2",
-    image_path: "showcase2",
+    name: "버섯",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/mushroom.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000003",
-    name: "showcase3",
-    image_path: "showcase3",
+    name: "오이",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cucumber.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000004",
-    name: "showcase4",
-    image_path: "showcase4",
+    name: "계란",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/eggs.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000005",
-    name: "showcase5",
-    image_path: "showcase5",
+    name: "치즈",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cheese.png",
   },
 ];
 
