@@ -569,10 +569,11 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
         }
       }
 
-      // 1단계인데 직전 멤버 id가 존재하고 현재 인식 결과가 없을 때 회원을 null로 갱신
-      else if (faceLevelRef.current.level === 1 && currentMemberId && !memberId) {
-        setCurrentMemberId("");
-      }
+      // ### unreachable block 이라고 하니 로직 확인 후 필요하면 재활성화 하세요! ###
+      // // 1단계인데 직전 멤버 id가 존재하고 현재 인식 결과가 없을 때 회원을 null로 갱신
+      // else if (faceLevelRef.current.level === 1 && currentMemberId && !memberId) {
+      //   setCurrentMemberId("");
+      // }
 
       // 큐에 다음 항목이 있으면 처리
       if (requestQueue.current.nextRequest) {

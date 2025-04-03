@@ -17,6 +17,8 @@ def find_most_similar_log(member_id: str, ingredient_vector, db: Session):
     highest_similarity = -1
 
     for log in logs:
+        if ingredient_vector is None or log.embedding_vector is None:
+            continue
         similarity = np.dot(ingredient_vector, log.embedding_vector) / (
             np.linalg.norm(ingredient_vector) * np.linalg.norm(log.embedding_vector)
         )

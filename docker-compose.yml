@@ -6,8 +6,12 @@ services:
     environment:
       - VITE_API_SERVER_URL=${VITE_API_SERVER_URL}
       - VITE_LOCAL_SERVER_URL=${VITE_LOCAL_SERVER_URL}
+      - VITE_WS_LOCAL_SERVER_URL=${VITE_WS_LOCAL_SERVER_URL}
+      - VITE_OPENAI_API_KEY=${OPENAI_API_KEY}
+      - VITE_TYPECAST_API_KEY=${VITE_TYPECAST_API_KEY}
     command: >
         sh -c "
+        ls -al &&
         yarn install &&
         yarn build &&
         cp -r /client/dist/* /client/dist"
@@ -130,26 +134,6 @@ services:
     networks:
       - see_through
       
-  jenkins:
-    build: 
-      context: ./jenkins
-      dockerfile: Dockerfile
-    container_name: jenkins
-    environment:
-      JENKINS_JAVA_OPTIONS: >-
-        -Dhudson.model.DirectoryBrowserSupport.CSP="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;" -Dhttp.nonProxyHosts="lab.ssafy.com|updates.jenkins.io" -Dhttps.nonProxyHosts="lab.ssafy.com|updates.jenkins.io"
-      NO_PROXY: "lab.ssafy.com,updates.jenkins.io"
-      JENKINS_OPTS: "--prefix=/jenkins"
-    ports:
-      - "11027:8080"
-    volumes:
-      - ./jenkins:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
-      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose:ro
-    networks:
-      - see_through
-
 volumes:
   grafana-data:
 
