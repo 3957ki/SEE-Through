@@ -35,7 +35,7 @@ function IngredientsContent() {
     setError(err instanceof Error ? err : new Error(String(err)));
   }
 
-  const { showDialog, hideDialog } = useDialog();
+  const { showDialog } = useDialog();
   const observer = useRef<IntersectionObserver | null>(null);
   const lastIngredientRef = useRef<HTMLDivElement | null>(null);
 
@@ -77,7 +77,7 @@ function IngredientsContent() {
   }, [isLoading, hasMore, isFetchingNextPage, internalLoadMore]);
 
   const handleIngredientClick = (ingredient: Ingredient) => {
-    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
+    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} />);
   };
 
   // Show error state

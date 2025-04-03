@@ -1,16 +1,18 @@
 import { getIngredient } from "@/api/ingredients";
+import { useDialog } from "@/contexts/DialogContext";
 import { DetailedIngredient } from "@/interfaces/Ingredient";
 import { useEffect, useState } from "react";
 
 interface IngredientDialogProps {
   ingredientId: string;
-  onClose: () => void;
 }
 
-function IngredientDialog({ ingredientId, onClose }: IngredientDialogProps) {
+function IngredientDialog({ ingredientId }: IngredientDialogProps) {
   const [ingredient, setIngredient] = useState<DetailedIngredient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  const { hideDialog } = useDialog();
 
   useEffect(() => {
     const fetchIngredient = async () => {
@@ -99,7 +101,7 @@ function IngredientDialog({ ingredientId, onClose }: IngredientDialogProps) {
         <button
           type="button"
           className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md w-full font-medium"
-          onClick={onClose}
+          onClick={hideDialog}
         >
           닫기
         </button>
