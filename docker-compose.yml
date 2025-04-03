@@ -10,11 +10,11 @@ services:
       - VITE_OPENAI_API_KEY=${OPENAI_API_KEY}
       - VITE_TYPECAST_API_KEY=${VITE_TYPECAST_API_KEY}
     command: >
-        sh -c "
-        npm install &&
-        npm run build &&
-        mkdir -p /client/build &&
-        cp -r /client/dist/* /client/build"
+      sh -c "rm -rf /client/build/* &&
+      npm install &&
+      npm run build &&
+      mkdir -p /client/build &&
+      cp -rv /client/dist/* /client/build/"
     volumes:
       - ./client:/client
       - ./media/uploads:/app/uploads
@@ -31,7 +31,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./client/dist:/opt/app
+      - ./client/build:/opt/app
     networks:
       - see_through
 
