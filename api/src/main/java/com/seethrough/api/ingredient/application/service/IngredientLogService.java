@@ -100,7 +100,7 @@ public class IngredientLogService {
 
 	@Async
 	@Transactional
-	protected void saveOutboundLog(List<Ingredient> ingredients) {
+	protected void saveOutboundLog(UUID memberId, List<Ingredient> ingredients) {
 		log.debug("[IngredientLogService] saveOutboundLog 호출");
 
 		LocalDateTime now = LocalDateTime.now();
@@ -110,7 +110,7 @@ public class IngredientLogService {
 				UuidCreator.getTimeOrderedEpoch(),
 				ingredient.getName(),
 				ingredient.getImagePath(),
-				ingredient.getMemberId(),
+				memberId,
 				MovementType.OUTBOUND,
 				now))
 			.toList();
