@@ -1,5 +1,5 @@
 import { fetchMonitoringUsers, updateMonitoring } from "@/api/monitoring";
-import ChangePinModal from "@/components/modal/ChangePinDialog";
+import ChangePinDialog from "@/components/dialog/ChangePinDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import type { MonitoringUser } from "@/interfaces/Monitoring";
 import { useCallback, useEffect, useState } from "react";
@@ -68,7 +68,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
   };
 
   const handleLockClick = () => {
-    showDialog(<ChangePinModal currentPin={currentPin} onPinChange={handlePinChange} />);
+    showDialog(<ChangePinDialog currentPin={currentPin} onPinChange={handlePinChange} />);
   };
 
   return (

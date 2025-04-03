@@ -1,3 +1,4 @@
+import PinDialog from "@/components/dialog/PinDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import { usePage } from "@/contexts/PageContext";
 import {
@@ -7,7 +8,6 @@ import {
   BsPencilSquare,
   BsPersonCircle,
 } from "react-icons/bs";
-import PinModal from "../modal/PinModal";
 
 // Available pages for navigation
 export type PageType = "main" | "logs" | "monitoring" | "meal" | "my";
@@ -35,7 +35,7 @@ function BottomNavigation({
 
   const handleMonitoringClick = () => {
     if (currentPage !== "monitoring") {
-      showDialog(<PinModal correctPin={currentPin} onSuccess={() => navigateTo("monitoring")} />);
+      showDialog(<PinDialog correctPin={currentPin} onSuccess={() => navigateTo("monitoring")} />);
     }
   };
 

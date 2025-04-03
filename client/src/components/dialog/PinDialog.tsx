@@ -1,12 +1,12 @@
 import { useDialog } from "@/contexts/DialogContext";
 import { useState } from "react";
 
-interface PinModalProps {
+interface PinDialogProps {
   correctPin: string;
   onSuccess: () => void;
 }
 
-function PinModal({ correctPin, onSuccess }: PinModalProps) {
+function PinDialog({ correctPin, onSuccess }: PinDialogProps) {
   const { hideDialog } = useDialog();
   const [inputPin, setInputPin] = useState<string>("");
 
@@ -95,4 +95,4 @@ function PinModal({ correctPin, onSuccess }: PinModalProps) {
   );
 }
 
-export default PinModal;
+export default PinDialog;

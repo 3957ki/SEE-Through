@@ -1,7 +1,7 @@
 import { useDialog } from "@/contexts/DialogContext";
 import { useState } from "react";
 
-interface ChangePinModalProps {
+interface ChangePinDialogProps {
   currentPin: string;
   onPinChange: (newPin: string) => Promise<boolean>;
 }
@@ -12,7 +12,7 @@ enum PinChangeStep {
   CONFIRM_NEW = 2,
 }
 
-function ChangePinModal({ currentPin, onPinChange }: ChangePinModalProps) {
+function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
   const { hideDialog } = useDialog();
 
   const [step, setStep] = useState<PinChangeStep>(PinChangeStep.VERIFY_CURRENT);
@@ -191,4 +191,4 @@ function ChangePinModal({ currentPin, onPinChange }: ChangePinModalProps) {
   );
 }
 
-export default ChangePinModal;
+export default ChangePinDialog;
