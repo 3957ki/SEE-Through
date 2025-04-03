@@ -48,17 +48,17 @@ function DateSelector({
 
   return (
     <div className="flex items-center px-4 py-2 border-b gap-2">
-      <button onClick={handlePrev} className="p-1" disabled={offset === 0}>
+      <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
         <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
       <div className="flex-1 flex justify-around">
-        {visibleDates.map((date, index) => {
+        {visibleDates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
           const day = format(date, "d");
           return (
             <div
-              key={index}
+              key={date.toDateString()}
               className={`flex flex-col items-center px-2 py-1 rounded-full cursor-pointer ${
                 isSelected ? "bg-orange-400 text-white" : "text-gray-700"
               }`}
@@ -70,7 +70,7 @@ function DateSelector({
           );
         })}
       </div>
-      <button onClick={handleNext} className="p-1" disabled>
+      <button type="button" onClick={handleNext} className="p-1" disabled>
         <ChevronRight className="w-5 h-5 text-gray-300" />
       </button>
     </div>
@@ -189,6 +189,7 @@ function MealSection({
           {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
         </div>
         <button
+          type="button"
           className="self-center pl-4"
           onClick={() => onRefresh(mealId)}
           disabled={isRefreshing}
@@ -284,6 +285,7 @@ export default function MealPage() {
       <div className="flex justify-between items-center px-4 mt-4">
         <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
         <button
+          type="button"
           onClick={handleGoToday}
           className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
         >

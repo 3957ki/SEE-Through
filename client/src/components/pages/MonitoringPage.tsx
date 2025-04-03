@@ -1,5 +1,5 @@
 import { fetchMonitoringUsers, updateMonitoring } from "@/api/monitoring";
-import ChangePinModal from "@/components/modal/ChangePinModal";
+import ChangePinModal from "@/components/modal/ChangePinDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import type { MonitoringUser } from "@/interfaces/Monitoring";
 import { useCallback, useEffect, useState } from "react";
@@ -14,7 +14,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
   const [users, setUsers] = useState<MonitoringUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [savingUsers, setSavingUsers] = useState<string[]>([]); // UUID는 string
-  const { showDialog, hideDialog } = useDialog();
+  const { showDialog } = useDialog();
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -68,9 +68,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
   };
 
   const handleLockClick = () => {
-    showDialog(
-      <ChangePinModal currentPin={currentPin} onPinChange={handlePinChange} onClose={hideDialog} />
-    );
+    showDialog(<ChangePinModal currentPin={currentPin} onPinChange={handlePinChange} />);
   };
 
   return (

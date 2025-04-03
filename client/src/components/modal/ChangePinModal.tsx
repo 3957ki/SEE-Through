@@ -1,9 +1,9 @@
-import { useState, type FC } from "react";
+import { useDialog } from "@/contexts/DialogContext";
+import { useState } from "react";
 
 interface ChangePinModalProps {
   currentPin: string;
   onPinChange: (newPin: string) => Promise<boolean>;
-  onClose: () => void;
 }
 
 enum PinChangeStep {
@@ -12,55 +12,57 @@ enum PinChangeStep {
   CONFIRM_NEW = 2,
 }
 
-const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onClose }) => {
+function ChangePinModal({ currentPin, onPinChange }: ChangePinModalProps) {
+  const { hideDialog } = useDialog();
+
   const [step, setStep] = useState<PinChangeStep>(PinChangeStep.VERIFY_CURRENT);
-  const [enteredPin, setEnteredPin] = useState<string>("");
+  const [inputPin, setInputPin] = useState<string>("");
   const [newPin, setNewPin] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   // Handle number button click
-  const handleNumberClick = (number: number) => {
+  const handleNumberClick = (digit: number) => {
     if (isProcessing) return;
 
     setError("");
 
     if (step === PinChangeStep.VERIFY_CURRENT) {
-      if (enteredPin.length < 4) {
-        const updatedPin = enteredPin + number;
-        setEnteredPin(updatedPin);
+      if (inputPin.length < 4) {
+        const updatedPin = inputPin + digit;
+        setInputPin(updatedPin);
 
         // Verify current PIN when 4 digits are entered
         if (updatedPin.length === 4) {
           if (updatedPin === currentPin) {
             setTimeout(() => {
-              setEnteredPin("");
+              setInputPin("");
               setStep(PinChangeStep.ENTER_NEW);
             }, 300);
           } else {
             setError("현재 PIN이 일치하지 않습니다.");
-            setTimeout(() => setEnteredPin(""), 300);
+            setTimeout(() => setInputPin(""), 300);
           }
         }
       }
     } else if (step === PinChangeStep.ENTER_NEW) {
-      if (enteredPin.length < 4) {
-        const updatedPin = enteredPin + number;
-        setEnteredPin(updatedPin);
+      if (inputPin.length < 4) {
+        const updatedPin = inputPin + digit;
+        setInputPin(updatedPin);
 
         // Move to confirmation step when 4 digits are entered
         if (updatedPin.length === 4) {
           setTimeout(() => {
             setNewPin(updatedPin);
-            setEnteredPin("");
+            setInputPin("");
             setStep(PinChangeStep.CONFIRM_NEW);
           }, 300);
         }
       }
     } else if (step === PinChangeStep.CONFIRM_NEW) {
-      if (enteredPin.length < 4) {
-        const updatedPin = enteredPin + number;
-        setEnteredPin(updatedPin);
+      if (inputPin.length < 4) {
+        const updatedPin = inputPin + digit;
+        setInputPin(updatedPin);
 
         // Confirm new PIN when 4 digits are entered
         if (updatedPin.length === 4) {
@@ -69,7 +71,7 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
           } else {
             setError("새 PIN이 일치하지 않습니다. 다시 시도해주세요.");
             setTimeout(() => {
-              setEnteredPin("");
+              setInputPin("");
               setNewPin("");
               setStep(PinChangeStep.ENTER_NEW);
             }, 300);
@@ -81,8 +83,8 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
 
   // Handle delete button click
   const handleDelete = () => {
-    if (enteredPin.length > 0) {
-      setEnteredPin(enteredPin.slice(0, -1));
+    if (inputPin.length > 0) {
+      setInputPin(inputPin.slice(0, -1));
     }
   };
 
@@ -93,12 +95,12 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
       const success = await onPinChange(confirmedPin);
       if (success) {
         setTimeout(() => {
-          onClose();
+          hideDialog();
         }, 200);
       } else {
         setError("PIN 변경에 실패했습니다. 다시 시도해주세요.");
         setStep(PinChangeStep.VERIFY_CURRENT);
-        setEnteredPin("");
+        setInputPin("");
         setNewPin("");
       }
     } catch (error) {
@@ -137,7 +139,7 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
             key={index}
             className="w-[30px] h-[30px] border-b-2 border-gray-400 flex justify-center items-center text-2xl"
           >
-            {enteredPin.length > index ? "•" : ""}
+            {inputPin.length > index ? "•" : ""}
           </div>
         ))}
       </div>
@@ -146,6 +148,7 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
       <div className="grid grid-cols-3 gap-3 mb-4">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <button
+            type="button"
             key={num}
             className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-2xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
             onClick={() => handleNumberClick(num)}
@@ -155,6 +158,7 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
           </button>
         ))}
         <button
+          type="button"
           className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
           onClick={handleDelete}
           disabled={isProcessing}
@@ -162,6 +166,7 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
           ←
         </button>
         <button
+          type="button"
           className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-2xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
           onClick={() => handleNumberClick(0)}
           disabled={isProcessing}
@@ -174,8 +179,9 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
       {/* Action buttons */}
       <div className="flex gap-3 mt-2">
         <button
+          type="button"
           className="bg-gray-300 text-gray-800 border-none rounded-lg px-6 py-2.5 text-base cursor-pointer hover:bg-gray-400 transition-colors"
-          onClick={onClose}
+          onClick={hideDialog}
           disabled={isProcessing}
         >
           취소
@@ -183,6 +189,6 @@ const ChangePinModal: FC<ChangePinModalProps> = ({ currentPin, onPinChange, onCl
       </div>
     </div>
   );
-};
+}
 
 export default ChangePinModal;

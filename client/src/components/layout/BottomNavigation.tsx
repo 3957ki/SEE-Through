@@ -1,4 +1,5 @@
 import { useDialog } from "@/contexts/DialogContext";
+import { usePage } from "@/contexts/PageContext";
 import {
   BsCalendarEvent,
   BsEyeglasses,
@@ -14,20 +15,17 @@ export type PageType = "main" | "logs" | "monitoring" | "meal" | "my";
 // Bottom Navigation Component
 interface BottomNavigationProps {
   currentPin: string;
-  onSuccess: () => void;
   currentPage: PageType;
-  onNavigate: (page: PageType) => void;
   isFixed?: boolean; // New prop to control fixed vs relative positioning
 }
 
 function BottomNavigation({
   currentPin,
-  onSuccess,
   currentPage,
-  onNavigate,
   isFixed = true, // Default to fixed positioning for backward compatibility
 }: BottomNavigationProps) {
-  const { showDialog, hideDialog } = useDialog();
+  const { showDialog } = useDialog();
+  const { navigateTo } = usePage();
 
   // Common classes for the navigation bar
   const baseClasses = "bg-white border-t flex justify-around items-center h-14 px-4";
@@ -37,7 +35,7 @@ function BottomNavigation({
 
   const handleMonitoringClick = () => {
     if (currentPage !== "monitoring") {
-      showDialog(<PinModal correctPin={currentPin} onSuccess={onSuccess} onClose={hideDialog} />);
+      showDialog(<PinModal correctPin={currentPin} onSuccess={() => navigateTo("monitoring")} />);
     }
   };
 
@@ -46,7 +44,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("my")}
+        onClick={() => navigateTo("my")}
       >
         <BsPersonCircle
           className={`w-6 h-6 ${currentPage === "my" ? "text-orange-500" : "text-gray-600"}`}
@@ -55,7 +53,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("meal")}
+        onClick={() => navigateTo("meal")}
       >
         <BsCalendarEvent
           className={`w-6 h-6 ${currentPage === "meal" ? "text-orange-500" : "text-gray-600"}`}
@@ -64,7 +62,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("main")}
+        onClick={() => navigateTo("main")}
       >
         <BsHouseDoor
           className={`w-6 h-6 ${currentPage === "main" ? "text-orange-500" : "text-gray-600"}`}
@@ -74,7 +72,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("logs")}
+        onClick={() => navigateTo("logs")}
       >
         <BsPencilSquare
           className={`w-6 h-6 ${currentPage === "logs" ? "text-orange-500" : "text-gray-600"}`}

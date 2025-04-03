@@ -36,10 +36,6 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
     my: <MyPage />,
   };
 
-  const handlePinSuccess = () => {
-    navigateTo("monitoring");
-  };
-
   return (
     <div ref={ref} className={cn("w-full h-full flex items-center justify-center", className)}>
       <PageContext value={pageContextValue}>
@@ -64,13 +60,7 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
           </div>
 
           <div className="w-full bg-white border-t">
-            <BottomNavigation
-              currentPin={currentPin}
-              onSuccess={handlePinSuccess}
-              currentPage={currentPage}
-              onNavigate={navigateTo}
-              isFixed={false}
-            />
+            <BottomNavigation currentPin={currentPin} currentPage={currentPage} isFixed={false} />
           </div>
           <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
         </div>
