@@ -65,3 +65,5 @@ htmlcov/
 .cache/
 dataset/
 register_dataset/
+*.pkl
+*.jpg

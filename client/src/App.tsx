@@ -7,7 +7,6 @@ import { disconnectLocalServer, initLocalServerWebSocket } from "@/services/webs
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
-// ShowcaseToggleButton component
 function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: string }) {
   return (
     <Button
@@ -68,7 +67,7 @@ function App() {
                     position: "relative",
                   }}
                 >
-                  <FridgeDisplay ref={fridgeDisplayRef} />
+                  <FridgeDisplay ref={fridgeDisplayRef} isActive={true} />
                 </div>
               </div>
             </div>

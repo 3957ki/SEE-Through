@@ -1,4 +1,5 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
+import Screensaver from "@/components/Screensaver";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import Ingredient from "@/interfaces/Ingredient";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
@@ -14,9 +15,10 @@ const SCALE_FACTOR = DISPLAY_CONTAINER_WIDTH / FRIDGE_DISPLAY_WIDTH;
 
 interface FridgeProps {
   insideIngredients: Ingredient[];
+  isActive: boolean;
 }
 
-function Fridge({ insideIngredients }: FridgeProps) {
+function Fridge({ insideIngredients, isActive }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
   const { addIngredient } = useOptimisticIngredientUpdates();
   const handleFridgeDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -70,7 +72,6 @@ function Fridge({ insideIngredients }: FridgeProps) {
   };
 
   return (
-    // 클릭하면 좌측 문이 토글됩니다.
     <div className="relative w-full h-full">
       <svg
         width="100%"
@@ -388,9 +389,10 @@ function Fridge({ insideIngredients }: FridgeProps) {
                   style={{
                     width: `${FRIDGE_DISPLAY_WIDTH}px`,
                     height: `${FRIDGE_DISPLAY_HEIGHT}px`,
+                    position: "relative",
                   }}
                 >
-                  <FridgeDisplay />
+                  {isActive ? <Screensaver /> : <FridgeDisplay />}
                 </div>
               </div>
             </div>

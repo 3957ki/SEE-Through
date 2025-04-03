@@ -1,3 +1,4 @@
+import { Dialog } from "@/components/Dialog";
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
 import LogPage from "@/components/pages/LogPage";
@@ -7,22 +8,19 @@ import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
 import { useDialog } from "@/contexts/DialogContext";
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
-import { Dialog } from "./Dialog";
+import React, { useRef, useState } from "react";
 
 interface FridgeDisplayProps {
   className?: string;
+  ref?: React.RefObject<HTMLDivElement | null>;
 }
 
-const FridgeDisplay = ({
-  ref,
-  className = "",
-}: FridgeDisplayProps & { ref?: React.RefObject<HTMLDivElement | null> }) => {
+function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
   const { dialogContent, hideDialog } = useDialog();
+  const displayRef = useRef<HTMLDivElement>(null);
 
-  // 각 페이지
   const pages = {
     main: <MainPage onShowMealPage={() => handleNavigate("meal")} />,
     logs: <LogPage />,
@@ -35,7 +33,6 @@ const FridgeDisplay = ({
     setCurrentPage(page);
   };
 
-  // Pin 번호 성공시 모니터링 페이지로 이동
   const handlePinSuccess = () => {
     handleNavigate("monitoring");
   };
@@ -43,6 +40,7 @@ const FridgeDisplay = ({
   return (
     <div ref={ref} className={cn("w-full h-full flex items-center justify-center", className)}>
       <div
+        ref={displayRef}
         className="bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative"
         style={{
           width: "100%",
@@ -74,7 +72,7 @@ const FridgeDisplay = ({
       </div>
     </div>
   );
-};
+}
 
 FridgeDisplay.displayName = "FridgeDisplay";
 
