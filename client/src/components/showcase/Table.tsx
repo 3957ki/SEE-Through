@@ -1,14 +1,15 @@
 import tableImage from "@/assets/table.png";
 import Ingredient from "@/interfaces/Ingredient";
+import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
 import ShowcaseIngredient from "./ShowcaseIngredient";
-
 interface TableProps {
   outsideIngredients: Ingredient[];
-  onDrop: (ingredient: Ingredient) => void;
 }
 
-export default function Table({ outsideIngredients, onDrop }: TableProps) {
+export default function Table({ outsideIngredients }: TableProps) {
+  const { removeIngredient } = useOptimisticIngredientUpdates();
+
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -26,7 +27,7 @@ export default function Table({ outsideIngredients, onDrop }: TableProps) {
         const ingredient = JSON.parse(ingredientData);
         if (!ingredient) return;
 
-        onDrop(ingredient);
+        removeIngredient.mutate(ingredient.ingredient_id);
       }
     } catch (error) {
       console.error("Failed to handle drop on table:", error);

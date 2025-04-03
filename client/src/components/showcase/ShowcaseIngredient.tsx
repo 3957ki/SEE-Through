@@ -10,7 +10,6 @@ interface ShowcaseIngredientProps {
 
 export default function ShowcaseIngredient({
   ingredient,
-  onClick,
   draggable = true,
   className = "",
 }: ShowcaseIngredientProps) {
@@ -58,7 +57,6 @@ export default function ShowcaseIngredient({
       draggable={draggable}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onClick={() => onClick?.(ingredient)}
       className={`cursor-grab hover:scale-120 transition-all duration-200 ${className}`}
       role="button"
       aria-label={`${draggable ? "Drag " : ""}${ingredient.name || "Unnamed ingredient"}`}

@@ -1,13 +1,13 @@
 import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
 import Header from "@/components/layout/Header";
+import LogPage from "@/components/pages/LogPage";
 import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
+import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
 import { DialogProvider } from "@/contexts/DialogContext";
 import { cn } from "@/lib/utils";
 import { useRef, useState, type RefObject } from "react";
-import LogPage from "./pages/LogPage";
-import MonitoringPage from "./pages/MonitoringPage";
 
 interface FridgeDisplayProps {
   className?: string;

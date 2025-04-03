@@ -1,8 +1,8 @@
 import FridgeDisplay from "@/components/FridgeDisplay";
+import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import Ingredient from "@/interfaces/Ingredient";
+import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { useEffect, useState, type CSSProperties, type DragEvent } from "react";
-import CommentDialog from "../dialog/CommentDialog";
-import ShowcaseIngredient from "./ShowcaseIngredient";
 
 // Constants for FridgeDisplay dimensions
 const FRIDGE_DISPLAY_WIDTH = 600;
@@ -13,22 +13,12 @@ const DISPLAY_CONTAINER_HEIGHT = DISPLAY_CONTAINER_WIDTH / ASPECT_RATIO;
 const SCALE_FACTOR = DISPLAY_CONTAINER_WIDTH / FRIDGE_DISPLAY_WIDTH;
 
 interface FridgeProps {
-  onDrop: (ingredient: Ingredient) => void;
   insideIngredients: Ingredient[];
-  ingredientOnClick: (ingredient: Ingredient) => void;
-  commentMessage?: string | null;
-  onCloseComment?: () => void;
 }
 
-function Fridge({
-  onDrop,
-  insideIngredients,
-  ingredientOnClick,
-  commentMessage,
-  onCloseComment,
-}: FridgeProps) {
+function Fridge({ insideIngredients }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
-
+  const { removeIngredient } = useOptimisticIngredientUpdates();
   const handleFridgeDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     try {
@@ -41,7 +31,7 @@ function Fridge({
         const ingredient = JSON.parse(ingredientData);
         if (!ingredient) return;
 
-        onDrop(ingredient);
+        removeIngredient.mutate(ingredient.ingredient_id);
       }
     } catch (error) {
       console.error("Failed to handle drop on fridge:", error);
@@ -202,11 +192,7 @@ function Fridge({
               >
                 {insideIngredients.slice(3, 5).map((item) => (
                   <div key={`${item.ingredient_id}`}>
-                    <ShowcaseIngredient
-                      ingredient={item}
-                      onClick={ingredientOnClick}
-                      className="fridge"
-                    />
+                    <ShowcaseIngredient ingredient={item} className="fridge" />
                   </div>
                 ))}
               </div>
@@ -230,11 +216,7 @@ function Fridge({
                       marginLeft: index > 0 ? "-3%" : "0",
                     }}
                   >
-                    <ShowcaseIngredient
-                      ingredient={item}
-                      onClick={ingredientOnClick}
-                      className="fridge"
-                    />
+                    <ShowcaseIngredient ingredient={item} className="fridge" />
                   </div>
                 ))}
               </div>
@@ -409,9 +391,6 @@ function Fridge({
                   }}
                 >
                   <FridgeDisplay />
-                  {commentMessage && onCloseComment && (
-                    <CommentDialog message={commentMessage} onClose={onCloseComment} />
-                  )}
                 </div>
               </div>
             </div>
