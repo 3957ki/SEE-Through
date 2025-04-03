@@ -120,3 +120,10 @@ CREATE TABLE meals
     FOREIGN KEY (member_id) REFERENCES members (member_id),
     UNIQUE (member_id, serving_date, serving_time)
 );
+
+-- FCM 토큰 테이블
+CREATE TABLE fcm_tokens
+(
+    fcm_token VARCHAR(255) NOT NULL,
+    PRIMARY KEY (fcm_token)
+);

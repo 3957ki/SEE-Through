@@ -20,7 +20,17 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.seethroughapp.R;
+import com.example.seethroughapp.data.model.dto.FCMTokenRequest;
+import com.example.seethroughapp.data.model.ingredient.IngredientWrapper;
+import com.example.seethroughapp.network.ApiService;
+import com.example.seethroughapp.network.RetrofitInstance;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -105,7 +115,30 @@ public class MainActivity extends AppCompatActivity {
                     // 토큰 가져오기 성공
                     String token = task.getResult();
                     Log.d(TAG, "FCM 토큰: " + token);
+
+                    sendTokenToServer(token);
                     //Toast.makeText(MainActivity.this, "FCM 토큰: " + token, Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void sendTokenToServer(String token){
+        FCMTokenRequest request = new FCMTokenRequest(token);
+        // Retrofit 호출 또는 데이터 가져오기
+        ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
+        apiService.sendToken(request).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null){
+                    Log.d(TAG, "FCM 토큰 서버 저장 성공: " + response.body());
+                } else {
+                    Log.d(TAG, "FCM 토큰 서버 저장 실패: " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e(TAG, "FCM 토큰 서버 전송 에러: " + t.getMessage());
+            }
+        });
     }
 }

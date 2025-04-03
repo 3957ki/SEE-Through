@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.seethrough.api.fcm.application.service.FCMService;
+import com.seethrough.api.member.domain.Member;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,7 @@ public class IngredientService {
 	private final IngredientRepository ingredientRepository;
 	private final IngredientDtoMapper ingredientDtoMapper;
 	private final MemberService memberService;
+	private final FCMService fcmService;
 	private final IngredientLogService ingredientLogService;
 	private final AlertService alertService;
 	private final LlmApiIngredientService llmApiIngredientService;
@@ -128,7 +131,7 @@ public class IngredientService {
 	public String outboundIngredients(OutboundIngredientsRequest request) {
 		log.debug("[Service] outboundIngredients 호출");
 
-		UUID memberIdObj = memberService.checkMemberExists(request.getMemberId());
+		Member member = memberService.findMember(UUID.fromString(request.getMemberId()));
 
 		List<UUID> ingredientIdList = request.getIngredientIdList()
 			.stream()
@@ -138,12 +141,20 @@ public class IngredientService {
 		// TODO: 찾을 수 없는 식재료에 대한 에러 처리
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
 
+		// 식재료 모니터링 대상 출고 모바일 알림
+		if (ingredients.size() > 0 && member.isMonitored()){
+			String ingredientString = "여러 재료";
+			if (ingredients.size() == 1)
+				ingredientString = ingredients.get(0).getName();
+			fcmService.sendOutMonitorNotification(member.getName(), ingredientString);
+		}
+
 		// TODO: steram으로 수정 예정(호출 위치도 마지막으로 수정되어야 함)
 		String response = null;
 		if (ingredients.size() == 1) {
-			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
+			response = alertService.getAlert(member.getMemberId(), ingredients.get(0).getIngredientId())
 				.map(Alert::getComment)
-				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
+				.orElseGet(() -> llmApiIngredientService.createComment(member.getMemberId(), ingredients.get(0).getIngredientId()));
 		}
 
 		ingredientRepository.deleteAll(ingredients);

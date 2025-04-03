@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/fcm")
+@RequestMapping("/api/fcm")
 public class FCMController {
     private final FCMService fcmService;
 
@@ -15,13 +15,10 @@ public class FCMController {
         this.fcmService = fcmService;
     }
 
-    @PostMapping("/send")
-    public ResponseEntity<String> sendNotification(@RequestBody Map<String, String> request) {
+    @PostMapping("/token")
+    public ResponseEntity<String> saveFCMToken(@RequestBody Map<String, String> request) {
         String token = request.get("token");
-        String title = request.get("title");
-        String body = request.get("body");
-
-        String response = fcmService.sendNotification(token, title, body);
-        return ResponseEntity.ok(response);
+        String response = fcmService.saveFCMToken(token);
+        return ResponseEntity.ok().body(response);
     }
 }
