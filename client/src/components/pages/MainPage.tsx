@@ -2,6 +2,7 @@ import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import IngredientDialog from "@/components/dialog/IngredientDialog";
 import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
 import { useDialog } from "@/contexts/DialogContext";
+import { usePage } from "@/contexts/PageContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
@@ -239,8 +240,9 @@ function useMeals(currentMember: any) {
   };
 }
 
-function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function Meals() {
   const { data: currentMember } = useCurrentMember();
+  const { navigateTo } = usePage();
 
   const {
     mealsToday,
@@ -308,7 +310,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
         <div
           key={data.meal_id}
           className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
-          onClick={() => onShowMealPage?.()}
+          onClick={() => navigateTo("meal")}
         >
           {/* 새로고침 로딩 스피너 */}
           {refreshingMealId === data.meal_id && (
@@ -376,16 +378,16 @@ function GreetingSection({ name }: { name?: string }) {
 }
 
 // Today's Diet Recommendation Section
-function TodaysDietSection({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function TodaysDietSection() {
   return (
     <Section>
       <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>오늘의 추천 식단</SectionTitle>
-      <Meals onShowMealPage={onShowMealPage} />
+      <Meals />
     </Section>
   );
 }
 
-function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function MainPage() {
   const { data: currentMember } = useCurrentMember();
 
   useEffect(() => {
@@ -397,7 +399,7 @@ function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
-      <TodaysDietSection onShowMealPage={onShowMealPage} />
+      <TodaysDietSection />
       <SectionDivider />
       <IngredientsSection />
     </div>
