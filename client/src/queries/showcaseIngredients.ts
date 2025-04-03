@@ -6,7 +6,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
 export const showcaseIngredients = [
   {
-    ingredient_id: "00000000-0000-0000-0000-000000000001",
+    ingredient_id: "99999999-0000-0000-0000-000000000001",
     name: "두부",
     image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/tofu.png",
   },
