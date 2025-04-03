@@ -1,18 +1,9 @@
-import { Dialog } from "@/components/Dialog";
-import {
-  createContext,
-  type ReactNode,
-  RefObject,
-  use,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import { createPortal } from "react-dom";
+import { createContext, type ReactNode, use, useCallback, useMemo, useState } from "react";
 
 interface DialogContextType {
   showDialog: (content: ReactNode) => void;
   hideDialog: () => void;
+  dialogContent: ReactNode | null;
 }
 
 export const DialogContext = createContext<DialogContextType | null>(null);
@@ -25,16 +16,11 @@ export function useDialog() {
   return context;
 }
 
-export function DialogProvider({
-  children,
-  portalTargetContainerRef,
-}: {
-  children: ReactNode;
-  portalTargetContainerRef: RefObject<HTMLElement>;
-}) {
+export function DialogProvider({ children }: { children: ReactNode }) {
   const [dialogContent, setDialogContent] = useState<ReactNode | null>(null);
 
   const showDialog = useCallback((content: ReactNode) => {
+    console.log("showDialog", content);
     setDialogContent(content);
   }, []);
 
@@ -42,17 +28,10 @@ export function DialogProvider({
     setDialogContent(null);
   }, []);
 
-  const value = useMemo(() => ({ showDialog, hideDialog }), [showDialog, hideDialog]);
-
-  return (
-    <DialogContext value={value}>
-      {children}
-      {portalTargetContainerRef.current &&
-        dialogContent !== null &&
-        createPortal(
-          <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />,
-          portalTargetContainerRef.current
-        )}
-    </DialogContext>
+  const value = useMemo(
+    () => ({ showDialog, hideDialog, dialogContent }),
+    [showDialog, hideDialog, dialogContent]
   );
+
+  return <DialogContext value={value}>{children}</DialogContext>;
 }

@@ -56,7 +56,7 @@ public class MealRepositoryImpl implements MealRepository {
 	public void saveAll(List<Meal> meals) {
 		log.debug("[Repository] saveAll 호출: {} 개의 로그", meals.size());
 
-		meals.forEach(entityManager::persist);
+		mealJpaRepository.saveAll(meals);
 	}
 
 	@Override

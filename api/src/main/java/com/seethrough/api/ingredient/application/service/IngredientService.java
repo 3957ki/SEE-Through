@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.alert.application.service.AlertService;
-import com.seethrough.api.alert.domain.Alert;
 import com.seethrough.api.alert.domain.event.CreateAlertByIngredientEvent;
 import com.seethrough.api.common.pagination.SliceRequestDto;
 import com.seethrough.api.common.pagination.SliceResponseDto;
@@ -32,6 +31,7 @@ import com.seethrough.api.ingredient.presentation.dto.request.InboundIngredients
 import com.seethrough.api.ingredient.presentation.dto.request.OutboundIngredientsRequest;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientDetailResponse;
 import com.seethrough.api.ingredient.presentation.dto.response.IngredientListResponse;
+import com.seethrough.api.ingredient.presentation.dto.response.OutBoundCommentResponse;
 import com.seethrough.api.member.application.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -112,11 +112,12 @@ public class IngredientService {
 				obj.getExpirationAt()))
 			.toList();
 
-		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredients(ingredients);
+		// TODO: 임베딩벡터 수정하기
+		// Map<UUID, List<Float>> embeddings = createEmbeddingForIngredients(ingredients);
 
-		ingredients.stream()
-			.filter(ingredient -> embeddings.containsKey(ingredient.getIngredientId()))
-			.forEach(ingredient -> ingredient.setEmbeddingVector(embeddings.get(ingredient.getIngredientId())));
+		// ingredients.stream()
+		// 	.filter(ingredient -> embeddings.containsKey(ingredient.getIngredientId()))
+		// 	.forEach(ingredient -> ingredient.setEmbeddingVector(embeddings.get(ingredient.getIngredientId())));
 
 		ingredientRepository.saveAll(ingredients);
 
@@ -128,7 +129,7 @@ public class IngredientService {
 	}
 
 	@Transactional
-	public String outboundIngredients(OutboundIngredientsRequest request) {
+	public OutBoundCommentResponse outboundIngredients(OutboundIngredientsRequest request) {
 		log.debug("[Service] outboundIngredients 호출");
 
 		Member member = memberService.findMember(UUID.fromString(request.getMemberId()));
@@ -138,9 +139,9 @@ public class IngredientService {
 			.map(UUID::fromString)
 			.toList();
 
-		// TODO: 찾을 수 없는 식재료에 대한 에러 처리
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
 
+<<<<<<< api/src/main/java/com/seethrough/api/ingredient/application/service/IngredientService.java
 		// 식재료 모니터링 대상 출고 모바일 알림
 		if (ingredients.size() > 0 && member.isMonitored()){
 			String ingredientString = "여러 재료";
@@ -149,17 +150,19 @@ public class IngredientService {
 			fcmService.sendOutMonitorNotification(member.getName(), ingredientString);
 		}
 
-		// TODO: steram으로 수정 예정(호출 위치도 마지막으로 수정되어야 함)
-		String response = null;
+		OutBoundCommentResponse response = null;
 		if (ingredients.size() == 1) {
-			response = alertService.getAlert(member.getMemberId(), ingredients.get(0).getIngredientId())
-				.map(Alert::getComment)
-				.orElseGet(() -> llmApiIngredientService.createComment(member.getMemberId(), ingredients.get(0).getIngredientId()));
+			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
+				.map(alert -> OutBoundCommentResponse.builder()
+					.comment(alert.getComment())
+					.isDanger(alert.isDanger())
+					.build())
+				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
 		}
 
 		ingredientRepository.deleteAll(ingredients);
 
-		ingredientLogService.saveOutboundLog(ingredients);
+		ingredientLogService.saveOutboundLog(memberIdObj, ingredients);
 
 		return response;
 	}

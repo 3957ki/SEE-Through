@@ -37,7 +37,7 @@ export async function insertIngredient(ingredient: Ingredient, memberId: string)
 export async function deleteIngredient(
   ingredientId: string,
   memberId: string
-): Promise<{ message: string }> {
+): Promise<{ comment: string; danger: boolean }> {
   const response = await APIServerFetcher.delete(`/ingredients`, {
     data: {
       member_id: memberId,
@@ -45,6 +45,8 @@ export async function deleteIngredient(
     },
   });
 
-  // 응답 데이터 구조가 content 또는 message로 반환되면 해당 값을 사용
-  return { message: response.data.content || response.data }; // message 반환
+  return {
+    comment: response.data.comment,
+    danger: response.data.danger,
+  };
 }

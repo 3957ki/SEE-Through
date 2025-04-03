@@ -1,7 +1,5 @@
 import { deleteIngredient, getIngredient, insertIngredient } from "@/api/ingredients";
-import { getLogs } from "@/api/logs";
 import { Ingredient } from "@/interfaces/Ingredient";
-import { logs } from "@/queries/logs";
 import { useCurrentMember } from "@/queries/members";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
@@ -14,23 +12,23 @@ export const showcaseIngredients = [
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000002",
-    name: "showcase2",
-    image_path: "showcase2",
+    name: "버섯",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/mushroom.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000003",
-    name: "showcase3",
-    image_path: "showcase3",
+    name: "오이",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cucumber.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000004",
-    name: "showcase4",
-    image_path: "showcase4",
+    name: "계란",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/eggs.png",
   },
   {
     ingredient_id: "99999999-0000-0000-0000-000000000005",
-    name: "showcase5",
-    image_path: "showcase5",
+    name: "치즈",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cheese.png",
   },
 ];
 
@@ -69,35 +67,6 @@ export function useShowcaseIngredients() {
 export function useOptimisticIngredientUpdates() {
   const queryClient = useQueryClient();
   const { data: currentMember } = useCurrentMember();
-
-  // Helper function to update logs for a specific member ID
-  const updateLogsForMember = async (memberId?: string) => {
-    try {
-      const freshLogs = await getLogs(1, 10, memberId);
-
-      // Get the existing infinite query data
-      const existingData = queryClient.getQueryData(logs.all(10, memberId).queryKey);
-
-      if (existingData) {
-        // If there's existing data, update the first page
-        queryClient.setQueryData(logs.all(10, memberId).queryKey, {
-          ...existingData,
-          pages: [freshLogs, ...(existingData as any).pages.slice(1)],
-        });
-      } else {
-        // If no existing data, set as new infinite query data
-        queryClient.setQueryData(logs.all(10, memberId).queryKey, {
-          pages: [freshLogs],
-          pageParams: [1],
-        });
-      }
-    } catch (error) {
-      console.error(
-        `Failed to fetch updated logs for ${memberId ? "member " + memberId : "all users"}:`,
-        error
-      );
-    }
-  };
 
   const addIngredient = useMutation({
     mutationFn: async (ingredient: Ingredient) => {
@@ -150,10 +119,6 @@ export function useOptimisticIngredientUpdates() {
             return queryKey[0] === "logs";
           },
         });
-
-        // Then explicitly fetch fresh data
-        await updateLogsForMember(currentMember.member_id); // User's own logs
-        await updateLogsForMember(undefined); // All users' logs
       }
     },
   });
@@ -161,12 +126,15 @@ export function useOptimisticIngredientUpdates() {
   const removeIngredient = useMutation({
     mutationFn: async (ingredientId: string) => {
       if (!currentMember) {
+        console.warn("[⚠️ currentMember 없음] 출고 불가");
         throw new Error("No current member found");
       }
 
       // Make the actual API call to delete the ingredient, including showcase ingredients
-      await deleteIngredient(ingredientId, currentMember.member_id);
-      return ingredientId;
+      console.log(`[📤 deleteIngredient 호출] ingredientId: ${ingredientId}`);
+      const result = await deleteIngredient(ingredientId, currentMember.member_id);
+      console.log("[✅ deleteIngredient 응답]", result);
+      return { ingredientId, comment: result.comment, danger: result.danger };
     },
     onMutate: async (ingredientId) => {
       // Cancel any outgoing refetches
@@ -206,10 +174,6 @@ export function useOptimisticIngredientUpdates() {
             return queryKey[0] === "logs";
           },
         });
-
-        // Then explicitly fetch fresh data
-        await updateLogsForMember(currentMember.member_id); // User's own logs
-        await updateLogsForMember(undefined); // All users' logs
       }
     },
   });

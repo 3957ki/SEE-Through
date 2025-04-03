@@ -6,9 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Slice;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.seethrough.api.common.pagination.SliceRequestDto;
@@ -35,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class IngredientLogService {
 
+	private final ApplicationContext applicationContext;
 	private final IngredientLogRepository ingredientLogRepository;
 	private final IngredientLogDtoMapper ingredientLogDtoMapper;
 	private final LlmApiIngredientLogService llmApiIngredientLogService;
@@ -62,6 +68,8 @@ public class IngredientLogService {
 		return SliceResponseDto.of(ingredientLogs.map(ingredientLogDtoMapper::toListResponse));
 	}
 
+	@Async
+	@Transactional
 	protected void saveInboundLog(List<Ingredient> ingredients) {
 		log.debug("[IngredientLogService] saveInboundLog 호출");
 
@@ -75,16 +83,24 @@ public class IngredientLogService {
 				ingredient.getInboundAt()))
 			.toList();
 
-		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredientLogs(ingredientLogs);
-
-		ingredientLogs.stream()
-			.filter(ingredientLog -> embeddings.containsKey(ingredientLog.getIngredientLogId()))
-			.forEach(ingredientLog -> ingredientLog.setEmbeddingVector(embeddings.get(ingredientLog.getIngredientLogId())));
-
 		ingredientLogRepository.saveAll(ingredientLogs);
+
+		List<UUID> ingredientLogIdList = ingredientLogs.stream()
+			.map(IngredientLog::getIngredientLogId)
+			.toList();
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				IngredientLogService proxy = applicationContext.getBean(IngredientLogService.class);
+				proxy.setEmbeddingVectorsAsync(ingredientLogIdList);
+			}
+		});
 	}
 
-	protected void saveOutboundLog(List<Ingredient> ingredients) {
+	@Async
+	@Transactional
+	protected void saveOutboundLog(UUID memberId, List<Ingredient> ingredients) {
 		log.debug("[IngredientLogService] saveOutboundLog 호출");
 
 		LocalDateTime now = LocalDateTime.now();
@@ -94,18 +110,38 @@ public class IngredientLogService {
 				UuidCreator.getTimeOrderedEpoch(),
 				ingredient.getName(),
 				ingredient.getImagePath(),
-				ingredient.getMemberId(),
+				memberId,
 				MovementType.OUTBOUND,
 				now))
 			.toList();
+
+		ingredientLogRepository.saveAll(ingredientLogs);
+
+		List<UUID> ingredientLogIdList = ingredientLogs.stream()
+			.map(IngredientLog::getIngredientLogId)
+			.toList();
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				IngredientLogService proxy = applicationContext.getBean(IngredientLogService.class);
+				proxy.setEmbeddingVectorsAsync(ingredientLogIdList);
+			}
+		});
+	}
+
+	@Async
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	protected void setEmbeddingVectorsAsync(List<UUID> ingredientLogIdList) {
+		log.debug("[IngredientLogService] setEmbeddingVectorsAsync 호출");
+
+		List<IngredientLog> ingredientLogs = ingredientLogRepository.findAllById(ingredientLogIdList);
 
 		Map<UUID, List<Float>> embeddings = createEmbeddingForIngredientLogs(ingredientLogs);
 
 		ingredientLogs.stream()
 			.filter(ingredientLog -> embeddings.containsKey(ingredientLog.getIngredientLogId()))
 			.forEach(ingredientLog -> ingredientLog.setEmbeddingVector(embeddings.get(ingredientLog.getIngredientLogId())));
-
-		ingredientLogRepository.saveAll(ingredientLogs);
 	}
 
 	private Map<UUID, List<Float>> createEmbeddingForIngredientLogs(List<IngredientLog> ingredientLogs) {

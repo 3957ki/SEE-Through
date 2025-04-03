@@ -46,4 +46,19 @@ public class IngredientLogRepositoryImpl implements IngredientLogRepository {
 
 		ingredientLogs.forEach(entityManager::persist);
 	}
+
+	@Override
+	public List<IngredientLog> findAllById(List<UUID> ingredientLogIdList) {
+		log.debug("[Repository] findAllById 호출: {} 개의 로그", ingredientLogIdList.size());
+
+		List<IngredientLog> entities = ingredientLogJpaRepository.findAllById(ingredientLogIdList);
+
+		log.debug("[Repository] 조회된 로그 수: {}", entities.size());
+
+		if (!entities.isEmpty()) {
+			log.debug("[Repository] 첫 번째 로그 상세 정보:{}", entities.get(0));
+		}
+
+		return entities;
+	}
 }

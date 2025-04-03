@@ -71,5 +71,6 @@ public class Ingredient {
 	private List<Float> embeddingVector;
 
 	@OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ToString.Exclude
 	private List<Alert> alerts;
 }

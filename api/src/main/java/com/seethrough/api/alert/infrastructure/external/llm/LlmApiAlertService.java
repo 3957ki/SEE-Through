@@ -8,7 +8,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByIngredientListResponse;
 import com.seethrough.api.alert.infrastructure.external.llm.dto.response.AlertByMemberListResponse;
-import com.seethrough.api.common.infrastructure.llm.LlmApiClient;
+import com.seethrough.api.common.infrastructure.LlmApiClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

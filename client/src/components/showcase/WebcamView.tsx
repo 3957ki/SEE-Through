@@ -274,7 +274,7 @@ function WebcamView() {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [faceDetector]);
+  }, [faceDetector, faceLevel]);
 
   const init = async () => {
     if (isInitializedRef.current) return;
@@ -472,7 +472,7 @@ function WebcamView() {
         clearTimeout(processingTimeoutRef.current);
       }
     };
-  }, []);
+  }, [currentMemberId]);
 
   // useEffect(() => {
   //   async function handleFaceRecognition(result: FaceDetectionResult) {

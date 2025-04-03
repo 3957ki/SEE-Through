@@ -1,50 +1,11 @@
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
-import Ingredient from "@/interfaces/Ingredient";
-import { useCurrentMember } from "@/queries/members";
-import {
-  useOptimisticIngredientUpdates,
-  useShowcaseIngredients,
-} from "@/queries/showcaseIngredients";
-import { type DragEvent } from "react";
-import WebcamView from "./showcase/WebcamView";
+import WebcamView from "@/components/showcase/WebcamView";
+import { useShowcaseIngredients } from "@/queries/showcaseIngredients";
 
 function ShowcaseScreen() {
-  const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
-  const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
-
-  const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    let ingredient: Ingredient | null = null;
-
-    try {
-      const ingredientData = e.dataTransfer.getData("application/x-ingredient");
-      if (!ingredientData || !currentMember) return;
-
-      ingredient = JSON.parse(ingredientData);
-      if (!ingredient) return;
-
-      // Use the mutation for optimistic updates
-      addIngredient.mutate(ingredient);
-    } catch (error) {
-      // Log the error for debugging
-      console.error("Failed to handle drop:", error);
-    }
-  };
-
-  const takeoutIngredient = async (ingredient: Ingredient): Promise<void> => {
-    if (!currentMember) return;
-
-    try {
-      // Use the mutation for optimistic updates
-      removeIngredient.mutate(ingredient.ingredient_id);
-    } catch (error) {
-      // Log the error for debugging
-      console.error("Error occurred while removing ingredient:", error);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -57,11 +18,7 @@ function ShowcaseScreen() {
       <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5">
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
-          <Fridge
-            handleDrop={handleDrop}
-            insideIngredients={insideIngredients}
-            ingredientOnClick={takeoutIngredient}
-          />
+          <Fridge insideIngredients={insideIngredients} />
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
