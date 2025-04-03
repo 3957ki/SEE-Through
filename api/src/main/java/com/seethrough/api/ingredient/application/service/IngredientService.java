@@ -150,7 +150,7 @@ public class IngredientService {
 
 		ingredientRepository.deleteAll(ingredients);
 
-		ingredientLogService.saveOutboundLog(ingredients);
+		ingredientLogService.saveOutboundLog(memberIdObj, ingredients);
 
 		return response;
 	}
