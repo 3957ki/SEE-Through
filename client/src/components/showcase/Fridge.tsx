@@ -18,7 +18,7 @@ interface FridgeProps {
 
 function Fridge({ insideIngredients }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
-  const { removeIngredient } = useOptimisticIngredientUpdates();
+  const { addIngredient } = useOptimisticIngredientUpdates();
   const handleFridgeDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     try {
@@ -31,7 +31,7 @@ function Fridge({ insideIngredients }: FridgeProps) {
         const ingredient = JSON.parse(ingredientData);
         if (!ingredient) return;
 
-        removeIngredient.mutate(ingredient.ingredient_id);
+        addIngredient.mutate(ingredient);
       }
     } catch (error) {
       console.error("Failed to handle drop on fridge:", error);

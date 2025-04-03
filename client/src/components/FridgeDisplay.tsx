@@ -5,18 +5,22 @@ import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
 import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
-import { DialogProvider } from "@/contexts/DialogContext";
+import { useDialog } from "@/contexts/DialogContext";
 import { cn } from "@/lib/utils";
-import { useRef, useState, type RefObject } from "react";
+import React, { useState } from "react";
+import { Dialog } from "./Dialog";
 
 interface FridgeDisplayProps {
   className?: string;
 }
 
-function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
-  const displayRef = useRef<HTMLDivElement>(null);
+const FridgeDisplay = ({
+  ref,
+  className = "",
+}: FridgeDisplayProps & { ref?: React.RefObject<HTMLDivElement | null> }) => {
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
+  const { dialogContent, hideDialog } = useDialog();
 
   // 각 페이지
   const pages = {
@@ -37,10 +41,7 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
   };
 
   return (
-    <div
-      ref={displayRef}
-      className={cn("w-full h-full flex items-center justify-center", className)}
-    >
+    <div ref={ref} className={cn("w-full h-full flex items-center justify-center", className)}>
       <div
         className="bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative"
         style={{
@@ -50,28 +51,32 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
           fontSize: "calc(16px * 0.3)", // Scale down font size
         }}
       >
-        <DialogProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
-          <div className="w-full shrink-0">
-            <Header />
-          </div>
+        <div className="w-full shrink-0">
+          <Header />
+        </div>
 
-          <div className="flex-1 overflow-auto" style={{ height: `calc(100% - 56px - 56px)` }}>
-            <div className="px-1">{pages[currentPage]}</div>
-          </div>
+        <div
+          className="flex-1 overflow-auto relative"
+          style={{ height: `calc(100% - 56px - 56px)` }}
+        >
+          <div className="px-1">{pages[currentPage]}</div>
+        </div>
 
-          <div className="w-full bg-white border-t">
-            <BottomNavigation
-              currentPin={currentPin}
-              onSuccess={handlePinSuccess}
-              currentPage={currentPage}
-              onNavigate={handleNavigate}
-              isFixed={false}
-            />
-          </div>
-        </DialogProvider>
+        <div className="w-full bg-white border-t">
+          <BottomNavigation
+            currentPin={currentPin}
+            onSuccess={handlePinSuccess}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            isFixed={false}
+          />
+        </div>
+        <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
       </div>
     </div>
   );
-}
+};
+
+FridgeDisplay.displayName = "FridgeDisplay";
 
 export default FridgeDisplay;
