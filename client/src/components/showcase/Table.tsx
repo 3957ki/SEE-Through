@@ -1,14 +1,17 @@
 import tableImage from "@/assets/table.png";
+import CommentDialog from "@/components/dialog/CommentDialog";
+import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
+import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
-import ShowcaseIngredient from "./ShowcaseIngredient";
 interface TableProps {
   outsideIngredients: Ingredient[];
 }
 
 export default function Table({ outsideIngredients }: TableProps) {
   const { removeIngredient } = useOptimisticIngredientUpdates();
+  const { showDialog } = useDialog();
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -27,7 +30,18 @@ export default function Table({ outsideIngredients }: TableProps) {
         const ingredient = JSON.parse(ingredientData);
         if (!ingredient) return;
 
-        removeIngredient.mutate(ingredient.ingredient_id);
+        removeIngredient.mutate(ingredient.ingredient_id, {
+          onSuccess: (data) => {
+            // Extract the string message from the object
+            console.log(data);
+            const messageText =
+              typeof data.message === "string"
+                ? data.message
+                : (data.message as { comment?: string })?.comment || "재료가 제거되었습니다.";
+
+            showDialog(<CommentDialog message={messageText} />);
+          },
+        });
       }
     } catch (error) {
       console.error("Failed to handle drop on table:", error);
