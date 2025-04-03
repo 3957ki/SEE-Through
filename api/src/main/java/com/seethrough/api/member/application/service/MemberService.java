@@ -240,7 +240,7 @@ public class MemberService {
 		members.forEach(Member::calculateAge);
 	}
 
-	private Member findMember(UUID memberId) {
+	public Member findMember(UUID memberId) {
 		return memberRepository.findByMemberId(memberId)
 			.orElseThrow(() ->
 				new MemberNotFoundException("구성원을 찾을 수 없습니다.")

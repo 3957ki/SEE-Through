@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.seethrough.api.fcm.application.service.FCMService;
+import com.seethrough.api.member.domain.Member;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,7 @@ public class IngredientService {
 	private final IngredientRepository ingredientRepository;
 	private final IngredientDtoMapper ingredientDtoMapper;
 	private final MemberService memberService;
+	private final FCMService fcmService;
 	private final IngredientLogService ingredientLogService;
 	private final AlertService alertService;
 	private final LlmApiIngredientService llmApiIngredientService;
@@ -129,7 +132,7 @@ public class IngredientService {
 	public OutBoundCommentResponse outboundIngredients(OutboundIngredientsRequest request) {
 		log.debug("[Service] outboundIngredients 호출");
 
-		UUID memberIdObj = memberService.checkMemberExists(request.getMemberId());
+		Member member = memberService.findMember(UUID.fromString(request.getMemberId()));
 
 		List<UUID> ingredientIdList = request.getIngredientIdList()
 			.stream()
@@ -137,6 +140,15 @@ public class IngredientService {
 			.toList();
 
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
+
+<<<<<<< api/src/main/java/com/seethrough/api/ingredient/application/service/IngredientService.java
+		// 식재료 모니터링 대상 출고 모바일 알림
+		if (ingredients.size() > 0 && member.isMonitored()){
+			String ingredientString = "여러 재료";
+			if (ingredients.size() == 1)
+				ingredientString = ingredients.get(0).getName();
+			fcmService.sendOutMonitorNotification(member.getName(), ingredientString);
+		}
 
 		OutBoundCommentResponse response = null;
 		if (ingredients.size() == 1) {

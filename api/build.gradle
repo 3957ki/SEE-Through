@@ -68,6 +68,9 @@ dependencies {
 
     // UUIDv7을 위한 라이브러리
     implementation 'com.github.f4b6a3:uuid-creator:6.0.0'
+
+    // FireBase
+    implementation 'com.google.firebase:firebase-admin:9.4.3'
 }
 
 tasks.named('test') {

@@ -1,4 +1,4 @@
-package com.example.seethroughapp.model.inoutlog;
+package com.example.seethroughapp.data.model.inoutlog;
 
 import lombok.Getter;
 import lombok.Setter;
