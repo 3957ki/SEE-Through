@@ -12,11 +12,17 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.seethroughapp.R;
 import com.example.seethroughapp.data.model.ingredient.Ingredient;
 import com.example.seethroughapp.data.model.inoutlog.InOutLog;
+import com.example.seethroughapp.data.model.meal.Meal;
 import com.example.seethroughapp.viewmodel.SeeThroughViewModel;
 
 import java.util.List;
 
 public class SeeThroughActivity extends AppCompatActivity {
+
+    private TextView firstMealType;
+    private TextView firstMealContent;
+    private TextView secondMealType;
+    private TextView secondMealContent;
 
     private TextView ingredientText;
     private TextView inOutLogText;
@@ -45,13 +51,20 @@ public class SeeThroughActivity extends AppCompatActivity {
             }
         });
 
+        firstMealType = findViewById(R.id.tv_card_first_title);
+        firstMealContent = findViewById(R.id.tv_card_first_content);
+        secondMealType = findViewById(R.id.tv_card_second_title);
+        secondMealContent = findViewById(R.id.tv_card_second_content);
+
         ingredientText = findViewById(R.id.tv_ingredients);
         inOutLogText = findViewById(R.id.tv_inoutlogs);
-
 
         viewModel = new ViewModelProvider(this).get(SeeThroughViewModel.class);
         viewModel.getIngredients().observe(this, this::displayIngredients);
         viewModel.getInOutLogs().observe(this, this::displayInOutLogs);
+        viewModel.getFirstMeal().observe(this, this::displayFirstMeal);
+        viewModel.getSecondMeal().observe(this, this::displaySecondMeal);
+        viewModel.fetchMeals();
         viewModel.fetchIngredients();
         viewModel.fetchInOutLogs();
     }
@@ -80,5 +93,23 @@ public class SeeThroughActivity extends AppCompatActivity {
             inOutLogString.append("출고 기록 없음");
         }
         inOutLogText.setText(inOutLogString.toString());
+    }
+
+    private void displayFirstMeal(Meal data){
+        if (data == null) return;
+        firstMealType.setText(data.getServingTime());
+        StringBuilder foods = new StringBuilder();
+        for (String food : data.getMenu())
+            foods.append(food).append("\n");
+        firstMealContent.setText(foods.toString());
+    }
+
+    private void displaySecondMeal(Meal data){
+        if (data == null) return;
+        secondMealType.setText(data.getServingTime());
+        StringBuilder foods = new StringBuilder();
+        for (String food : data.getMenu())
+            foods.append(food).append("\n");
+        secondMealContent.setText(foods.toString());
     }
 }
