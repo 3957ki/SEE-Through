@@ -13,7 +13,7 @@ services:
         sh -c "
         npm install &&
         npm run build &&
-        cp -r /client/dist/* /client/dist"
+        cp -r /client/dist/* /client/build"
     volumes:
       - ./client:/client
       - ./media/uploads:/app/uploads
