@@ -59,36 +59,44 @@ public class FCMService {
         }
     }
 
-    public String sendOutMonitorNotification(String userName, String ingredientName) {
+    public String sendNotification(String title, String body){
         try {
-            // 알림 메시지 설정
             Notification notification = Notification.builder()
-                    .setTitle("See-Through 출고 알림")
-                    .setBody(userName + "가 " + ingredientName + "를 출고하였습니다.")
+                    .setTitle(title)
+                    .setBody(body)
                     .build();
 
-            // 데이터베이스에서 FCM 토큰 가져오기
             List<FCMToken> tokens = fcmTokenRepository.findAll();
             List<String> tokenList = tokens.stream()
-                    .map(FCMToken::getFcmToken) // FCMToken 엔티티에서 실제 토큰 문자열 추출
+                    .map(FCMToken::getFcmToken)
                     .collect(Collectors.toList());
 
-            if (tokenList.isEmpty()) {
-                return "푸시 알림 전송 실패: 토큰이 없습니다.";
-            }
+            if (tokenList.isEmpty()) return "푸시 알림 전송 실패: 토큰이 없습니다.";
 
-            // MulticastMessage 생성 (최대 1000개의 토큰 가능)
             MulticastMessage message = MulticastMessage.builder()
                     .addAllTokens(tokenList)
                     .setNotification(notification)
                     .build();
 
-            // FCM 서버로 전송
             BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
             return "푸시 알림 전송 성공: " + response.getSuccessCount() + "명에게 전송됨.";
         } catch (Exception e) {
             e.printStackTrace();
             return "푸시 알림 전송 실패: " + e.getMessage();
         }
+
     }
+
+    public String sendOutMonitorNotification(String userName, String ingredientName){
+        String title = "See-Through 출고 알림";
+        String body = userName + "님이 " + ingredientName + "를 출고하였습니다.";
+        return sendNotification(title, body);
+    }
+
+    public String sendRecommendCommentNotification(String userName, String comment){
+        String title = "See-Through 추천 코멘트";
+        String body = comment;
+        return sendNotification(title, body);
+    }
+
 }

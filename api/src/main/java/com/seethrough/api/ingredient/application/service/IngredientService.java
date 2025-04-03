@@ -141,7 +141,6 @@ public class IngredientService {
 
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
 
-<<<<<<< api/src/main/java/com/seethrough/api/ingredient/application/service/IngredientService.java
 		// 식재료 모니터링 대상 출고 모바일 알림
 		if (ingredients.size() > 0 && member.isMonitored()){
 			String ingredientString = "여러 재료";
@@ -152,17 +151,17 @@ public class IngredientService {
 
 		OutBoundCommentResponse response = null;
 		if (ingredients.size() == 1) {
-			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
+			response = alertService.getAlert(member.getMemberId(), ingredients.get(0).getIngredientId())
 				.map(alert -> OutBoundCommentResponse.builder()
 					.comment(alert.getComment())
 					.isDanger(alert.isDanger())
 					.build())
-				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
+				.orElseGet(() -> llmApiIngredientService.createComment(member.getMemberId(), ingredients.get(0).getIngredientId()));
 		}
 
 		ingredientRepository.deleteAll(ingredients);
 
-		ingredientLogService.saveOutboundLog(memberIdObj, ingredients);
+		ingredientLogService.saveOutboundLog(member.getMemberId(), ingredients);
 
 		return response;
 	}
