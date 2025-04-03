@@ -11,9 +11,8 @@ services:
       - VITE_TYPECAST_API_KEY=${VITE_TYPECAST_API_KEY}
     command: >
         sh -c "
-        ls -al &&
-        yarn install &&
-        yarn build &&
+        npm install &&
+        npm run build &&
         cp -r /client/dist/* /client/dist"
     volumes:
       - ./client:/client
