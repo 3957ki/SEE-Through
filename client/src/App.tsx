@@ -65,7 +65,7 @@ function App() {
                   position: "relative",
                 }}
               >
-                <FridgeDisplay />
+                <FridgeDisplay isActive={true} />
               </div>
             </div>
           </div>
