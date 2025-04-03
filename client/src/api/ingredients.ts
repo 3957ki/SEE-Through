@@ -11,7 +11,17 @@ export async function getIngredients(
     : `/ingredients?page=${page}&size=${size}&sortBy=inboundAt&sortDirection=ASC`;
 
   const response = await APIServerFetcher.get(url);
-  return response.data;
+
+  // snake_case를 camelCase로 변환
+  const data = response.data;
+  return {
+    content: data.content,
+    sliceInfo: {
+      currentPage: data.slice_info.current_page,
+      pageSize: data.slice_info.page_size,
+      hasNext: data.slice_info.has_next,
+    },
+  };
 }
 
 export async function getIngredient(ingredientId: string): Promise<DetailedIngredient | null> {
