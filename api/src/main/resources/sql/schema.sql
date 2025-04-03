@@ -121,3 +121,24 @@ CREATE TABLE meals
     FOREIGN KEY (member_id) REFERENCES members (member_id),
     UNIQUE (member_id, serving_date, serving_time)
 );
+
+-- 질병 RAG 테이블
+CREATE TABLE disease_vectors
+(
+    id         UUID DEFAULT gen_random_uuid(),
+    disease    VARCHAR      NOT NULL,
+    ingredient VARCHAR      NOT NULL,
+    reason     TEXT         NOT NULL,
+    embedding  VECTOR(1536) NOT NULL,
+    created_at TIMESTAMP    NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+-- FCM 토큰 테이블
+CREATE TABLE fcm_tokens
+(
+    fcm_token VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (fcm_token)
+);
