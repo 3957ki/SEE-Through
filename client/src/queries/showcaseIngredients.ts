@@ -97,7 +97,7 @@ export function useOptimisticIngredientUpdates() {
 
       return { previousValue };
     },
-    onError: (err, ingredient, context) => {
+    onError: (_, ingredient, context) => {
       // Rollback on error
       queryClient.setQueryData(
         showcaseIngredientsKeys.ingredient(ingredient.ingredient_id).queryKey,
@@ -152,7 +152,7 @@ export function useOptimisticIngredientUpdates() {
 
       return { previousValue };
     },
-    onError: (err, ingredientId, context) => {
+    onError: (_, ingredientId, context) => {
       // Rollback on error
       queryClient.setQueryData(
         showcaseIngredientsKeys.ingredient(ingredientId).queryKey,
