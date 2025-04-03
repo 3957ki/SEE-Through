@@ -6,7 +6,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
 export const showcaseIngredients = [
   {
-    ingredient_id: "99999999-0000-0000-0000-000000000001",
+    ingredient_id: "00000000-0000-0000-0000-000000000001",
     name: "두부",
     image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/tofu.png",
   },
@@ -126,12 +126,15 @@ export function useOptimisticIngredientUpdates() {
   const removeIngredient = useMutation({
     mutationFn: async (ingredientId: string) => {
       if (!currentMember) {
+        console.warn("[⚠️ currentMember 없음] 출고 불가");
         throw new Error("No current member found");
       }
 
       // Make the actual API call to delete the ingredient, including showcase ingredients
+      console.log(`[📤 deleteIngredient 호출] ingredientId: ${ingredientId}`);
       const result = await deleteIngredient(ingredientId, currentMember.member_id);
-      return { ingredientId, message: result.message };
+      console.log("[✅ deleteIngredient 응답]", result);
+      return { ingredientId, comment: result.comment, danger: result.danger };
     },
     onMutate: async (ingredientId) => {
       // Cancel any outgoing refetches
