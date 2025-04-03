@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
 import { useRef, useState, type RefObject } from "react";
 import LogPage from "./pages/LogPage";
 import MonitoringPage from "./pages/MonitoringPage";
+import Screensaver from "./Screensaver";
 
 interface FridgeDisplayProps {
   className?: string;
+  isActive: boolean;
 }
 
-function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
+function FridgeDisplay({ className = "", isActive }: FridgeDisplayProps) {
   const displayRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
@@ -50,25 +52,29 @@ function FridgeDisplay({ className = "" }: FridgeDisplayProps) {
           fontSize: "calc(16px * 0.3)", // Scale down font size
         }}
       >
-        <DialogProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
-          <div className="w-full shrink-0">
-            <Header />
-          </div>
+        {isActive ? (
+          <Screensaver />
+        ) : (
+          <DialogProvider portalTargetContainerRef={displayRef as RefObject<HTMLElement>}>
+            <div className="w-full shrink-0">
+              <Header />
+            </div>
 
-          <div className="flex-1 overflow-auto" style={{ height: `calc(100% - 56px - 56px)` }}>
-            <div className="px-1">{pages[currentPage]}</div>
-          </div>
+            <div className="flex-1 overflow-auto" style={{ height: `calc(100% - 56px - 56px)` }}>
+              <div className="px-1">{pages[currentPage]}</div>
+            </div>
 
-          <div className="w-full bg-white border-t">
-            <BottomNavigation
-              currentPin={currentPin}
-              onSuccess={handlePinSuccess}
-              currentPage={currentPage}
-              onNavigate={handleNavigate}
-              isFixed={false}
-            />
-          </div>
-        </DialogProvider>
+            <div className="w-full bg-white border-t">
+              <BottomNavigation
+                currentPin={currentPin}
+                onSuccess={handlePinSuccess}
+                currentPage={currentPage}
+                onNavigate={handleNavigate}
+                isFixed={false}
+              />
+            </div>
+          </DialogProvider>
+        )}
       </div>
     </div>
   );

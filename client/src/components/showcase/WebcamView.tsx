@@ -19,7 +19,12 @@ const IOU_CUT = 0.5;
 const MIN_FACE_ANGLE_THRESHOLD = 0.3;
 const EDGE_MARGIN = 40;
 
-function WebcamView() {
+interface WebcamViewProps {
+  onActivateScreensaver: () => void;
+  onDeactivateScreensaver: () => void;
+}
+
+function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoCanvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -153,6 +158,7 @@ function WebcamView() {
       if (isLocalServerConnected()) {
         console.log("[레벨 2] 요청");
         sendNextFrame(newLevel, null);
+        onDeactivateScreensaver;
       }
     }
   };
@@ -436,8 +442,16 @@ function WebcamView() {
         }
 
         if (nextFaceLevel.level !== faceLevelRef.current.level) {
-          updateFaceLevel(nextFaceLevel);
           handleFaceLevelChange(nextFaceLevel.level);
+          // 2레벨에서 화면 보여주기
+          if (nextFaceLevel.level == 2) {
+            onDeactivateScreensaver();
+          }
+          // 2레벨에서 벗어나면 화면 닫기
+          else if (faceLevelRef.current.level == 2) {
+            onActivateScreensaver();
+          }
+          updateFaceLevel(nextFaceLevel);
         }
 
         // 캔버스에 그리기

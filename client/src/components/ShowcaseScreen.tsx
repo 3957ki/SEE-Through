@@ -9,11 +9,27 @@ import {
 } from "@/queries/showcaseIngredients";
 import { useState, type DragEvent } from "react";
 import WebcamView from "./showcase/WebcamView";
+
 function ShowcaseScreen() {
   const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
   const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
   const [commentMessage, setCommentMessage] = useState<string | null>(null);
+  const [screensaverActive, setScreensaverActive] = useState(true);
+
+  // 화면 보호기 활성화 함수
+  const activateScreensaver = () => {
+    console.log("화면 보호기 켜기");
+
+    setScreensaverActive(true);
+  };
+
+  // 화면 보호기 비활성화 함수
+  const deactivateScreensaver = () => {
+    console.log("화면 보호기 끄기");
+
+    setScreensaverActive(false);
+  };
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -64,13 +80,17 @@ function ShowcaseScreen() {
             ingredientOnClick={takeoutIngredient}
             commentMessage={commentMessage}
             onCloseComment={() => setCommentMessage(null)}
+            isActive={screensaverActive}
           />
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
         <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
           <div className="h-1/3">
-            <WebcamView />
+            <WebcamView
+              onActivateScreensaver={activateScreensaver}
+              onDeactivateScreensaver={deactivateScreensaver}
+            />
           </div>
           <div className="h-1/3">
             <UserInfoCard />

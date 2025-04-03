@@ -17,6 +17,7 @@ interface FridgeProps {
   ingredientOnClick: (ingredient: Ingredient) => void;
   commentMessage?: string | null;
   onCloseComment?: () => void;
+  isActive: boolean;
 }
 
 function Fridge({
@@ -25,6 +26,7 @@ function Fridge({
   ingredientOnClick,
   commentMessage,
   onCloseComment,
+  isActive,
 }: FridgeProps) {
   const [leftDoorOpen, setLeftDoorOpen] = useState(false);
 
@@ -367,7 +369,7 @@ function Fridge({
                     height: `${FRIDGE_DISPLAY_HEIGHT}px`,
                   }}
                 >
-                  <FridgeDisplay />
+                  <FridgeDisplay isActive={isActive} />
                   {commentMessage && onCloseComment && (
                     <CommentDialog message={commentMessage} onClose={onCloseComment} />
                   )}
