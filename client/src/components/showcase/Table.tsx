@@ -3,6 +3,7 @@ import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
+import { speakWithOpenAI } from "@/lib/textToSpeech";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
 interface TableProps {
@@ -35,11 +36,12 @@ export default function Table({ outsideIngredients }: TableProps) {
             // Extract the string message from the object
             console.log(data);
             const messageText =
-              typeof data.message === "string"
-                ? data.message
-                : (data.message as { comment?: string })?.comment || "재료가 제거되었습니다.";
+              typeof data.comment === "string"
+                ? data.comment
+                : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
             showDialog(<CommentDialog message={messageText} />);
+            speakWithOpenAI(messageText);
           },
         });
       }
