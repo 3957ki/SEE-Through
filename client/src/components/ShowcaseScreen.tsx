@@ -1,51 +1,11 @@
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
-import Ingredient from "@/interfaces/Ingredient";
-import { useCurrentMember } from "@/queries/members";
-import {
-  useOptimisticIngredientUpdates,
-  useShowcaseIngredients,
-} from "@/queries/showcaseIngredients";
-import { useState, type DragEvent } from "react";
-import WebcamView from "./showcase/WebcamView";
+import WebcamView from "@/components/showcase/WebcamView";
+import { useShowcaseIngredients } from "@/queries/showcaseIngredients";
+
 function ShowcaseScreen() {
-  const { data: currentMember } = useCurrentMember();
   const { insideIngredients, outsideIngredients, isLoading } = useShowcaseIngredients();
-  const { addIngredient, removeIngredient } = useOptimisticIngredientUpdates();
-  const [commentMessage, setCommentMessage] = useState<string | null>(null);
-
-  const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    let ingredient: Ingredient | null = null;
-
-    try {
-      const ingredientData = e.dataTransfer.getData("application/x-ingredient");
-      if (!ingredientData || !currentMember) return;
-
-      ingredient = JSON.parse(ingredientData);
-      if (!ingredient) return;
-
-      // Use the mutation for optimistic updates
-      addIngredient.mutate(ingredient);
-    } catch (error) {
-      // Log the error for debugging
-      console.error("Failed to handle drop:", error);
-    }
-  };
-
-  const takeoutIngredient = async (ingredient: Ingredient): Promise<void> => {
-    if (!currentMember) return;
-
-    removeIngredient.mutate(ingredient.ingredient_id, {
-      onSuccess: ({ message }) => {
-        setCommentMessage(message || `${ingredient.name} 재료가 출고되었습니다.`);
-      },
-      onError: () => {
-        setCommentMessage("재료 출고 중 오류가 발생했습니다.");
-      },
-    });
-  };
 
   if (isLoading) {
     return (
@@ -58,13 +18,7 @@ function ShowcaseScreen() {
       <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5">
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
-          <Fridge
-            handleDrop={handleDrop}
-            insideIngredients={insideIngredients}
-            ingredientOnClick={takeoutIngredient}
-            commentMessage={commentMessage}
-            onCloseComment={() => setCommentMessage(null)}
-          />
+          <Fridge insideIngredients={insideIngredients} />
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
