@@ -1,6 +1,6 @@
 import { Dialog } from "@/components/Dialog";
-import BottomNavigation, { PageType } from "@/components/layout/BottomNavigation";
-import Header from "@/components/layout/Header";
+import MainHeader from "@/components/headers/MainHeader";
+import BottomNavigation from "@/components/layout/BottomNavigation";
 import LogPage from "@/components/pages/LogPage";
 import MainPage from "@/components/pages/MainPage";
 import MealPage from "@/components/pages/MealPage";
@@ -8,6 +8,7 @@ import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
 import { useDialog } from "@/contexts/DialogContext";
 import { PageContext } from "@/contexts/PageContext";
+import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
 import React, { useMemo, useRef, useState } from "react";
 
@@ -27,6 +28,14 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
   };
 
   const pageContextValue = useMemo(() => ({ currentPage, navigateTo }), [currentPage]);
+
+  const headers = {
+    main: <MainHeader />,
+    logs: <MainHeader />,
+    monitoring: <MainHeader />,
+    meal: <MainHeader />,
+    my: <MainHeader />,
+  };
 
   const pages = {
     main: <MainPage />,
@@ -48,9 +57,7 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           }}
         >
-          <div className="w-full shrink-0">
-            <Header />
-          </div>
+          <div className="w-full shrink-0">{headers[currentPage]}</div>
 
           <div
             className="flex-1 overflow-auto relative"

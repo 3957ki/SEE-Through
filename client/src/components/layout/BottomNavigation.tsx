@@ -1,6 +1,7 @@
 import PinDialog from "@/components/dialog/PinDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import { usePage } from "@/contexts/PageContext";
+import { PageType } from "@/interfaces/PageType";
 import {
   BsCalendarEvent,
   BsEyeglasses,
@@ -9,10 +10,6 @@ import {
   BsPersonCircle,
 } from "react-icons/bs";
 
-// Available pages for navigation
-export type PageType = "main" | "logs" | "monitoring" | "meal" | "my";
-
-// Bottom Navigation Component
 interface BottomNavigationProps {
   currentPin: string;
   currentPage: PageType;

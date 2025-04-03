@@ -4,7 +4,7 @@ import { useCurrentMember } from "@/queries/members";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { BsPersonCircle } from "react-icons/bs";
 
-function Header() {
+function MainHeader() {
   const { data: currentMember } = useCurrentMember();
   const { showDialog } = useDialog();
 
@@ -24,4 +24,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default MainHeader;
