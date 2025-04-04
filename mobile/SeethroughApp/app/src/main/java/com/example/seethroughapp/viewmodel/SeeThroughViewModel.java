@@ -14,6 +14,7 @@ import com.example.seethroughapp.data.model.meal.Meal;
 import com.example.seethroughapp.data.model.meal.Meals;
 import com.example.seethroughapp.network.ApiService;
 import com.example.seethroughapp.network.RetrofitInstance;
+import com.example.seethroughapp.util.Var;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -89,7 +90,6 @@ public class SeeThroughViewModel extends ViewModel {
     }
 
     public void fetchMeals(){
-        String memberId = "00000000-0000-0000-0000-000000000001";
         ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
 
         Calendar calendar = Calendar.getInstance();
@@ -98,14 +98,14 @@ public class SeeThroughViewModel extends ViewModel {
 
         int curHour = calendar.get(Calendar.HOUR_OF_DAY);
 
-        apiService.getMeals(memberId, today).enqueue(new Callback<Meals>() {
+        apiService.getMeals(Var.memberId, today).enqueue(new Callback<Meals>() {
             @Override
             public void onResponse(Call<Meals> call, Response<Meals> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     if (curHour >= 0 && curHour < 10) {
                         firstMeal.setValue(response.body().getBreakfast());
                         secondMeal.setValue(response.body().getLunch());
-                    }else if (curHour >= 8 && curHour < 16){
+                    }else if (curHour >= 10 && curHour < 16){
                         firstMeal.setValue(response.body().getLunch());
                         secondMeal.setValue(response.body().getDinner());
                     }else
@@ -126,7 +126,7 @@ public class SeeThroughViewModel extends ViewModel {
 
         calendar.add(Calendar.DAY_OF_YEAR, 1);
         String tomorrow = dateFormat.format(calendar.getTime());
-        apiService.getMeals(memberId, tomorrow).enqueue(new Callback<Meals>() {
+        apiService.getMeals(Var.memberId, tomorrow).enqueue(new Callback<Meals>() {
             @Override
             public void onResponse(Call<Meals> call, Response<Meals> response) {
                 if (response.isSuccessful() && response.body() != null){

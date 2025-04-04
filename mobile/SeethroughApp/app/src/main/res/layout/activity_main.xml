@@ -7,7 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context=".ui.MainActivity">
+    tools:context=".ui.MainActivity"
+    android:fitsSystemWindows="true">
 
     <!-- 상단바 -->
     <TextView
@@ -33,7 +34,7 @@
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -46,7 +47,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="거실"
+            android:text="부엌"
             android:textSize="14sp"
             android:textColor="@android:color/darker_gray"
             android:layout_marginEnd="16dp"/>
@@ -67,11 +68,11 @@
             android:textColor="@android:color/darker_gray"/>
     </LinearLayout>
 
-    <!-- 기기 카드 -->
+
     <androidx.cardview.widget.CardView
         android:id="@+id/device_card"
         android:layout_width="176dp"
-        android:layout_height="134dp"
+        android:layout_height="120dp"
         android:layout_margin="16dp"
         app:cardBackgroundColor="@android:color/darker_gray"
         app:cardCornerRadius="16dp"
@@ -84,6 +85,14 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <ImageView
+                android:id="@+id/device_image"
+                android:layout_width="39dp"
+                android:layout_height="57dp"
+                android:contentDescription="Refrigerator Image"
+                android:scaleType="centerCrop"
+                android:src="@drawable/refrigerator_universal_color_light" />
+
             <TextView
                 android:id="@+id/device_name"
                 android:layout_width="wrap_content"
@@ -93,14 +102,6 @@
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/device_image"
-                android:layout_width="32dp"
-                android:layout_height="78dp"
-                android:src="@drawable/refrigerator_universal_color_light"
-                android:contentDescription="Refrigerator Image"
-                android:scaleType="centerCrop" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
