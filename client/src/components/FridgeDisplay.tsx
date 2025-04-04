@@ -57,17 +57,17 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           }}
         >
-          <div className="w-full shrink-0">{headers[currentPage]}</div>
+          {/* Header Section */}
+          <div className="w-full shrink-0 h-14 px-4">{headers[currentPage]}</div>
 
-          <div
-            className="flex-1 overflow-auto relative"
-            style={{ height: `calc(100% - 56px - 56px)` }}
-          >
-            <div className="px-1">{pages[currentPage]}</div>
+          {/* Content Section */}
+          <div className="flex-1 overflow-auto px-4">
+            <div className="py-4">{pages[currentPage]}</div>
           </div>
 
-          <div className="w-full bg-white border-t">
-            <BottomNavigation currentPin={currentPin} currentPage={currentPage} isFixed={false} />
+          {/* Navigation Section */}
+          <div className="w-full shrink-0 h-14 px-4">
+            <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
           </div>
           <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
         </div>

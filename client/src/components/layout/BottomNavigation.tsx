@@ -13,22 +13,17 @@ import {
 interface BottomNavigationProps {
   currentPin: string;
   currentPage: PageType;
-  isFixed?: boolean; // New prop to control fixed vs relative positioning
 }
 
-function BottomNavigation({
-  currentPin,
-  currentPage,
-  isFixed = true, // Default to fixed positioning for backward compatibility
-}: BottomNavigationProps) {
+function BottomNavigation({ currentPin, currentPage }: BottomNavigationProps) {
   const { showDialog } = useDialog();
   const { navigateTo } = usePage();
 
   // Common classes for the navigation bar
-  const baseClasses = "bg-white border-t flex justify-around items-center h-14 px-4";
+  const baseClasses = "bg-white border-t flex justify-around items-center h-full px-4";
 
-  // Add fixed positioning only when isFixed is true
-  const positionClasses = isFixed ? "fixed bottom-0 left-0 right-0" : "w-full";
+  // Remove fixed positioning since we're using a dedicated space
+  const positionClasses = "w-full";
 
   const handleMonitoringClick = () => {
     if (currentPage !== "monitoring") {

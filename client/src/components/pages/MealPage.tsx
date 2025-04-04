@@ -47,7 +47,7 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center px-4 py-2 border-b gap-2">
+    <div className="flex items-center py-2 border-b gap-2">
       <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
         <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
@@ -120,7 +120,7 @@ function MealItem({
 
   return (
     <div
-      className={`flex items-center justify-start px-4 py-1 gap-2 rounded-md transition ${
+      className={`flex items-center justify-start py-1 gap-2 rounded-md transition ${
         feedback === "like"
           ? "bg-orange-50 border-l-4 border-orange-400"
           : feedback === "dislike"
@@ -172,7 +172,7 @@ function MealSection({
 }) {
   return (
     <div className="py-4">
-      <div className="flex justify-between items-stretch px-4">
+      <div className="flex justify-between items-stretch">
         <div>
           <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
           <div className="mt-2 space-y-1">
@@ -199,7 +199,6 @@ function MealSection({
           />
         </button>
       </div>
-      <div className="mt-4 border-t-2 border-orange-500 mx-4" />
     </div>
   );
 }

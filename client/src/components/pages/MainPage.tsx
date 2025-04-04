@@ -265,6 +265,7 @@ function Meals() {
         {/* "식단 생성하기" 버튼 */}
         {!loading ? (
           <button
+            type="button"
             onClick={createMeals}
             className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
           >
@@ -340,6 +341,7 @@ function Meals() {
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-base font-semibold">{title}</h3>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRefresh(data.meal_id);

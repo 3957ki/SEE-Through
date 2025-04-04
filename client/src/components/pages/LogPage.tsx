@@ -113,9 +113,9 @@ export default function LogPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
+    <div className="max-w-md mx-auto">
       {/* 내 로그만 보기 토글 */}
-      <div className="flex items-center justify-end mb-4">
+      <div className="flex items-center justify-end">
         <span className="text-sm mr-2">내 로그만 보기</span>
         <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
       </div>
