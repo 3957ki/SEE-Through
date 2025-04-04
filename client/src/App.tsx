@@ -3,9 +3,8 @@ import ShowcaseScreen from "@/components/ShowcaseScreen";
 import { Button } from "@/components/ui/button";
 import { CurrentMemberIdProvider } from "@/contexts/CurrentMemberIdContext";
 import { DialogProvider } from "@/contexts/DialogContext";
-import { disconnectLocalServer, initLocalServerWebSocket } from "@/services/websocketService";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: string }) {
   return (
@@ -38,14 +37,6 @@ function ShowcaseToggleButton({ onClick, title }: { onClick: () => void; title: 
 function App() {
   const [isShowcase, setIsShowcase] = useState(true);
   const fridgeDisplayRef = useRef<HTMLDivElement>(null);
-
-  // Initialize WebSocket connection
-  useEffect(() => {
-    initLocalServerWebSocket();
-    return () => {
-      disconnectLocalServer();
-    };
-  }, []);
 
   const queryClient = new QueryClient();
 
