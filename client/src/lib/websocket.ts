@@ -149,4 +149,30 @@ export class WebSocketManager {
   public getStatus(): WebSocketStatus {
     return this.status;
   }
+
+  // 웹소켓 연결될 때 까지 기다림
+  public waitForOpen(timeout = 5000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.status === "OPEN") {
+        resolve();
+        return;
+      }
+
+      const checkInterval = 100;
+      let waited = 0;
+
+      const interval = setInterval(() => {
+        if (this.status === "OPEN") {
+          clearInterval(interval);
+          resolve();
+        } else {
+          waited += checkInterval;
+          if (waited >= timeout) {
+            clearInterval(interval);
+            reject(new Error("WebSocket connection timeout"));
+          }
+        }
+      }, checkInterval);
+    });
+  }
 }
