@@ -1,178 +1,64 @@
 import os
-import shutil
-import time
-import numpy as np
-import pandas as pd
+import glob
 from deepface import DeepFace
 
 
-def delete_small_folders(dataset_path):
-    for person_folder in os.listdir(dataset_path):
-        person_path = os.path.join(dataset_path, person_folder)
+def register_all_users(db_path, model, detector_backend):
 
-        if os.path.isdir(person_path):
-            files = [
-                f
-                for f in os.listdir(person_path)
-                if os.path.isfile(os.path.join(person_path, f))
-            ]
+    # 데이터셋 폴더 내의 모든 사용자 폴더 가져오기
+    user_folders = [
+        f for f in os.listdir(db_path) if os.path.isdir(os.path.join(db_path, f))
+    ]
 
-            if len(files) <= 1:
-                shutil.rmtree(person_path)
-                print(f"Deleted folder: {person_path}")
+    total_users = len(user_folders)
+    registered_images = 0
 
+    print(f"총 {total_users}명의 사용자를 등록합니다.")
 
-def move_first_image(dataset_path, register_dataset_path):
-    os.makedirs(register_dataset_path, exist_ok=True)
+    # 각 사용자 폴더 처리
+    for i, user_id in enumerate(user_folders, 1):
+        user_folder = os.path.join(db_path, user_id)
 
-    for person_folder in os.listdir(dataset_path):
-        person_path = os.path.join(dataset_path, person_folder)
-        register_person_path = os.path.join(register_dataset_path, person_folder)
+        # 지원하는 이미지 파일 확장자
+        image_extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp"]
+        image_files = []
 
-        if os.path.isdir(person_path):
-            files = sorted(
-                [
-                    f
-                    for f in os.listdir(person_path)
-                    if os.path.isfile(os.path.join(person_path, f))
-                ]
-            )
+        # 모든 이미지 파일 수집
+        for ext in image_extensions:
+            image_files.extend(glob.glob(os.path.join(user_folder, ext)))
 
-            if files:
-                os.makedirs(register_person_path, exist_ok=True)
-                first_image_path = os.path.join(person_path, files[0])
-                target_path = os.path.join(register_person_path, files[0])
-                shutil.move(first_image_path, target_path)
-                print(f"Moved {first_image_path} -> {target_path}")
+        print(
+            f"[{i}/{total_users}] 사용자 '{user_id}' 등록 중... (이미지 {len(image_files)}개)"
+        )
 
-
-def register_users(register_dataset_path, db_path):
-    detector_backend = "retinaface"
-    model = "Facenet"
-
-    for person_folder in os.listdir(register_dataset_path):
-        person_path = os.path.join(register_dataset_path, person_folder)
-
-        if os.path.isdir(person_path):
-            files = [
-                f
-                for f in os.listdir(person_path)
-                if os.path.isfile(os.path.join(person_path, f))
-            ]
-
-            for file in files:
-                file_path = os.path.join(person_path, file)
-                user_id = person_folder
-
+        # 각 이미지 등록
+        for j, image_path in enumerate(image_files, 1):
+            try:
                 DeepFace.update(
                     user_id=user_id,
-                    image_path=file_path,
+                    image_path=image_path,
                     db_path=db_path,
                     model_name=model,
                     detector_backend=detector_backend,
                     silent=True,
                 )
-                print(f"Registered {user_id} with {file_path}")
+                registered_images += 1
+                if j % 5 == 0:  # 5개마다 진행 상황 출력
+                    print(f"  - {j}/{len(image_files)} 이미지 처리 완료")
+            except Exception as e:
+                print(f"  - 오류 발생: {image_path} - {str(e)}")
 
+        print(f"  - 사용자 '{user_id}' 등록 완료!")
 
-def test_recognition_performance(
-    dataset_path, db_path, failed_log_path="failed_images.txt"
-):
-    detector_backend = "retinaface"
-    model = "Facenet"
-    total_images = 0
-    correct_matches = 0
-    processing_times = []
-    failed_images = []
-
-    for person_folder in os.listdir(dataset_path):
-        person_path = os.path.join(dataset_path, person_folder)
-
-        if os.path.isdir(person_path):
-            files = [
-                f
-                for f in os.listdir(person_path)
-                if os.path.isfile(os.path.join(person_path, f))
-            ]
-
-            for file in files:
-                file_path = os.path.join(person_path, file)
-                total_images += 1
-                start_time = time.time()
-                try:
-                    dfs = DeepFace.find(
-                        img_path=file_path,
-                        db_path=db_path,
-                        model_name=model,
-                        detector_backend=detector_backend,
-                    )
-                    elapsed_time = time.time() - start_time
-                    processing_times.append(elapsed_time)
-
-                    if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:
-                        df = dfs[0]
-                        identities = df["identity"].tolist()
-                        detected_persons = [
-                            os.path.basename(os.path.dirname(identity))
-                            for identity in identities
-                        ]
-
-                        if person_folder in detected_persons:
-                            correct_matches += 1
-                            print(
-                                f"Correctly identified {file_path} as {person_folder}"
-                            )
-                        else:
-                            print(f"Failed to identify {file_path} correctly")
-                            failed_images.append(file_path)
-                    else:
-                        print(f"No match found for {file_path}")
-                        failed_images.append(file_path)
-                except Exception as e:
-                    print(f"Error processing {file_path}: {str(e)}")
-                    failed_images.append(file_path)
-
-    # 결과 요약 출력
-    accuracy = (correct_matches / total_images) * 100 if total_images > 0 else 0
-    avg_time = np.mean(processing_times) if processing_times else 0
-
-    print(f"Recognition Accuracy: {accuracy:.2f}%")
-    print(f"Average Processing Time: {avg_time:.4f} seconds per image")
-
-    # 실패 이미지 저장
-    if failed_images:
-        with open(failed_log_path, "w") as f:
-            for path in failed_images:
-                f.write(path + "\n")
-        print(f"Failed image paths written to {failed_log_path}")
-    else:
-        print("All images were successfully recognized.")
-
-
-def test(img_path, db_path):
-    dfs = DeepFace.find(
-        img_path=img_path,
-        db_path=db_path,
-        model_name="Facenet",
-        detector_backend="retinaface",
+    print(
+        f"\n등록 완료! 총 {total_users}명의 사용자, {registered_images}개의 이미지가 등록되었습니다."
     )
-    # 결과 변환
-    if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:  # 기존 사용자 응답
-        df = dfs[0]
-        result = df.applymap(
-            lambda x: int(x) if isinstance(x, (np.int64, np.int32)) else x
-        ).to_dict(orient="records")
-        print(result)
-
-    else:  # 신규 사용자 등록
-        print(False)
 
 
-dataset_path = "dataset"
-register_dataset_path = "register_dataset"
-db_path = "users"
+# 사용 예시
+if __name__ == "__main__":
+    db_path = "dataset"
+    model = "Facenet512"
+    detector_backend = "retinaface"
 
-delete_small_folders(dataset_path)
-move_first_image(dataset_path, register_dataset_path)
-# register_users(register_dataset_path, db_path)
-test_recognition_performance(dataset_path=register_dataset_path, db_path=dataset_path)
+    # register_all_users(db_path, model, detector_backend)
