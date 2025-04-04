@@ -11,9 +11,9 @@ export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
   const [myLogsOnly, setMyLogsOnly] = useState(false);
   const { currentMemberId } = useCurrentMemberId();
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const pageSize = 10;
+  const [firstLoad, setFirstLoad] = useState(true);
 
   // Use the updated useLogs hook for infinite scrolling
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
@@ -51,40 +51,58 @@ export default function LogPage() {
     }, {});
 
     setGroupedLogs(newGroupedLogs);
-  }, [data?.pages]);
+
+    // After first data load, we're not in first load state anymore
+    if (firstLoad) setFirstLoad(false);
+  }, [data?.pages, firstLoad]);
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
+    // Set up the intersection observer only if we have a loadMoreRef
     if (!loadMoreRef.current) return;
 
-    // Disconnect previous observer if it exists
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    const loadMoreElement = loadMoreRef.current;
 
-    // Create a new observer
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
-        // If the load-more element is visible and we have more pages
-        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        const [entry] = entries;
+
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          console.log("Intersection detected, fetching next page");
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      {
+        root: null, // use viewport as root
+        rootMargin: "0px 0px 500px 0px", // trigger earlier
+        threshold: 0.1, // trigger when 10% visible
+      }
     );
 
-    // Start observing the load-more element
-    observerRef.current.observe(loadMoreRef.current);
+    observer.observe(loadMoreElement);
 
-    // Cleanup observer on unmount
+    // Cleanup
     return () => {
-      observerRef.current?.disconnect();
+      if (loadMoreElement) {
+        observer.unobserve(loadMoreElement);
+      }
+      observer.disconnect();
     };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  // Force trigger first fetch if hasNextPage is true and we can't see the loadMore element
+  useEffect(() => {
+    if (firstLoad && hasNextPage && !isFetchingNextPage) {
+      console.log("Force triggering first fetch");
+      fetchNextPage();
+    }
+  }, [firstLoad, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Handle toggle for "my logs only"
   const handleToggleMyLogs = () => {
     setMyLogsOnly(!myLogsOnly);
+    // Reset firstLoad state when filter changes
+    setFirstLoad(true);
   };
 
   if (isLoading) {
@@ -177,7 +195,7 @@ export default function LogPage() {
       ))}
 
       {/* Infinite scroll loading trigger */}
-      <div ref={loadMoreRef} className="text-center py-4">
+      <div ref={loadMoreRef} className="text-center p-4" style={{ minHeight: "50px" }}>
         {isFetchingNextPage ? (
           <div className="text-sm text-gray-500">로딩 중...</div>
         ) : hasNextPage ? (
@@ -189,7 +207,9 @@ export default function LogPage() {
           >
             더 보기 <ChevronDown className="h-4 w-4" />
           </Button>
-        ) : null}
+        ) : (
+          <div className="text-sm text-gray-500">모든 데이터를 불러왔습니다</div>
+        )}
       </div>
     </div>
   );
