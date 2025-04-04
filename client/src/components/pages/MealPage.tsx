@@ -5,7 +5,6 @@ import {
   removeDislikedFood,
   removePreferredFood,
 } from "@/api/members";
-import { SectionTitle } from "@/components/ui/section";
 import { Spinner } from "@/components/ui/spinner";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useCurrentMember } from "@/queries/members";
@@ -47,7 +46,7 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center py-2 border-b gap-2">
+    <div className="flex items-center border-b gap-2">
       <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
         <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
@@ -120,7 +119,7 @@ function MealItem({
 
   return (
     <div
-      className={`flex items-center justify-start py-1 gap-2 rounded-md transition ${
+      className={`flex items-center justify-start gap-2 rounded-md transition ${
         feedback === "like"
           ? "bg-orange-50 border-l-4 border-orange-400"
           : feedback === "dislike"
@@ -171,7 +170,7 @@ function MealSection({
   memberId: string;
 }) {
   return (
-    <div className="py-4">
+    <div>
       <div className="flex justify-between items-stretch">
         <div>
           <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
@@ -280,9 +279,12 @@ export default function MealPage() {
   if (!currentMember) return null;
 
   return (
-    <div className="pb-24 relative">
-      <div className="flex justify-between items-center px-4 mt-4">
-        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
+    <div>
+      <div className="flex justify-between items-center px-4">
+        <div className="flex items-center gap-1">
+          <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+          <h2 className="text-lg font-medium">식단 캘린더</h2>
+        </div>
         <button
           type="button"
           onClick={handleGoToday}
@@ -295,7 +297,7 @@ export default function MealPage() {
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
 
       {meals ? (
-        <>
+        <div className="px-4 space-y-4">
           <MealSection
             title="아침"
             items={meals.breakfast.menu}
@@ -329,7 +331,7 @@ export default function MealPage() {
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
           />
-        </>
+        </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-gray-500">
           <Spinner size={36} />

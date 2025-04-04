@@ -1,13 +1,14 @@
 import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import IngredientDialog from "@/components/dialog/IngredientDialog";
-import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
+import { MemberSwitcherDialog } from "@/components/dialog/MemberSwitcherDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import { usePage } from "@/contexts/PageContext";
 import Ingredient from "@/interfaces/Ingredient";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
+import { BsArrowClockwise, BsCalendarEvent, BsPersonCircle } from "react-icons/bs";
 
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
@@ -121,16 +122,14 @@ function IngredientsSection() {
   const { data: currentMember } = useCurrentMember();
 
   return (
-    <Section>
-      <SectionTitle>재료 목록</SectionTitle>
-      <SectionContent>
-        {currentMember ? (
-          <IngredientsContent />
-        ) : (
-          <div className="text-center py-4">사용자 정보를 불러오는 중...</div>
-        )}
-      </SectionContent>
-    </Section>
+    <div className="py-4">
+      <h2 className="text-lg font-medium px-4 mb-3">재료 목록</h2>
+      {currentMember ? (
+        <IngredientsContent />
+      ) : (
+        <div className="text-center py-4">사용자 정보를 불러오는 중...</div>
+      )}
+    </div>
   );
 }
 
@@ -369,23 +368,40 @@ function Meals() {
 
 // Header Greeting Section
 function GreetingSection({ name }: { name?: string }) {
+  const { showDialog } = useDialog();
+  const { data: currentMember } = useCurrentMember();
+
   return (
-    <Section className="py-4">
-      <SectionContent>
-        <p className="text-2xl font-medium">좋은 아침입니다,</p>
-        <p className="text-2xl font-medium">{name}님!</p>
-      </SectionContent>
-    </Section>
+    <div className="py-4">
+      <div className="flex items-center gap-4 px-4">
+        <Avatar
+          className="h-12 w-12 cursor-pointer bg-gray-100 rounded-full"
+          onClick={() => showDialog(<MemberSwitcherDialog />)}
+        >
+          <AvatarImage src={currentMember?.image_path} alt="User avatar" />
+          <AvatarFallback>
+            <BsPersonCircle className="w-full h-full" />
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-2xl font-medium">좋은 아침입니다,</p>
+          <p className="text-2xl font-medium">{name}님!</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // Today's Diet Recommendation Section
 function TodaysDietSection() {
   return (
-    <Section>
-      <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>오늘의 추천 식단</SectionTitle>
+    <div className="py-4">
+      <div className="flex items-center gap-1 px-4 mb-3">
+        <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+        <h2 className="text-lg font-medium">오늘의 추천 식단</h2>
+      </div>
       <Meals />
-    </Section>
+    </div>
   );
 }
 
@@ -402,7 +418,7 @@ function MainPage() {
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
       <TodaysDietSection />
-      <SectionDivider />
+      <div className="h-2 bg-gray-50 my-3 w-full" />
       <IngredientsSection />
     </div>
   );
