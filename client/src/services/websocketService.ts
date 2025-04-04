@@ -18,9 +18,10 @@ export const localServerWS = new WebSocketManager({
 });
 
 // Initialize WebSocket connection
-export function initLocalServerWebSocket() {
+export async function initLocalServerWebSocket() {
   // Connect to WebSocket server
   localServerWS.connect();
+  await localServerWS.waitForOpen(); // 웹소켓 연결이 성공할 때 까지 기다림
 }
 
 // Function to send a message to the local server

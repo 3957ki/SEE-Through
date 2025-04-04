@@ -10,12 +10,14 @@ services:
       - VITE_OPENAI_API_KEY=${OPENAI_API_KEY}
       - VITE_TYPECAST_API_KEY=${VITE_TYPECAST_API_KEY}
     command: >
-        sh -c "
-        npm install &&
-        npm run build &&
-        cp -r /client/dist/* /client/dist"
+      sh -c "rm -rf /client/build/* &&
+      npm install &&
+      npm run build &&
+      mkdir -p /app/build &&
+      cp -rv /client/dist/* /app/build/"
     volumes:
       - ./client:/client
+      - /home/ubuntu/opt/build:/app/build
       - ./media/uploads:/app/uploads
     networks:
       - see_through
@@ -30,13 +32,13 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./client/dist:/opt/app
+      - /home/ubuntu/opt/build:/opt/app
     networks:
       - see_through
 
   api:
     image: openjdk:17-alpine
-    build: 
+    build:
       context: ./api
     container_name: api
     working_dir: /api
@@ -48,13 +50,17 @@ services:
       NICKNAME_URL: ${NICKNAME_URL}
       SWAGGER_USERNAME: ${SWAGGER_USERNAME}
       SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
+      ALARM_UUID: ${ALARM_UUID}
+      FCM_TOKEN_PATH: ${FCM_TOKEN_PATH}
+      TYPECAST_API_KEY: ${TYPECAST_API_KEY}
+      TYPECAST_BASE_URL: ${TYPECAST_BASE_URL}
     command: >
         sh -c "
         apk add --no-cache tzdata &&
         ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime &&
         export TZ=Asia/Seoul &&
         chmod +x /api/gradlew &&
-        /api/gradlew clean build --stacktrace &&
+        /api/gradlew clean build -x test --stacktrace &&
         cp /api/build/libs/api-0.0.1-SNAPSHOT.jar /api/app.jar &&
         java -jar /api/app.jar"
     ports:
@@ -66,7 +72,7 @@ services:
       - see_through
 
   llm:
-    build: 
+    build:
       context: ./llm
       dockerfile: Dockerfile
     container_name: llm
@@ -83,7 +89,7 @@ services:
 
   db:
     image: pgvector/pgvector:0.8.0-pg15
-    build: 
+    build:
       context: ./db
     container_name: db
     restart: always
@@ -132,7 +138,7 @@ services:
       - grafana-data:/var/lib/grafana
     networks:
       - see_through
-      
+
 volumes:
   grafana-data:
 

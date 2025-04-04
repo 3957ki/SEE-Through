@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.seethrough.api.fcm.application.service.FCMService;
 import com.seethrough.api.member.domain.Member;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class IngredientService {
+
+	@Value("${alarm.uuid}")
+	private String alarmUUID;
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 	private final IngredientRepository ingredientRepository;
@@ -141,7 +145,6 @@ public class IngredientService {
 
 		List<Ingredient> ingredients = ingredientRepository.findIngredientsByIngredientId(ingredientIdList);
 
-<<<<<<< api/src/main/java/com/seethrough/api/ingredient/application/service/IngredientService.java
 		// 식재료 모니터링 대상 출고 모바일 알림
 		if (ingredients.size() > 0 && member.isMonitored()){
 			String ingredientString = "여러 재료";
@@ -152,17 +155,22 @@ public class IngredientService {
 
 		OutBoundCommentResponse response = null;
 		if (ingredients.size() == 1) {
-			response = alertService.getAlert(memberIdObj, ingredients.get(0).getIngredientId())
+			response = alertService.getAlert(member.getMemberId(), ingredients.get(0).getIngredientId())
 				.map(alert -> OutBoundCommentResponse.builder()
 					.comment(alert.getComment())
 					.isDanger(alert.isDanger())
 					.build())
-				.orElseGet(() -> llmApiIngredientService.createComment(memberIdObj, ingredients.get(0).getIngredientId()));
+				.orElseGet(() -> llmApiIngredientService.createComment(member.getMemberId(), ingredients.get(0).getIngredientId()));
+		}
+
+		// TODO: 지정된 사용자만 출고했을때 코멘트 알림을 받도록 설정
+		if (request.getMemberId().equals(alarmUUID)){
+			fcmService.sendRecommendCommentNotification(member.getName(), response.getComment());
 		}
 
 		ingredientRepository.deleteAll(ingredients);
 
-		ingredientLogService.saveOutboundLog(memberIdObj, ingredients);
+		ingredientLogService.saveOutboundLog(member.getMemberId(), ingredients);
 
 		return response;
 	}

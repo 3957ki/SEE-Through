@@ -2,6 +2,7 @@ import { createAndGetMember } from "@/api/members";
 import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import {
   disconnectLocalServer,
+  initLocalServerWebSocket,
   isLocalServerConnected,
   offLocalServerMessage,
   onLocalServerMessage,
@@ -305,6 +306,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     const runInitAndLoad = async () => {
       try {
         await init(); // 먼저 웹캠 시작
+        await initLocalServerWebSocket(); // 웹소켓 연결이 되면 시작
 
         // 최신 WASM 경로로 수정
         const filesetResolver = await FilesetResolver.forVisionTasks(
@@ -417,7 +419,11 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             const area = currentBox.width * currentBox.height;
 
             // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음
-            if (area >= currentCut && isFront && !isTooCloseToEdge) {
+            if (
+              area >= currentCut &&
+              !isTooCloseToEdge &&
+              (isFront || faceLevelRef.current.level == 2)
+            ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
               nextFaceLevel = { level: 1, cut: LARGE_FACE_CUT };
@@ -568,12 +574,6 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
           console.error("[WebSocket] 멤버 업데이트 실패:", err);
         }
       }
-
-      // ### unreachable block 이라고 하니 로직 확인 후 필요하면 재활성화 하세요! ###
-      // // 1단계인데 직전 멤버 id가 존재하고 현재 인식 결과가 없을 때 회원을 null로 갱신
-      // else if (faceLevelRef.current.level === 1 && currentMemberId && !memberId) {
-      //   setCurrentMemberId("");
-      // }
 
       // 큐에 다음 항목이 있으면 처리
       if (requestQueue.current.nextRequest) {

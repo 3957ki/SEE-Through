@@ -188,7 +188,7 @@ def detect_faces(
     img: np.ndarray,
     align: bool = True,
     expand_percentage: int = 0,
-    max_faces: Optional[int] = 1,
+    max_faces: Optional[int] = None,
 ) -> List[DetectedFace]:
     """
     Detect face(s) from a given image

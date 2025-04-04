@@ -12,7 +12,9 @@ from deepface.models.FacialRecognition import FacialRecognition
 
 
 def represent(
-    img_path: Union[str, IO[bytes], np.ndarray, Sequence[Union[str, np.ndarray, IO[bytes]]]],
+    img_path: Union[
+        str, IO[bytes], np.ndarray, Sequence[Union[str, np.ndarray, IO[bytes]]]
+    ],
     model_name: str = "VGG-Face",
     enforce_detection: bool = True,
     detector_backend: str = "opencv",
@@ -20,54 +22,9 @@ def represent(
     expand_percentage: int = 0,
     normalization: str = "base",
     anti_spoofing: bool = False,
-    max_faces: Optional[int] = None,
+    max_faces: Optional[int] = 1,
 ) -> Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]:
-    """
-    Represent facial images as multi-dimensional vector embeddings.
 
-    Args:
-        img_path (str, np.ndarray, or Sequence[Union[str, np.ndarray]]):
-            The exact path to the image, a numpy array in BGR format,
-            a base64 encoded image, or a sequence of these.
-            If the source image contains multiple faces,
-            the result will include information for each detected face.
-
-        model_name (str): Model for face recognition. Options: VGG-Face, Facenet, Facenet512,
-            OpenFace, DeepFace, DeepID, Dlib, ArcFace, SFace and GhostFaceNet
-
-        enforce_detection (boolean): If no face is detected in an image, raise an exception.
-            Default is True. Set to False to avoid the exception for low-resolution images.
-
-        detector_backend (string): face detector backend. Options: 'opencv', 'retinaface',
-            'mtcnn', 'ssd', 'dlib', 'mediapipe', 'yolov8', 'yolov11n', 'yolov11s',
-            'yolov11m', 'centerface' or 'skip'.
-
-        align (boolean): Perform alignment based on the eye positions.
-
-        expand_percentage (int): expand detected facial area with a percentage (default is 0).
-
-        normalization (string): Normalize the input image before feeding it to the model.
-            Default is base. Options: base, raw, Facenet, Facenet2018, VGGFace, VGGFace2, ArcFace
-
-        anti_spoofing (boolean): Flag to enable anti spoofing (default is False).
-
-        max_faces (int): Set a limit on the number of faces to be processed (default is None).
-
-    Returns:
-        results (List[Dict[str, Any]] or List[Dict[str, Any]]): A list of dictionaries.
-            Result type becomes List of List of Dict if batch input passed.
-            Each containing the following fields:
-
-        - embedding (List[float]): Multidimensional vector representing facial features.
-            The number of dimensions varies based on the reference model
-            (e.g., FaceNet returns 128 dimensions, VGG-Face returns 4096 dimensions).
-        - facial_area (dict): Detected facial area by face detection in dictionary format.
-            Contains 'x' and 'y' as the left-corner point, and 'w' and 'h'
-            as the width and height. If `detector_backend` is set to 'skip', it represents
-            the full image area and is nonsensical.
-        - face_confidence (float): Confidence score of face detection. If `detector_backend` is set
-            to 'skip', the confidence will be 0 and is nonsensical.
-    """
     resp_objs = []
 
     model: FacialRecognition = modeling.build_model(
@@ -104,7 +61,9 @@ def represent(
             img, _ = image_utils.load_image(single_img_path)
 
             if len(img.shape) != 3:
-                raise ValueError(f"Input img must be 3 dimensional but it is {img.shape}")
+                raise ValueError(
+                    f"Input img must be 3 dimensional but it is {img.shape}"
+                )
 
             # Convert to RGB format to keep compatability with `extract_faces`.
             img = img[:, :, ::-1]
@@ -113,7 +72,12 @@ def represent(
             img_objs = [
                 {
                     "face": img,
-                    "facial_area": {"x": 0, "y": 0, "w": img.shape[0], "h": img.shape[1]},
+                    "facial_area": {
+                        "x": 0,
+                        "y": 0,
+                        "w": img.shape[0],
+                        "h": img.shape[1],
+                    },
                     "confidence": 0,
                 }
             ]
@@ -123,7 +87,8 @@ def represent(
             # sort as largest facial areas come first
             img_objs = sorted(
                 img_objs,
-                key=lambda img_obj: img_obj["facial_area"]["w"] * img_obj["facial_area"]["h"],
+                key=lambda img_obj: img_obj["facial_area"]["w"]
+                * img_obj["facial_area"]["h"],
                 reverse=True,
             )
             # discard rest of the items
@@ -174,4 +139,4 @@ def represent(
 
     resp_objs = [resp_objs_dict[idx] for idx in range(len(images))]
 
-    return resp_objs[0] if len(images) == 1 else resp_objs
+    return resp_objs[0][0]

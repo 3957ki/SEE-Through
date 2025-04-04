@@ -16,7 +16,6 @@ import sys
 from contextlib import asynccontextmanager
 import traceback
 
-
 # 로그 설정
 logger = logging.getLogger("face_api")
 logger.setLevel(logging.DEBUG)
@@ -28,9 +27,8 @@ logger.addHandler(handler)
 
 # 모델 설정
 detector_backend = "retinaface"
-model = "Facenet"
-db_path = "db"
-profile_path = "users"
+model = "Facenet512"
+db_path = "users"
 
 
 # 앱 시작 시
@@ -63,24 +61,28 @@ app.add_middleware(
 
 
 # 이미지 저장 함수
-def save_image(face_region, temp_file_path, user_image_path):
+def save_image(face_region, temp_file_path, user_image_path, padding_ratio=0.5):
     try:
         original_image = Image.open(temp_file_path)
-        cropped_face = original_image.crop(face_region)
+        width, height = original_image.size
+
+        x1, y1, x2, y2 = face_region
+        face_width = x2 - x1
+        face_height = y2 - y1
+
+        pad_w = int(face_width * padding_ratio)
+        pad_h = int(face_height * padding_ratio)
+
+        x1 = max(0, x1 - pad_w)
+        y1 = max(0, y1 - pad_h)
+        x2 = min(width, x2 + pad_w)
+        y2 = min(height, y2 + pad_h)
+
+        cropped_face = original_image.crop((x1, y1, x2, y2))
         cropped_face.save(user_image_path, format="JPEG")
     except Exception as e:
         logger.warning(f"얼굴 이미지 자르기 실패: {e}, 원본 이미지 저장")
         shutil.move(temp_file_path, user_image_path)
-
-
-# 인식용 이미지 저장 함수
-def save_db_image(temp_file_path, db_image_path):
-    try:
-        original_image = Image.open(temp_file_path)
-        original_image.save(db_image_path, format="JPEG")
-    except Exception as e:
-        logger.warning(f"인식용 이미지 저장 실패: {e}")
-        shutil.move(temp_file_path, db_image_path)
 
 
 # 얼굴 인식 API
@@ -112,7 +114,7 @@ async def websocket_find_faces(websocket: WebSocket):
                 # 얼굴 인식 수행
                 dfs = DeepFace.find(
                     img_path=temp_file_path,
-                    db_path=profile_path,
+                    db_path=db_path,
                     model_name=model,
                     detector_backend=detector_backend,
                     silent=True,
@@ -156,31 +158,32 @@ async def websocket_find_faces(websocket: WebSocket):
                         if provided_uuid:
                             # uuid가 같다면 강제로 신규 등록
                             if provided_uuid == detected_uuid:
+                                logger.info("uuid가 같음")
                                 user_id = str(uuid.uuid4())
                                 is_new = True
 
-                                # 인식용 이미지 저장 경로
-                                db_image_path = os.path.join(db_path, f"{user_id}.jpg")
-
-                                # 인식용 이미지 저장 요청
-                                save_db_image(temp_file_path, db_image_path)
-
-                                # 프로필 이미지 저장 경로
-                                user_image_path = os.path.join(
-                                    profile_path, f"{user_id}.jpg"
+                                new_rep = DeepFace.update(
+                                    user_id=user_id,
+                                    image_path=temp_file_path,
+                                    db_path=db_path,
+                                    model_name=model,
+                                    detector_backend=detector_backend,
+                                    silent=True,
                                 )
 
-                                new_rep = DeepFace.extract_faces(
-                                    img_path=temp_file_path,
-                                    detector_backend=detector_backend,
-                                )[0]["facial_area"]
+                                # 이미지 저장 경로
+                                user_image_path = os.path.join(
+                                    db_path, f"{user_id}.jpg"
+                                )
 
                                 # 얼굴 이미지 자르기
                                 face_region = (
-                                    new_rep["x"],
-                                    new_rep["y"],
-                                    new_rep["x"] + new_rep["w"],
-                                    new_rep["y"] + new_rep["h"],
+                                    new_rep["facial_area"]["x"],
+                                    new_rep["facial_area"]["y"],
+                                    new_rep["facial_area"]["x"]
+                                    + new_rep["facial_area"]["w"],
+                                    new_rep["facial_area"]["y"]
+                                    + new_rep["facial_area"]["h"],
                                 )
 
                                 # 이미지 저장 요청
@@ -200,32 +203,31 @@ async def websocket_find_faces(websocket: WebSocket):
 
                     # 인식 결과가 없다면
                     else:
+                        logger.info("인식 결과 없음")
                         user_id = provided_uuid if provided_uuid else str(uuid.uuid4())
                         is_new = True
 
-                        # 인식용 이미지 저장 경로
-                        db_image_path = os.path.join(db_path, f"{user_id}.jpg")
-
-                        # 인식용 이미지 저장 요청
-                        save_db_image(temp_file_path, db_image_path)
-
-                        # 프로필 이미지 저장 경로
-                        user_image_path = os.path.join(profile_path, f"{user_id}.jpg")
-
-                        new_rep = DeepFace.extract_faces(
-                            img_path=temp_file_path,
+                        new_rep = DeepFace.update(
+                            user_id=user_id,
+                            image_path=temp_file_path,
+                            db_path=db_path,
+                            model_name=model,
                             detector_backend=detector_backend,
-                        )[0]["facial_area"]
+                            silent=True,
+                        )
+
+                        # 이미지 저장 경로
+                        user_image_path = os.path.join(db_path, f"{user_id}.jpg")
 
                         # 얼굴 이미지 자르기
                         face_region = (
-                            new_rep["x"],
-                            new_rep["y"],
-                            new_rep["x"] + new_rep["w"],
-                            new_rep["y"] + new_rep["h"],
+                            new_rep["facial_area"]["x"],
+                            new_rep["facial_area"]["y"],
+                            new_rep["facial_area"]["x"] + new_rep["facial_area"]["w"],
+                            new_rep["facial_area"]["y"] + new_rep["facial_area"]["h"],
                         )
 
-                        # 이미지 저장 요청
+                        # 이미지 저장
                         save_image(face_region, temp_file_path, user_image_path)
 
                         result = [{"identity": user_id}]
@@ -245,7 +247,7 @@ async def websocket_find_faces(websocket: WebSocket):
 @vision_router.get("/get-faces")
 async def get_faces(user_id: str):
     # 사용자 이미지 경로 설정
-    user_image_path = os.path.join(profile_path, f"{user_id}.jpg")
+    user_image_path = os.path.join(db_path, f"{user_id}.jpg")
 
     # 파일 존재 여부 확인
     if not os.path.exists(user_image_path):
