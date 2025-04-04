@@ -71,10 +71,33 @@ export function useMemberMeals(memberId?: string) {
     queryKey: [memberId || "", todayString],
     queryFn: async () => {
       if (!memberId) return emptyMealResponse;
+
+      // Check if there's data in the members context format first
+      const existingMembersData = queryClient.getQueryData([
+        "members",
+        "current",
+        "detail",
+        memberId,
+        "meals",
+        today,
+      ]);
+
+      if (existingMembersData) {
+        console.log("Using existing data from members context");
+        return existingMembersData;
+      }
+
       console.log("Fetching meals for member:", memberId, "date:", todayString);
       try {
         const result = await getMealsByDate(memberId, today);
         console.log(`Meals for ${todayString} fetched successfully`);
+
+        // Also update the members context format
+        queryClient.setQueryData(
+          ["members", "current", "detail", memberId, "meals", today],
+          result
+        );
+
         return result;
       } catch (error: any) {
         // If 404, don't throw and return empty meals instead
@@ -155,9 +178,17 @@ export function useMemberMeals(memberId?: string) {
         // Store the data with our custom keys
         queryClient.setQueryData([memberId, todayString], data);
 
+        // Also update the members context format
+        queryClient.setQueryData(["members", "current", "detail", memberId, "meals", today], data);
+
         // Invalidate tomorrow's query to refetch it once
         queryClient.invalidateQueries({
           queryKey: [memberId, tomorrowString],
+        });
+
+        // Also invalidate the members format
+        queryClient.invalidateQueries({
+          queryKey: ["members", "current", "detail", memberId, "meals", tomorrow],
         });
       }
     },
@@ -238,8 +269,8 @@ export function useMemberMeals(memberId?: string) {
   ]);
 
   return {
-    mealsToday,
-    mealsTomorrow,
+    mealsToday: mealsToday as MealPlanResponse,
+    mealsTomorrow: mealsTomorrow as MealPlanResponse,
     isLoading,
     isError,
     mealError: needsMealCreation,

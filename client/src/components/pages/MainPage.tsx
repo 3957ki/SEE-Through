@@ -147,6 +147,7 @@ function Meals() {
     isLoading,
     isError,
   } = useMemberMeals(currentMember?.member_id);
+
   const hour = new Date().getHours();
 
   // Only log once per state change to avoid console spam
