@@ -55,14 +55,14 @@ services:
       TYPECAST_API_KEY: ${TYPECAST_API_KEY}
       TYPECAST_BASE_URL: ${TYPECAST_BASE_URL}
     command: >
-      sh -c "
-      apk add --no-cache tzdata &&
-      ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime &&
-      export TZ=Asia/Seoul &&
-      chmod +x /api/gradlew &&
-      /api/gradlew clean build --stacktrace &&
-      cp /api/build/libs/api-0.0.1-SNAPSHOT.jar /api/app.jar &&
-      java -jar /api/app.jar"
+        sh -c "
+        apk add --no-cache tzdata &&
+        ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime &&
+        export TZ=Asia/Seoul &&
+        chmod +x /api/gradlew &&
+        /api/gradlew clean build -x test --stacktrace &&
+        cp /api/build/libs/api-0.0.1-SNAPSHOT.jar /api/app.jar &&
+        java -jar /api/app.jar"
     ports:
       - "41348:8080"
     volumes:

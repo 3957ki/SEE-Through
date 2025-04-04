@@ -284,7 +284,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
   if (!mealsToday || !mealsTomorrow) return null;
 
   const selectedMeals = (() => {
-    if (hour >= 5 && hour < 11) {
+    if (hour >= 0 && hour < 11) {
       return [
         { title: "아침", data: mealsToday.breakfast, color: "bg-orange-400" },
         { title: "점심", data: mealsToday.lunch, color: "bg-gray-700" },
