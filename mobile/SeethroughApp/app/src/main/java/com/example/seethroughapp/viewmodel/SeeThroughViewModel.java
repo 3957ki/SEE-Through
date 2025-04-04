@@ -30,20 +30,75 @@ public class SeeThroughViewModel extends ViewModel {
     private MutableLiveData<List<Ingredient>> ingredients = new MutableLiveData<>();
     private MutableLiveData<List<InOutLog>> inOutLogs = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> isFirstMealLoading = new MutableLiveData<>(false);
     private MutableLiveData<Meal> firstMeal = new MutableLiveData<>();
+    private MutableLiveData<Boolean> isSecondMealLoading = new MutableLiveData<>(false);
     private MutableLiveData<Meal> secondMeal = new MutableLiveData<>();
+
 
     public LiveData<List<Ingredient>> getIngredients() {
         return ingredients;
     }
     public LiveData<List<InOutLog>> getInOutLogs() { return inOutLogs; }
+    public LiveData<Boolean> getIsFirstMealLoading(){ return isFirstMealLoading; }
     public LiveData<Meal> getFirstMeal() { return firstMeal; }
+    public LiveData<Boolean> getIsSecondMealLoading(){ return isSecondMealLoading; }
     public LiveData<Meal> getSecondMeal() { return secondMeal; }
 
-    public void fetchIngredients() {
+    public void refreshFirstMeal(){
+        isFirstMealLoading.setValue(true);
+        ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
+        apiService.refreshMeal(getFirstMeal().getValue().getMealId()).enqueue(new Callback<Meal>() {
+            @Override
+            public void onResponse(Call<Meal> call, Response<Meal> response) {
+                if (response.isSuccessful()){
+                    if (response.body() != null){
+                        firstMeal.setValue(response.body());
+                        isFirstMealLoading.postValue(false);
+                    } else {
+                        Log.e("Meal", "Response body is null");
+                    }
+                }else {
+                    Log.e("Meal", "API request failled");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Meal> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void refreshSecondMeal(){
+        isSecondMealLoading.setValue(true);
+        ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
+        apiService.refreshMeal(getSecondMeal().getValue().getMealId()).enqueue(new Callback<Meal>() {
+            @Override
+            public void onResponse(Call<Meal> call, Response<Meal> response) {
+                if (response.isSuccessful()){
+                    if (response.body() != null){
+                        secondMeal.setValue(response.body());
+                        isSecondMealLoading.postValue(false);
+                    } else {
+                        Log.e("Meal", "Response body is null");
+                    }
+                }else {
+                    Log.e("Meal", "API request failled");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Meal> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void fetchIngredients(int size) {
         // Retrofit 호출 또는 데이터 가져오기
         ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
-        apiService.getIngredients().enqueue(new Callback<IngredientWrapper>() {
+        apiService.getIngredients(Var.memberId, size).enqueue(new Callback<IngredientWrapper>() {
             @Override
             public void onResponse(Call<IngredientWrapper> call, Response<IngredientWrapper> response) {
                 if (response.isSuccessful()) {
@@ -65,9 +120,9 @@ public class SeeThroughViewModel extends ViewModel {
         });
     }
 
-    public void fetchInOutLogs(){
+    public void fetchInOutLogs(int size){
         ApiService apiService = RetrofitInstance.getRetrofitInstance().create(ApiService.class);
-        apiService.getInOutLogs().enqueue(new Callback<InOutLogWrapper>() {
+        apiService.getInOutLogs(size).enqueue(new Callback<InOutLogWrapper>() {
             @Override
             public void onResponse(Call<InOutLogWrapper> call, Response<InOutLogWrapper> response) {
                 if (response.isSuccessful()){

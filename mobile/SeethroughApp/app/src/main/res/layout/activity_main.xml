@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="@color/st_gray"
     tools:context=".ui.MainActivity"
     android:fitsSystemWindows="true">
 
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:text="우리 집"
         android:textSize="20sp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/st_black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:text="모든 기기"
             android:textSize="14sp"
-            android:textColor="@android:color/black"
+            android:textColor="@color/st_black"
             android:layout_marginEnd="16dp"/>
 
         <TextView
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:text="부엌"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/st_dark_gray"
             android:layout_marginEnd="16dp"/>
 
         <TextView
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:text="지정된 방 없음"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/st_dark_gray"
             android:layout_marginEnd="16dp"/>
 
         <TextView
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:text="개인 기기"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"/>
+            android:textColor="@color/st_dark_gray"/>
     </LinearLayout>
 
 
@@ -74,7 +74,7 @@
         android:layout_width="176dp"
         android:layout_height="120dp"
         android:layout_margin="16dp"
-        app:cardBackgroundColor="@android:color/darker_gray"
+        app:cardBackgroundColor="@color/st_white"
         app:cardCornerRadius="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tab_menu">
@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="SeeThrough"
-                android:textColor="@android:color/white"
+                android:textColor="@color/st_black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>

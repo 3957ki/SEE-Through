@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.InOutLogActivity"
-    android:background="@color/white"
+    android:background="@color/st_gray"
     android:fitsSystemWindows="true">
 
     <!-- 제목 텍스트 -->
