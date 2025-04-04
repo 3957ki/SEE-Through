@@ -349,17 +349,11 @@ function GreetingSection({ name }: { name?: string }) {
 
 // Today's Diet Recommendation Section
 function TodaysDietSection() {
-  const { data: currentMember } = useCurrentMember();
-  const { isLoading: isMealsLoading } = useMemberMeals(currentMember?.member_id);
-
   return (
     <div className="py-4">
       <div className="flex items-center gap-1 px-4 mb-3">
         <BsCalendarEvent className="w-4 h-4 text-gray-600" />
         <h2 className="text-lg font-medium">오늘의 추천 식단</h2>
-        {isMealsLoading && (
-          <div className="ml-2 w-4 h-4 border-t-2 border-solid border-orange-400 rounded-full animate-spin"></div>
-        )}
       </div>
       <Meals />
     </div>
