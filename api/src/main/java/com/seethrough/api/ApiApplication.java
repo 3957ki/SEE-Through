@@ -6,19 +6,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
-@ComponentScan(
-	basePackages = "com.seethrough.api",
-	excludeFilters = {
-		@ComponentScan.Filter(
-			type = FilterType.REGEX,
-			pattern = "com\\.seethrough\\.api\\.fcm\\..*"
-		),
-		@ComponentScan.Filter(
-			type = FilterType.REGEX,
-			pattern = "com\\.seethrough\\.api\\.ingredient\\..*"
-		)
-	}
-)
 public class ApiApplication {
 
 	public static void main(String[] args) {
