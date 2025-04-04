@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Slf4j
 @Component
@@ -40,19 +41,25 @@ public class TtsExternalClient {
 			"xapi_audio_format", "mp3"
 		);
 
-		Map<?, ?> response = typecastWebClient.post()
-			.uri("/api/speak")
-			.contentType(MediaType.APPLICATION_JSON)
-			.headers(h -> h.setBearerAuth(apiKey))
-			.bodyValue(body)
-			.retrieve()
-			.bodyToMono(Map.class)
-			.block();
+		try {
+			Map<?, ?> response = typecastWebClient.post()
+				.uri("/api/speak")
+				.contentType(MediaType.APPLICATION_JSON)
+				.headers(h -> h.setBearerAuth(apiKey))
+				.bodyValue(body)
+				.retrieve()
+				.bodyToMono(Map.class)
+				.block();
 
-		// 응답 형식: { result: { speak_v2_url: "https://typecast.ai/api/speak/v2/..." } }
-		Map<?, ?> result = (Map<?, ?>) response.get("result");
-		return (String) result.get("speak_v2_url");
+			Map<?, ?> result = (Map<?, ?>) response.get("result");
+			return (String) result.get("speak_v2_url");
+
+		} catch (WebClientResponseException e) {
+			log.error("TTS 요청 실패 - status: {}, body: {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+			throw e;
+		}
 	}
+
 
 	public String pollAudioDownloadUrl(String speakUrl) throws InterruptedException {
 		int retry = 0, maxRetry = 10;
