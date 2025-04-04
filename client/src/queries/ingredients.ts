@@ -11,7 +11,11 @@ export const ingredients = createQueryKeys("ingredients", {
 });
 
 export function useIngredient(ingredientId: string) {
-  const { data } = useQuery(ingredients.detail(ingredientId));
+  const { data, isLoading, error } = useQuery(ingredients.detail(ingredientId));
 
-  return { data: data as DetailedIngredient };
+  return {
+    data: data as DetailedIngredient,
+    isLoading,
+    error,
+  };
 }

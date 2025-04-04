@@ -1,40 +1,20 @@
-import { getIngredient } from "@/api/ingredients";
+import { Spinner } from "@/components/ui/spinner";
 import { useDialog } from "@/contexts/DialogContext";
-import { DetailedIngredient } from "@/interfaces/Ingredient";
-import { useEffect, useState } from "react";
+import { useIngredient } from "@/queries/ingredients";
 
 interface IngredientDialogProps {
   ingredientId: string;
 }
 
 function IngredientDialog({ ingredientId }: IngredientDialogProps) {
-  const [ingredient, setIngredient] = useState<DetailedIngredient | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
+  const { data: ingredient, isLoading, error } = useIngredient(ingredientId);
   const { hideDialog } = useDialog();
-
-  useEffect(() => {
-    const fetchIngredient = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getIngredient(ingredientId);
-        setIngredient(data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("알 수 없는 오류가 발생했습니다."));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchIngredient();
-  }, [ingredientId]);
 
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg p-4 w-80 max-w-md">
         <div className="flex justify-center items-center h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          <Spinner size={24} />
         </div>
       </div>
     );

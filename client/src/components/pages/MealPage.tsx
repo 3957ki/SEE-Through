@@ -1,4 +1,3 @@
-import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import {
   addDislikedFood,
   addPreferredFood,
@@ -6,8 +5,7 @@ import {
   removePreferredFood,
 } from "@/api/members";
 import { Spinner } from "@/components/ui/spinner";
-import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useCurrentMember } from "@/queries/members";
+import { useCurrentMember, useCurrentMemberMealsOf, useMutateRefreshMeal } from "@/queries/members";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -205,8 +203,8 @@ function MealSection({
 export default function MealPage() {
   const { data: currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [meals, setMeals] = useState<MealPlanResponse | null>(null);
-  const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+  const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
+  const refreshMutation = useMutateRefreshMeal(selectedDate);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
   const [isFeedbackInitialized, setIsFeedbackInitialized] = useState(false);
 
@@ -234,47 +232,9 @@ export default function MealPage() {
     setSelectedDate(new Date());
   };
 
-  const handleRefreshMeal = async (mealId: string) => {
-    if (!currentMember || refreshingMealId) return;
-
-    try {
-      setRefreshingMealId(mealId);
-      const refreshedMeal = await refreshMeal(mealId);
-      if (meals) {
-        const updatedMeals = { ...meals };
-        if (refreshedMeal.serving_time === "아침") {
-          updatedMeals.breakfast = refreshedMeal;
-        } else if (refreshedMeal.serving_time === "점심") {
-          updatedMeals.lunch = refreshedMeal;
-        } else if (refreshedMeal.serving_time === "저녁") {
-          updatedMeals.dinner = refreshedMeal;
-        }
-        setMeals(updatedMeals);
-      }
-    } catch (err) {
-      console.error("식단 새로고침 실패", err);
-    } finally {
-      setRefreshingMealId(null);
-    }
+  const handleRefreshMeal = (mealId: string) => {
+    refreshMutation.mutate(mealId);
   };
-
-  useEffect(() => {
-    if (!currentMember) return;
-
-    const fetchMeals = async () => {
-      try {
-        const today = new Date();
-        const data = isSameDay(selectedDate, today)
-          ? await getTodayMeals(currentMember.member_id)
-          : await getMealsByDate(currentMember.member_id, selectedDate);
-        setMeals(data);
-      } catch (err) {
-        console.error("식단 불러오기 실패", err);
-      }
-    };
-
-    fetchMeals();
-  }, [currentMember, selectedDate]);
 
   if (!currentMember) return null;
 
@@ -296,7 +256,12 @@ export default function MealPage() {
 
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
 
-      {meals ? (
+      {isMealsLoading ? (
+        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+          <Spinner size={36} />
+          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+        </div>
+      ) : meals ? (
         <div className="px-4 space-y-4">
           <MealSection
             title="아침"
@@ -304,7 +269,9 @@ export default function MealPage() {
             reason={meals.breakfast.reason}
             mealId={meals.breakfast.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.breakfast.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.breakfast.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
@@ -315,7 +282,9 @@ export default function MealPage() {
             reason={meals.lunch.reason}
             mealId={meals.lunch.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.lunch.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.lunch.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
@@ -326,7 +295,9 @@ export default function MealPage() {
             reason={meals.dinner.reason}
             mealId={meals.dinner.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.dinner.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.dinner.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
@@ -334,8 +305,7 @@ export default function MealPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-gray-500">
-          <Spinner size={36} />
-          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+          <p className="text-gray-500">식단 정보가 없습니다.</p>
         </div>
       )}
     </div>
