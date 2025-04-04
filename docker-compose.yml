@@ -38,7 +38,7 @@ services:
 
   api:
     image: openjdk:17-alpine
-    build: 
+    build:
       context: ./api
     container_name: api
     working_dir: /api
@@ -51,6 +51,9 @@ services:
       SWAGGER_USERNAME: ${SWAGGER_USERNAME}
       SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
       ALARM_UUID: ${ALARM_UUID}
+      FCM_TOKEN_PATH: ${FCM_TOKEN_PATH}
+      TYPECAST_API_KEY: ${TYPECAST_API_KEY}
+      TYPECAST_BASE_URL: ${TYPECAST_BASE_URL}
     command: >
         sh -c "
         apk add --no-cache tzdata &&
@@ -69,7 +72,7 @@ services:
       - see_through
 
   llm:
-    build: 
+    build:
       context: ./llm
       dockerfile: Dockerfile
     container_name: llm
@@ -86,7 +89,7 @@ services:
 
   db:
     image: pgvector/pgvector:0.8.0-pg15
-    build: 
+    build:
       context: ./db
     container_name: db
     restart: always
@@ -135,7 +138,7 @@ services:
       - grafana-data:/var/lib/grafana
     networks:
       - see_through
-      
+
 volumes:
   grafana-data:
 
