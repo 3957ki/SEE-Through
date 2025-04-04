@@ -13,7 +13,7 @@ export async function speakWithTTS(text: string, actorId: string): Promise<void>
         actor_id: actorId,
       },
       {
-        responseType: "blob", // ✅ 여기가 핵심!
+        responseType: "blob",
       }
     );
 
