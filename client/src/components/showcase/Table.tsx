@@ -4,6 +4,7 @@ import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
+import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
 interface TableProps {
@@ -13,6 +14,7 @@ interface TableProps {
 export default function Table({ outsideIngredients }: TableProps) {
   const { removeIngredient } = useOptimisticIngredientUpdates();
   const { showDialog } = useDialog();
+  const { data: currentMember } = useCurrentMember();
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -41,7 +43,16 @@ export default function Table({ outsideIngredients }: TableProps) {
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
             showDialog(<CommentDialog message={messageText} />);
-            speakWithTTS(messageText, "666a9871abcf27a5169850d0");
+            // currentMember.age로 actor 분기
+            // const age = currentMember?.age;
+            // console.log("사용자 나이:", age);
+            // const actorId =
+            //   age !== undefined && age >= 0 && age < 13
+            //     ? "619d7eb59233f1f0771197ed" // 어린이: 머루
+            //     : "632293f759d649937b97f323"; // 어른: 진우
+            // console.log("actorId: ", actorId);
+            // speakWithTTS(messageText, actorId);
+            speakWithTTS(messageText, "632293f759d649937b97f323");
           },
         });
       }

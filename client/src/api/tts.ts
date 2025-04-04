@@ -1,17 +1,32 @@
 import { APIServerFetcher } from "@/lib/fetchers";
 
 export async function speakWithTTS(text: string, actorId: string): Promise<void> {
-  try {
-    const response = await APIServerFetcher.post("/tts/full", {
-      text,
-      actor_id: actorId,
-    });
+  console.log("[TTS 요청 시작]");
+  console.log("▶ 텍스트:", text);
+  console.log("▶ actorId:", actorId);
 
-    const blob = new Blob([response.data], { type: "audio/mpeg" });
-    const audioUrl = URL.createObjectURL(blob);
+  try {
+    const response = await APIServerFetcher.post(
+      "/tts/full",
+      {
+        text,
+        actor_id: actorId,
+      },
+      {
+        responseType: "blob", // ✅ 여기가 핵심!
+      }
+    );
+
+    console.log("[TTS 응답 수신 완료]");
+    console.log("▶ 응답 Blob 타입:", response.data.type);
+
+    const audioUrl = URL.createObjectURL(response.data);
+    console.log("▶ 생성된 오디오 URL:", audioUrl);
+
     const audio = new Audio(audioUrl);
-    audio.play();
+    await audio.play();
+    console.log("[TTS 재생 시작]");
   } catch (error) {
-    console.error("TTS 호출 실패:", error);
+    console.error("[TTS 호출 실패]", error);
   }
 }
