@@ -419,7 +419,11 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             const area = currentBox.width * currentBox.height;
 
             // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음
-            if (area >= currentCut && isFront && !isTooCloseToEdge) {
+            if (
+              area >= currentCut &&
+              !isTooCloseToEdge &&
+              (isFront || faceLevelRef.current.level == 2)
+            ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
               nextFaceLevel = { level: 1, cut: LARGE_FACE_CUT };
