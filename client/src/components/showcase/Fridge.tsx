@@ -1,3 +1,4 @@
+import bespokeOpenedImage from "@/assets/bespoke-opened-crop.png";
 import FridgeDisplay from "@/components/FridgeDisplay";
 import Screensaver from "@/components/Screensaver";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
@@ -153,13 +154,16 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           }}
           transform="translate(489,952)"
         >
-          <image
-            href="/src/assets/bespoke-opened-crop.png"
-            width="100%"
-            height="100%"
-            transform="translate(-870, -1040)"
-            preserveAspectRatio="xMidYMid meet"
-          />
+          <foreignObject x="-870" y="-1040" width="1000" height="1000">
+            <img
+              src={bespokeOpenedImage}
+              alt="Opened fridge door"
+              style={{
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          </foreignObject>
         </g>
         {leftDoorOpen && (
           <foreignObject x="130" y="110" width="358" height="590" style={{ pointerEvents: "all" }}>

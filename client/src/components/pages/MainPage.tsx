@@ -1,12 +1,13 @@
-import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import IngredientDialog from "@/components/dialog/IngredientDialog";
-import { Section, SectionContent, SectionDivider, SectionTitle } from "@/components/ui/section";
+import { MemberSwitcherDialog } from "@/components/dialog/MemberSwitcherDialog";
 import { useDialog } from "@/contexts/DialogContext";
+import { usePage } from "@/contexts/PageContext";
 import Ingredient from "@/interfaces/Ingredient";
-import type { MealPlanResponse } from "@/interfaces/Meal";
+import { useMemberMeals } from "@/queries/meals";
 import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BsArrowClockwise, BsCalendarEvent } from "react-icons/bs";
+import { BsArrowClockwise, BsCalendarEvent, BsPersonCircle } from "react-icons/bs";
 
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
@@ -35,7 +36,7 @@ function IngredientsContent() {
     setError(err instanceof Error ? err : new Error(String(err)));
   }
 
-  const { showDialog, hideDialog } = useDialog();
+  const { showDialog } = useDialog();
   const observer = useRef<IntersectionObserver | null>(null);
   const lastIngredientRef = useRef<HTMLDivElement | null>(null);
 
@@ -77,7 +78,7 @@ function IngredientsContent() {
   }, [isLoading, hasMore, isFetchingNextPage, internalLoadMore]);
 
   const handleIngredientClick = (ingredient: Ingredient) => {
-    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} onClose={hideDialog} />);
+    showDialog(<IngredientDialog ingredientId={ingredient.ingredient_id} />);
   };
 
   // Show error state
@@ -120,127 +121,20 @@ function IngredientsSection() {
   const { data: currentMember } = useCurrentMember();
 
   return (
-    <Section>
-      <SectionTitle>재료 목록</SectionTitle>
-      <SectionContent>
-        {currentMember ? (
-          <IngredientsContent />
-        ) : (
-          <div className="text-center py-4">사용자 정보를 불러오는 중...</div>
-        )}
-      </SectionContent>
-    </Section>
+    <div className="py-4">
+      <h2 className="text-lg font-medium px-4 mb-3">재료 목록</h2>
+      {currentMember ? (
+        <IngredientsContent />
+      ) : (
+        <div className="text-center py-4">사용자 정보를 불러오는 중...</div>
+      )}
+    </div>
   );
 }
 
-function useMeals(currentMember: any) {
-  const [mealsToday, setMealsToday] = useState<MealPlanResponse | null>(null);
-  const [mealsTomorrow, setMealsTomorrow] = useState<MealPlanResponse | null>(null);
-  const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
-  const [mealError, setMealError] = useState(false); // 404 오류 상태 추가
-  const [loading, setLoading] = useState(false); // 로딩 상태 추가
-
-  useEffect(() => {
-    const fetchMeals = async () => {
-      if (!currentMember) return;
-
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-
-      try {
-        const [todayMeals, tomorrowMeals] = await Promise.all([
-          getMealsByDate(currentMember.member_id, today),
-          getMealsByDate(currentMember.member_id, tomorrow),
-        ]);
-
-        setMealsToday(todayMeals);
-        setMealsTomorrow(tomorrowMeals);
-        setMealError(false); // 정상적으로 데이터가 오면 오류 상태 초기화
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          setMealError(true); // 404 오류가 발생하면 오류 상태 설정
-        } else {
-          console.error("식단 요청 실패", err);
-        }
-      }
-    };
-
-    fetchMeals();
-  }, [currentMember]);
-
-  const handleRefresh = async (mealId: string) => {
-    if (!currentMember || refreshingMealId) return;
-
-    setRefreshingMealId(mealId);
-    try {
-      const updated = await refreshMeal(mealId);
-      const targetMeals = [mealsToday, mealsTomorrow].find(
-        (meals) =>
-          meals?.breakfast.meal_id === mealId ||
-          meals?.lunch.meal_id === mealId ||
-          meals?.dinner.meal_id === mealId
-      );
-
-      const setMealsFn = targetMeals === mealsToday ? setMealsToday : setMealsTomorrow;
-
-      setMealsFn((prev) => {
-        if (!prev) return prev;
-        const updatedMeals = { ...prev };
-        if (updated.serving_time === "아침") updatedMeals.breakfast = updated;
-        else if (updated.serving_time === "점심") updatedMeals.lunch = updated;
-        else if (updated.serving_time === "저녁") updatedMeals.dinner = updated;
-        return updatedMeals;
-      });
-    } catch (err: any) {
-      console.error("식단 새로고침 실패", err);
-    } finally {
-      setRefreshingMealId(null);
-    }
-  };
-
-  const createMeals = async () => {
-    console.log("식단 생성 시작...");
-    setLoading(true); // 식단 생성 시작 시 로딩 상태 활성화
-    try {
-      const createdMeals = await getTodayMeals(currentMember.member_id); // 식단 생성 요청
-      console.log("식단 생성 완료:", createdMeals);
-      setMealsToday(createdMeals); // 오늘 식단 상태 업데이트
-      setMealError(false); // 식단 생성 성공시 오류 상태 초기화
-
-      // 식단 생성 후 getMealsByDate로 다시 요청하여 최신 식단 정보를 가져옴
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-
-      const [todayMeals, tomorrowMeals] = await Promise.all([
-        getMealsByDate(currentMember.member_id, today),
-        getMealsByDate(currentMember.member_id, tomorrow),
-      ]);
-
-      setMealsToday(todayMeals);
-      setMealsTomorrow(tomorrowMeals);
-    } catch (err: any) {
-      console.error("식단 생성 실패", err);
-    } finally {
-      setLoading(false); // 식단 생성 완료 후 로딩 상태 비활성화
-      console.log("로딩 상태 비활성화");
-    }
-  };
-
-  return {
-    mealsToday,
-    mealsTomorrow,
-    handleRefresh,
-    refreshingMealId,
-    mealError,
-    createMeals,
-    loading,
-  };
-}
-
-function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function Meals() {
   const { data: currentMember } = useCurrentMember();
+  const { navigateTo } = usePage();
 
   const {
     mealsToday,
@@ -249,39 +143,103 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
     refreshingMealId,
     mealError,
     createMeals,
-    loading,
-  } = useMeals(currentMember);
+    loading: isMealsLoading,
+    isLoading,
+    isError,
+  } = useMemberMeals(currentMember?.member_id);
+
   const hour = new Date().getHours();
 
+  // Only log once per state change to avoid console spam
   useEffect(() => {
-    console.log("Meals 컴포넌트 렌더링, 로딩 상태:", loading);
-  }, [loading]);
+    console.log("Meals component state:", {
+      currentMemberId: currentMember?.member_id,
+      mealsToday: mealsToday ? "data present" : "no data",
+      mealsTomorrow: mealsTomorrow ? "data present" : "no data",
+      isLoading,
+      isMealsLoading,
+      mealError,
+      isError,
+    });
+  }, [
+    currentMember?.member_id,
+    mealsToday,
+    mealsTomorrow,
+    isLoading,
+    isMealsLoading,
+    mealError,
+    isError,
+  ]);
 
-  if (mealError) {
+  if (isLoading || isMealsLoading) {
     return (
-      <div className="mt-2 px-4 flex gap-4">
-        {/* "식단 생성하기" 버튼 */}
-        {!loading ? (
-          <button
-            onClick={createMeals}
-            className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
-          >
-            식단 생성하기
-          </button>
-        ) : (
-          <div className="w-full flex justify-center items-center">
-            {/* Tailwind로 로딩 스피너 및 메시지 표시 */}
-            <div className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg">
-              <div className="w-10 h-10 border-t-4 border-solid border-green-500 rounded-full animate-spin"></div>
-              <p className="text-base font-medium text-gray-800">AI가 일주일 식단 생성중</p>
-            </div>
-          </div>
-        )}
+      <div className="mt-2 px-4">
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="w-12 h-12 border-t-4 border-solid border-orange-500 rounded-full animate-spin mb-3"></div>
+          <p className="text-base font-medium text-gray-700">AI가 일주일 식단 생성중</p>
+          <p className="text-sm text-gray-500 mt-1">잠시만 기다려주세요...</p>
+        </div>
       </div>
     );
   }
 
-  if (!mealsToday || !mealsTomorrow) return null;
+  if (mealError || isError) {
+    return (
+      <div className="mt-2 px-4 flex gap-4">
+        {/* "식단 생성하기" 버튼 */}
+        <button
+          type="button"
+          onClick={() => createMeals()}
+          className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+        >
+          식단 생성하기
+        </button>
+      </div>
+    );
+  }
+
+  if (!mealsToday || !mealsTomorrow) {
+    console.log("Meals data is missing");
+    return (
+      <div className="mt-2 px-4">
+        <div className="py-4 text-center text-gray-500">
+          현재 식단 정보가 없습니다.
+          <button
+            type="button"
+            onClick={() => createMeals()}
+            className="mt-2 w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+          >
+            식단 생성하기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure meal data has the expected structure
+  const hasValidMealData =
+    mealsToday?.breakfast?.menu &&
+    mealsToday?.lunch?.menu &&
+    mealsToday?.dinner?.menu &&
+    mealsTomorrow?.breakfast?.menu;
+
+  if (!hasValidMealData) {
+    console.log("Invalid meal data structure:", { mealsToday, mealsTomorrow });
+    return (
+      <div className="mt-2 px-4">
+        <div className="py-4 text-center text-gray-500">
+          식단 데이터 구조에 문제가 있습니다.
+          <button
+            type="button"
+            onClick={() => createMeals()}
+            className="mt-2 w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+          >
+            식단 다시 생성하기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const selectedMeals = (() => {
     if (hour >= 0 && hour < 11) {
@@ -308,7 +266,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
         <div
           key={data.meal_id}
           className={`relative w-full h-[160px] rounded-2xl shadow-md text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-center p-4`}
-          onClick={() => onShowMealPage?.()}
+          onClick={() => navigateTo("meal")}
         >
           {/* 새로고침 로딩 스피너 */}
           {refreshingMealId === data.meal_id && (
@@ -321,7 +279,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
           )}
 
           {/* 전체 로딩 스피너 */}
-          {loading && (
+          {isMealsLoading && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
               <div
                 className="flex flex-col items-center justify-center space-y-4 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg"
@@ -338,6 +296,7 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-base font-semibold">{title}</h3>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRefresh(data.meal_id);
@@ -365,40 +324,57 @@ function Meals({ onShowMealPage }: { onShowMealPage?: () => void }) {
 
 // Header Greeting Section
 function GreetingSection({ name }: { name?: string }) {
+  const { showDialog } = useDialog();
+  const { data: currentMember } = useCurrentMember();
+
   return (
-    <Section className="py-4">
-      <SectionContent>
-        <p className="text-2xl font-medium">좋은 아침입니다,</p>
-        <p className="text-2xl font-medium">{name}님!</p>
-      </SectionContent>
-    </Section>
+    <div className="py-4">
+      <div className="flex items-center gap-4 px-4">
+        <Avatar
+          className="h-12 w-12 cursor-pointer bg-gray-100 rounded-full"
+          onClick={() => showDialog(<MemberSwitcherDialog />)}
+        >
+          <AvatarImage src={currentMember?.image_path} alt="User avatar" />
+          <AvatarFallback>
+            <BsPersonCircle className="w-full h-full" />
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-2xl font-medium">좋은 아침입니다,</p>
+          <p className="text-2xl font-medium">{name}님!</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // Today's Diet Recommendation Section
-function TodaysDietSection({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function TodaysDietSection() {
   return (
-    <Section>
-      <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>오늘의 추천 식단</SectionTitle>
-      <Meals onShowMealPage={onShowMealPage} />
-    </Section>
+    <div className="py-4">
+      <div className="flex items-center gap-1 px-4 mb-3">
+        <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+        <h2 className="text-lg font-medium">오늘의 추천 식단</h2>
+      </div>
+      <Meals />
+    </div>
   );
 }
 
-function MainPage({ onShowMealPage }: { onShowMealPage?: () => void }) {
+function MainPage() {
   const { data: currentMember } = useCurrentMember();
 
-  useEffect(() => {
-    if (currentMember) {
-      console.log(currentMember);
-    }
-  }, [currentMember]);
+  // useEffect(() => {
+  //   if (currentMember) {
+  //     console.log(currentMember);
+  //   }
+  // }, [currentMember]);
 
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
-      <TodaysDietSection onShowMealPage={onShowMealPage} />
-      <SectionDivider />
+      <TodaysDietSection />
+      <div className="h-2 bg-gray-50 my-3 w-full" />
       <IngredientsSection />
     </div>
   );

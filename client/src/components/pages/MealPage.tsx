@@ -1,14 +1,11 @@
-import { getMealsByDate, getTodayMeals, refreshMeal } from "@/api/meals";
 import {
   addDislikedFood,
   addPreferredFood,
   removeDislikedFood,
   removePreferredFood,
 } from "@/api/members";
-import { SectionTitle } from "@/components/ui/section";
 import { Spinner } from "@/components/ui/spinner";
-import type { MealPlanResponse } from "@/interfaces/Meal";
-import { useCurrentMember } from "@/queries/members";
+import { useCurrentMember, useCurrentMemberMealsOf, useMutateRefreshMeal } from "@/queries/members";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -47,18 +44,18 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center px-4 py-2 border-b gap-2">
-      <button onClick={handlePrev} className="p-1" disabled={offset === 0}>
+    <div className="flex items-center border-b gap-2">
+      <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
         <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
       <div className="flex-1 flex justify-around">
-        {visibleDates.map((date, index) => {
+        {visibleDates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
           const day = format(date, "d");
           return (
             <div
-              key={index}
+              key={date.toDateString()}
               className={`flex flex-col items-center px-2 py-1 rounded-full cursor-pointer ${
                 isSelected ? "bg-orange-400 text-white" : "text-gray-700"
               }`}
@@ -70,7 +67,7 @@ function DateSelector({
           );
         })}
       </div>
-      <button onClick={handleNext} className="p-1" disabled>
+      <button type="button" onClick={handleNext} className="p-1" disabled>
         <ChevronRight className="w-5 h-5 text-gray-300" />
       </button>
     </div>
@@ -120,7 +117,7 @@ function MealItem({
 
   return (
     <div
-      className={`flex items-center justify-start px-4 py-1 gap-2 rounded-md transition ${
+      className={`flex items-center justify-start gap-2 rounded-md transition ${
         feedback === "like"
           ? "bg-orange-50 border-l-4 border-orange-400"
           : feedback === "dislike"
@@ -171,8 +168,8 @@ function MealSection({
   memberId: string;
 }) {
   return (
-    <div className="py-4">
-      <div className="flex justify-between items-stretch px-4">
+    <div>
+      <div className="flex justify-between items-stretch">
         <div>
           <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
           <div className="mt-2 space-y-1">
@@ -189,6 +186,7 @@ function MealSection({
           {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
         </div>
         <button
+          type="button"
           className="self-center pl-4"
           onClick={() => onRefresh(mealId)}
           disabled={isRefreshing}
@@ -198,7 +196,6 @@ function MealSection({
           />
         </button>
       </div>
-      <div className="mt-4 border-t-2 border-orange-500 mx-4" />
     </div>
   );
 }
@@ -206,8 +203,8 @@ function MealSection({
 export default function MealPage() {
   const { data: currentMember } = useCurrentMember();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [meals, setMeals] = useState<MealPlanResponse | null>(null);
-  const [refreshingMealId, setRefreshingMealId] = useState<string | null>(null);
+  const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
+  const refreshMutation = useMutateRefreshMeal(selectedDate);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
   const [isFeedbackInitialized, setIsFeedbackInitialized] = useState(false);
 
@@ -235,55 +232,21 @@ export default function MealPage() {
     setSelectedDate(new Date());
   };
 
-  const handleRefreshMeal = async (mealId: string) => {
-    if (!currentMember || refreshingMealId) return;
-
-    try {
-      setRefreshingMealId(mealId);
-      const refreshedMeal = await refreshMeal(mealId);
-      if (meals) {
-        const updatedMeals = { ...meals };
-        if (refreshedMeal.serving_time === "아침") {
-          updatedMeals.breakfast = refreshedMeal;
-        } else if (refreshedMeal.serving_time === "점심") {
-          updatedMeals.lunch = refreshedMeal;
-        } else if (refreshedMeal.serving_time === "저녁") {
-          updatedMeals.dinner = refreshedMeal;
-        }
-        setMeals(updatedMeals);
-      }
-    } catch (err) {
-      console.error("식단 새로고침 실패", err);
-    } finally {
-      setRefreshingMealId(null);
-    }
+  const handleRefreshMeal = (mealId: string) => {
+    refreshMutation.mutate(mealId);
   };
-
-  useEffect(() => {
-    if (!currentMember) return;
-
-    const fetchMeals = async () => {
-      try {
-        const today = new Date();
-        const data = isSameDay(selectedDate, today)
-          ? await getTodayMeals(currentMember.member_id)
-          : await getMealsByDate(currentMember.member_id, selectedDate);
-        setMeals(data);
-      } catch (err) {
-        console.error("식단 불러오기 실패", err);
-      }
-    };
-
-    fetchMeals();
-  }, [currentMember, selectedDate]);
 
   if (!currentMember) return null;
 
   return (
-    <div className="pb-24 relative">
-      <div className="flex justify-between items-center px-4 mt-4">
-        <SectionTitle icon={<BsCalendarEvent className="w-4 h-4" />}>식단 캘린더</SectionTitle>
+    <div>
+      <div className="flex justify-between items-center px-4">
+        <div className="flex items-center gap-1">
+          <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+          <h2 className="text-lg font-medium">식단 캘린더</h2>
+        </div>
         <button
+          type="button"
           onClick={handleGoToday}
           className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
         >
@@ -293,15 +256,22 @@ export default function MealPage() {
 
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
 
-      {meals ? (
-        <>
+      {isMealsLoading ? (
+        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+          <Spinner size={36} />
+          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+        </div>
+      ) : meals ? (
+        <div className="px-4 space-y-4">
           <MealSection
             title="아침"
             items={meals.breakfast.menu}
             reason={meals.breakfast.reason}
             mealId={meals.breakfast.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.breakfast.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.breakfast.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
@@ -312,7 +282,9 @@ export default function MealPage() {
             reason={meals.lunch.reason}
             mealId={meals.lunch.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.lunch.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.lunch.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
@@ -323,16 +295,17 @@ export default function MealPage() {
             reason={meals.dinner.reason}
             mealId={meals.dinner.meal_id}
             onRefresh={handleRefreshMeal}
-            isRefreshing={refreshingMealId === meals.dinner.meal_id}
+            isRefreshing={
+              refreshMutation.isPending && refreshMutation.variables === meals.dinner.meal_id
+            }
             feedbackMap={feedbackMap}
             setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
           />
-        </>
+        </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-gray-500">
-          <Spinner size={36} />
-          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+          <p className="text-gray-500">식단 정보가 없습니다.</p>
         </div>
       )}
     </div>

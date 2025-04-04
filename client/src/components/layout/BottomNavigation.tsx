@@ -1,4 +1,7 @@
+import PinDialog from "@/components/dialog/PinDialog";
 import { useDialog } from "@/contexts/DialogContext";
+import { usePage } from "@/contexts/PageContext";
+import { PageType } from "@/interfaces/PageType";
 import {
   BsCalendarEvent,
   BsEyeglasses,
@@ -6,38 +9,25 @@ import {
   BsPencilSquare,
   BsPersonCircle,
 } from "react-icons/bs";
-import PinModal from "../modal/PinModal";
 
-// Available pages for navigation
-export type PageType = "main" | "logs" | "monitoring" | "meal" | "my";
-
-// Bottom Navigation Component
 interface BottomNavigationProps {
   currentPin: string;
-  onSuccess: () => void;
   currentPage: PageType;
-  onNavigate: (page: PageType) => void;
-  isFixed?: boolean; // New prop to control fixed vs relative positioning
 }
 
-function BottomNavigation({
-  currentPin,
-  onSuccess,
-  currentPage,
-  onNavigate,
-  isFixed = true, // Default to fixed positioning for backward compatibility
-}: BottomNavigationProps) {
-  const { showDialog, hideDialog } = useDialog();
+function BottomNavigation({ currentPin, currentPage }: BottomNavigationProps) {
+  const { showDialog } = useDialog();
+  const { navigateTo } = usePage();
 
   // Common classes for the navigation bar
-  const baseClasses = "bg-white border-t flex justify-around items-center h-14 px-4";
+  const baseClasses = "bg-white border-t flex justify-around items-center h-full px-4";
 
-  // Add fixed positioning only when isFixed is true
-  const positionClasses = isFixed ? "fixed bottom-0 left-0 right-0" : "w-full";
+  // Remove fixed positioning since we're using a dedicated space
+  const positionClasses = "w-full";
 
   const handleMonitoringClick = () => {
     if (currentPage !== "monitoring") {
-      showDialog(<PinModal correctPin={currentPin} onSuccess={onSuccess} onClose={hideDialog} />);
+      showDialog(<PinDialog correctPin={currentPin} onSuccess={() => navigateTo("monitoring")} />);
     }
   };
 
@@ -46,7 +36,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("my")}
+        onClick={() => navigateTo("my")}
       >
         <BsPersonCircle
           className={`w-6 h-6 ${currentPage === "my" ? "text-orange-500" : "text-gray-600"}`}
@@ -55,7 +45,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("meal")}
+        onClick={() => navigateTo("meal")}
       >
         <BsCalendarEvent
           className={`w-6 h-6 ${currentPage === "meal" ? "text-orange-500" : "text-gray-600"}`}
@@ -64,7 +54,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("main")}
+        onClick={() => navigateTo("main")}
       >
         <BsHouseDoor
           className={`w-6 h-6 ${currentPage === "main" ? "text-orange-500" : "text-gray-600"}`}
@@ -74,7 +64,7 @@ function BottomNavigation({
       <button
         type="button"
         className="flex flex-col items-center justify-center p-2"
-        onClick={() => onNavigate("logs")}
+        onClick={() => navigateTo("logs")}
       >
         <BsPencilSquare
           className={`w-6 h-6 ${currentPage === "logs" ? "text-orange-500" : "text-gray-600"}`}

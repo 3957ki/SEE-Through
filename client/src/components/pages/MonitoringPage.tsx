@@ -1,8 +1,7 @@
-import { fetchMonitoringUsers, updateMonitoring } from "@/api/monitoring";
-import ChangePinModal from "@/components/modal/ChangePinModal";
+import ChangePinDialog from "@/components/dialog/ChangePinDialog";
+import { Spinner } from "@/components/ui/spinner";
 import { useDialog } from "@/contexts/DialogContext";
-import type { MonitoringUser } from "@/interfaces/Monitoring";
-import { useCallback, useEffect, useState } from "react";
+import { useMonitoringUsers, useUpdateMonitoring } from "@/queries/monitoring";
 import { Button } from "../ui/button";
 
 type MonitoringPageProps = {
@@ -11,50 +10,12 @@ type MonitoringPageProps = {
 };
 
 export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPageProps) {
-  const [users, setUsers] = useState<MonitoringUser[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [savingUsers, setSavingUsers] = useState<string[]>([]); // UUID는 string
-  const { showDialog, hideDialog } = useDialog();
-
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await fetchMonitoringUsers();
-      setUsers(data);
-    } catch (error) {
-      console.error("사용자 데이터 로드 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  const { users, isLoading } = useMonitoringUsers();
+  const updateMutation = useUpdateMonitoring();
+  const { showDialog } = useDialog();
 
   const toggleUserSelection = async (userId: string) => {
-    setSavingUsers((prev) => [...prev, userId]);
-
-    // UI 업데이트 (토글)
-    const updatedUsers = users.map((user) =>
-      user.member_id === userId ? { ...user, is_monitored: !user.is_monitored } : user
-    );
-    setUsers(updatedUsers);
-
-    try {
-      const success = await updateMonitoring({ userId });
-
-      if (!success) {
-        setUsers(users); // 롤백
-        alert("저장에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("저장 실패:", error);
-      setUsers(users); // 롤백
-      alert("저장 중 오류가 발생했습니다.");
-    } finally {
-      setSavingUsers((prev) => prev.filter((id) => id !== userId));
-    }
+    updateMutation.mutate({ userId });
   };
 
   const handlePinChange = async (newPin: string): Promise<boolean> => {
@@ -68,9 +29,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
   };
 
   const handleLockClick = () => {
-    showDialog(
-      <ChangePinModal currentPin={currentPin} onPinChange={handlePinChange} onClose={hideDialog} />
-    );
+    showDialog(<ChangePinDialog currentPin={currentPin} onPinChange={handlePinChange} />);
   };
 
   return (
@@ -85,20 +44,24 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
         </Button>
       </div>
 
-      {loading ? (
-        <div className="text-center py-8">로딩 중...</div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+          <Spinner size={36} />
+          <p className="mt-2 text-sm">사용자 정보를 불러오는 중입니다...</p>
+        </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-6">
           {users.map((user) => {
-            const isSaving = savingUsers.includes(user.member_id);
+            const isUpdating =
+              updateMutation.isPending && updateMutation.variables?.userId === user.member_id;
 
             return (
               <div
                 key={user.member_id}
-                onClick={() => !isSaving && toggleUserSelection(user.member_id)}
+                onClick={() => !isUpdating && toggleUserSelection(user.member_id)}
                 className={`
                   p-4 rounded-lg flex flex-col items-center justify-center 
-                  ${isSaving ? "opacity-70" : "cursor-pointer"}
+                  ${isUpdating ? "opacity-70" : "cursor-pointer"}
                   ${user.is_monitored ? "border-2 border-orange-400" : "border border-gray-300"}
                 `}
               >
@@ -108,7 +71,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
                   className="w-16 h-16 rounded-full mb-2 object-cover"
                 />
                 <span className="text-center">{user.name}</span>
-                {isSaving && <span className="text-xs text-orange-500 mt-1">저장 중...</span>}
+                {isUpdating && <span className="text-xs text-orange-500 mt-1">저장 중...</span>}
               </div>
             );
           })}

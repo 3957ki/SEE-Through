@@ -1,5 +1,6 @@
+import { Spinner } from "@/components/ui/spinner";
 import { members } from "@/queries/members";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, ReactNode, use, useMemo, useState } from "react";
 
 interface CurrentMemberIdContextType {
@@ -21,6 +22,16 @@ export function CurrentMemberIdProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [currentMemberId, setCurrentMemberId] = useState<string>("");
 
+  // Use TanStack Query to fetch members
+  const { data: membersList, isLoading } = useQuery(members.list);
+
+  // Set the first member ID when data is loaded
+  useMemo(() => {
+    if (membersList && membersList.length > 0 && !currentMemberId) {
+      setCurrentMemberId(membersList[0].member_id);
+    }
+  }, [membersList, currentMemberId]);
+
   const currentMemberIdValue = useMemo(
     () => ({
       currentMemberId,
@@ -31,6 +42,15 @@ export function CurrentMemberIdProvider({ children }: { children: ReactNode }) {
     }),
     [currentMemberId, queryClient]
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner size={36} />
+        <p className="ml-2">Loading member data...</p>
+      </div>
+    );
+  }
 
   return <CurrentMemberIdContext value={currentMemberIdValue}>{children}</CurrentMemberIdContext>;
 }

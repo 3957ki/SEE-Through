@@ -61,14 +61,25 @@ export function useCurrentMember() {
 
 export function useCurrentMemberMealsOf(date: Date) {
   const { currentMemberId } = useCurrentMemberId();
+  const queryClient = useQueryClient();
+
+  // Check the global creation flag we created in meals.ts
+  const globalCreationKey = "meals_creation_in_progress";
+  const creationInProgress = queryClient.getQueryData([globalCreationKey]) === true;
 
   if (!currentMemberId || currentMemberId === "") {
     throw new Error("Current member ID is not set or is empty");
   }
 
-  const { data, isLoading, isError, error } = useQuery(
-    members.current._ctx.detail(currentMemberId)._ctx.meals(date)
-  );
+  const {
+    data,
+    isLoading: queryLoading,
+    isError,
+    error,
+  } = useQuery(members.current._ctx.detail(currentMemberId)._ctx.meals(date));
+
+  // Include the global creation flag in the loading state
+  const isLoading = queryLoading || creationInProgress;
 
   return {
     data: data as MealPlanResponse,
@@ -86,12 +97,39 @@ export function useMutateRefreshMeal(date: Date) {
     throw new Error("Current member ID is not set or is empty");
   }
 
+  // Generate consistent date string key
+  const dateString = date.toISOString().split("T")[0];
+
   return useMutation({
     mutationFn: (mealId: string) => refreshMeal(mealId),
     onSuccess: (refreshedMeal) => {
-      // Get the current cached meals
+      // Get the current cached meals - update both query systems
+
+      // Update the members context query data
       queryClient.setQueryData(
         members.current._ctx.detail(currentMemberId)._ctx.meals(date).queryKey,
+        (oldData: MealPlanResponse | undefined) => {
+          if (!oldData) return oldData;
+
+          // Create a copy of the old data
+          const newData = { ...oldData };
+
+          // Update the specific meal that was refreshed based on serving_time
+          if (refreshedMeal.serving_time === "아침") {
+            newData.breakfast = refreshedMeal;
+          } else if (refreshedMeal.serving_time === "점심") {
+            newData.lunch = refreshedMeal;
+          } else if (refreshedMeal.serving_time === "저녁") {
+            newData.dinner = refreshedMeal;
+          }
+
+          return newData;
+        }
+      );
+
+      // Also update the direct key format used in meals.ts
+      queryClient.setQueryData(
+        [currentMemberId, dateString],
         (oldData: MealPlanResponse | undefined) => {
           if (!oldData) return oldData;
 
