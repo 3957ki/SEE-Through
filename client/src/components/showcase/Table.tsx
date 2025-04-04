@@ -1,9 +1,9 @@
+import { speakWithTTS } from "@/api/tts";
 import tableImage from "@/assets/table.png";
 import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
-import { speakWithOpenAI } from "@/lib/textToSpeech";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
 interface TableProps {
@@ -41,7 +41,7 @@ export default function Table({ outsideIngredients }: TableProps) {
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
             showDialog(<CommentDialog message={messageText} />);
-            speakWithOpenAI(messageText);
+            speakWithTTS(messageText, "666a9871abcf27a5169850d0");
           },
         });
       }
