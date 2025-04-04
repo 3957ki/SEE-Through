@@ -2,6 +2,7 @@ import { createAndGetMember } from "@/api/members";
 import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import {
   disconnectLocalServer,
+  initLocalServerWebSocket,
   isLocalServerConnected,
   offLocalServerMessage,
   onLocalServerMessage,
@@ -305,6 +306,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     const runInitAndLoad = async () => {
       try {
         await init(); // 먼저 웹캠 시작
+        initLocalServerWebSocket();
 
         // 최신 WASM 경로로 수정
         const filesetResolver = await FilesetResolver.forVisionTasks(
