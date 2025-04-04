@@ -129,7 +129,7 @@ public class MealController {
 		@ApiResponse(responseCode = "404", description = "구성원을 찾을 수 없음",
 			content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 	})
-	public ResponseEntity<DailyMealResponse> createMealsForPeriod(
+	public ResponseEntity<Void> createMealsForPeriod(
 		@PathVariable String memberId,
 		@Valid @RequestBody CreateMealsForPeriodRequest request
 	) {
