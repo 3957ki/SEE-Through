@@ -70,6 +70,8 @@ prompt_risky = ChatPromptTemplate.from_template(
 📚 참고할 수 있는 의료 정보:
 {medical_info}
 
+{child_friendly_clause}
+
 ---
 
 📄 아래 JSON 스키마 형식으로만 응답하세요:
@@ -144,14 +146,25 @@ def analyze_risky_foods_with_comments(
     medical_info_str = retrieve_medical_info_by_batch_vector(food_names, diseases, db)
     logger.info("📚 LLM 프롬프트에 포함된 의료 정보:\n%s", medical_info_str)
 
+    child_friendly_clause = ""
+    if age <= 12:
+        child_friendly_clause = """
+    🧒 사용자가 어린이(만 12세 이하)이므로, **친절하고 이해하기 쉬운 반말**로 설명해주세요.
+
+    - 어려운 의학 용어 대신 쉬운 표현을 사용하세요.
+    - 걱정하지 않도록 부드럽게 말해주세요.
+    - 예: "이건 먹으면 배가 아플 수 있어", "몸에 안 좋을 수도 있어", "다음엔 다른 걸 먹는 게 좋겠어"
+    """
+
     response = llm.invoke(
-        prompt_risky.format(
-            food_names=food_list_str,
-            allergies_name=allergy_list_str,
-            disease_name=disease_list_str,
-            age=age,  # 나이 전달
-            medical_info=medical_info_str,
-            format_instructions=parser.get_format_instructions(),
+    prompt_risky.format(
+        food_names=food_list_str,
+        allergies_name=allergy_list_str,
+        disease_name=disease_list_str,
+        age=age,
+        medical_info=medical_info_str,
+        format_instructions=parser.get_format_instructions(),
+        child_friendly_clause=child_friendly_clause,  
         )
     )
 
