@@ -1,6 +1,6 @@
 import { getIngredients } from "@/api/ingredients";
 import { getMealsByDate, refreshMeal } from "@/api/meals";
-import { getMember, getMembers } from "@/api/members";
+import { getMember, getMembers, updateMember } from "@/api/members";
 import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import type { MealPlanResponse } from "@/interfaces/Meal";
 import Member, { DetailedMember } from "@/interfaces/Member";
@@ -216,4 +216,32 @@ export function useCurrentMemberIngredients() {
     hasMore: !!hasNextPage,
     isFetchingNextPage,
   };
+}
+
+export function useUpdateMember() {
+  const queryClient = useQueryClient();
+  const { currentMemberId } = useCurrentMemberId();
+
+  return useMutation({
+    mutationFn: (data: {
+      member_id: string;
+      name: string;
+      birth: string;
+      color: string;
+      font_size: string;
+      preferred_foods: string[];
+      disliked_foods: string[];
+      allergies: string[];
+      diseases: string[];
+    }) => updateMember(data),
+    onSuccess: () => {
+      // Invalidate both the member list and the current member's details
+      queryClient.invalidateQueries({ queryKey: members.list.queryKey });
+      if (currentMemberId) {
+        queryClient.invalidateQueries({
+          queryKey: members.current._ctx.detail(currentMemberId).queryKey,
+        });
+      }
+    },
+  });
 }
