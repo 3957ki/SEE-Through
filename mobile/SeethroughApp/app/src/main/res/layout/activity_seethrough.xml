@@ -80,23 +80,30 @@
                     app:layout_constraintBottom_toBottomOf="parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/tv_card_first_content"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="내용"
-                android:textSize="16sp"
-                android:textColor="@color/st_black"
-                android:textAlignment="viewStart"/>
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp">
 
-            <ProgressBar
-                android:id="@+id/progress_first_meal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_marginTop="16dp"/>
+                <TextView
+                    android:id="@+id/tv_card_first_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="내용"
+                    android:textSize="16sp"
+                    android:textColor="@color/st_black"
+                    android:textAlignment="viewStart"/>
+
+                <ProgressBar
+                    android:id="@+id/progress_first_meal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:indeterminate="true"/>
+            </FrameLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -138,23 +145,31 @@
                     app:layout_constraintBottom_toBottomOf="parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/tv_card_second_content"
+            <!-- FrameLayout으로 겹치기 -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="내용"
-                android:textSize="16sp"
-                android:textColor="@color/st_black"
-                android:textAlignment="viewStart"/>
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp">
 
-            <ProgressBar
-                android:id="@+id/progress_second_meal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_marginTop="16dp"/>
+                <TextView
+                    android:id="@+id/tv_card_second_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="내용"
+                    android:textSize="16sp"
+                    android:textColor="@color/st_black"
+                    android:textAlignment="viewStart"/>
+
+                <ProgressBar
+                    android:id="@+id/progress_second_meal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:indeterminate="true"/>
+            </FrameLayout>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
