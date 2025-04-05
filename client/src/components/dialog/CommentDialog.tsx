@@ -1,20 +1,22 @@
 import { useDialog } from "@/contexts/DialogContext";
+import { AlertCircle } from "lucide-react";
 
 function CommentDialog({ message }: { message: string }) {
   const { hideDialog } = useDialog();
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="mt-2">
-        <h3 className="font-bold text-xl text-center">알림</h3>
-        <div className="mt-4 p-4 text-center border-t border-b border-gray-100">
-          <p className="text-gray-700">{message}</p>
-        </div>
+    <div className="flex flex-col items-center text-center p-6 bg-white rounded-2xl shadow-md max-w-md mx-auto">
+      <div className="bg-orange-100 rounded-full p-3 mb-4">
+        <AlertCircle className="w-8 h-8 text-orange-500" />
       </div>
+
+      <h3 className="text-xl font-semibold text-gray-800 mb-2">알림</h3>
+      <p className="text-gray-600 leading-relaxed">{message}</p>
 
       <button
         type="button"
-        className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md w-full font-medium"
         onClick={hideDialog}
+        className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-md transition-colors font-semibold"
       >
         닫기
       </button>
