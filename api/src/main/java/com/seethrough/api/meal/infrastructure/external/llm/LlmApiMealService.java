@@ -9,7 +9,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.seethrough.api.common.infrastructure.LlmApiClient;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealListRequest;
-import com.seethrough.api.meal.infrastructure.external.llm.dto.request.ScheduleMealRequest;
 import com.seethrough.api.meal.infrastructure.external.llm.dto.response.ScheduleMealListResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -31,36 +30,40 @@ public class LlmApiMealService {
 			.build()
 			.toUriString();
 
-		ScheduleMealListResponse finalResponse = ScheduleMealListResponse.builder()
-			.memberId(request.getMemberId())
-			.schedules(new ArrayList<>())
-			.build();
+		return llmApiClient.sendRequestMono(HttpMethod.POST, uri, request, ScheduleMealListResponse.class)
+			.doOnNext(response -> log.info("[LlmApiMealService] 배치 응답: {}", response))
+			.block();
 
-		List<List<ScheduleMealRequest>> batchedRequests = splitIntoBatches(request.getSchedules(), BATCH_SIZE);
-
-		for (int idx = 0; idx < batchedRequests.size(); idx++) {
-			List<ScheduleMealRequest> batch = batchedRequests.get(idx);
-
-			ScheduleMealListRequest batchRequest = ScheduleMealListRequest.builder()
-				.memberId(request.getMemberId())
-				.schedules(batch)
-				.build();
-
-			log.info("[LlmApiMealService] 배치 처리 중: {}/{}", idx + 1, batchedRequests.size());
-
-			ScheduleMealListResponse batchResponse = llmApiClient.sendRequestMono(HttpMethod.POST, uri, batchRequest, ScheduleMealListResponse.class)
-				.doOnNext(response -> log.info("[LlmApiMealService] 배치 응답: {}", response))
-				.block();
-
-			if (batchResponse != null && batchResponse.getSchedules() != null) {
-				finalResponse.addSchedules(batchResponse);
-			}
-		}
-
-		log.info("[LlmApiMealService] 전체 식단 생성 완료: total schedules={}",
-			finalResponse.getSchedules() != null ? finalResponse.getSchedules().size() : 0);
-
-		return finalResponse;
+		// ScheduleMealListResponse finalResponse = ScheduleMealListResponse.builder()
+		// 	.memberId(request.getMemberId())
+		// 	.schedules(new ArrayList<>())
+		// 	.build();
+		//
+		// List<List<ScheduleMealRequest>> batchedRequests = splitIntoBatches(request.getSchedules(), BATCH_SIZE);
+		//
+		// for (int idx = 0; idx < batchedRequests.size(); idx++) {
+		// 	List<ScheduleMealRequest> batch = batchedRequests.get(idx);
+		//
+		// 	ScheduleMealListRequest batchRequest = ScheduleMealListRequest.builder()
+		// 		.memberId(request.getMemberId())
+		// 		.schedules(batch)
+		// 		.build();
+		//
+		// 	log.info("[LlmApiMealService] 배치 처리 중: {}/{}", idx + 1, batchedRequests.size());
+		//
+		// 	ScheduleMealListResponse batchResponse = llmApiClient.sendRequestMono(HttpMethod.POST, uri, batchRequest, ScheduleMealListResponse.class)
+		// 		.doOnNext(response -> log.info("[LlmApiMealService] 배치 응답: {}", response))
+		// 		.block();
+		//
+		// 	if (batchResponse != null && batchResponse.getSchedules() != null) {
+		// 		finalResponse.addSchedules(batchResponse);
+		// 	}
+		// }
+		//
+		// log.info("[LlmApiMealService] 전체 식단 생성 완료: total schedules={}",
+		// 	finalResponse.getSchedules() != null ? finalResponse.getSchedules().size() : 0);
+		//
+		// return finalResponse;
 	}
 
 	private <T> List<List<T>> splitIntoBatches(List<T> list, int batchSize) {
