@@ -53,10 +53,11 @@ app = FastAPI(lifespan=lifespan)
 # CORS 설정 추가
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 모든 origin 허용
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 
@@ -88,159 +89,162 @@ def save_image(face_region, temp_file_path, user_image_path, padding_ratio=0.5):
 # 얼굴 인식 API
 @vision_router.websocket("/find-faces")
 async def websocket_find_faces(websocket: WebSocket):
-    await websocket.accept()
     try:
+        await websocket.accept()
         while True:
-            # 메시지를 JSON 형태로 받음
-            data = await websocket.receive_json()
-            image_base64 = data.get("image")
-            level = data.get("level")  # 얼굴 인식 단계
-            provided_uuid = data.get(
-                "uuid"
-            )  # 프론트에 현재 UUID가 있다면 IOU 크기가 작을 때 UUID를 담을 것, 현재 UUID가 없다면 담으면 안됨
-
-            logger.info(f"얼굴 인식 요청 level: {level} uuid: {provided_uuid}")
-
-            # Base64 디코딩하여 이미지 변환
-            image_data = base64.b64decode(image_base64)
-            image = Image.open(BytesIO(image_data))
-
-            # 임시 파일 저장
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-                image.save(temp_file, format="JPEG")
-                temp_file_path = temp_file.name
-
             try:
-                # 얼굴 인식 수행
-                dfs = DeepFace.find(
-                    img_path=temp_file_path,
-                    db_path=db_path,
-                    model_name=model,
-                    detector_backend=detector_backend,
-                    silent=True,
-                    threshold=0.3,
-                )
+                # 메시지를 JSON 형태로 받음
+                data = await websocket.receive_json()
+                image_base64 = data.get("image")
+                level = data.get("level")  # 얼굴 인식 단계
+                provided_uuid = data.get("uuid")  # 프론트에 현재 UUID가 있다면 IOU 크기가 작을 때 UUID를 담을 것, 현재 UUID가 없다면 담으면 안됨
 
-                result = []
-                is_new = False
+                logger.info(f"얼굴 인식 요청 level: {level} uuid: {provided_uuid}")
 
-                # level이 1이라면 인식 실패시 신규 등록 안함
-                if level == 1:
-                    # 인식 결과가 있다면
-                    if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:
-                        df = dfs[0]
-                        result = df.applymap(
-                            lambda x: (
-                                int(x) if isinstance(x, (np.int64, np.int32)) else x
-                            )
-                        ).to_dict(orient="records")
-                        user_id = result[0]["identity"]
-                        is_new = False
+                # Base64 디코딩하여 이미지 변환
+                image_data = base64.b64decode(image_base64)
+                image = Image.open(BytesIO(image_data))
 
-                    # 인식 결과가 없다면 None
+                # 임시 파일 저장
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+                    image.save(temp_file, format="JPEG")
+                    temp_file_path = temp_file.name
+
+                try:
+                    # 얼굴 인식 수행
+                    dfs = DeepFace.find(
+                        img_path=temp_file_path,
+                        db_path=db_path,
+                        model_name=model,
+                        detector_backend=detector_backend,
+                        silent=True,
+                        threshold=0.3,
+                    )
+
+                    result = []
+                    is_new = False
+
+                    # level이 1이라면 인식 실패시 신규 등록 안함
+                    if level == 1:
+                        # 인식 결과가 있다면
+                        if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:
+                            df = dfs[0]
+                            result = df.applymap(
+                                lambda x: (
+                                    int(x) if isinstance(x, (np.int64, np.int32)) else x
+                                )
+                            ).to_dict(orient="records")
+                            user_id = result[0]["identity"]
+                            is_new = False
+
+                        # 인식 결과가 없다면 None
+                        else:
+                            user_id = None
+                            is_new = False
+
+                    # level이 1이 아니라면 인식 실패시 신규 등록 해야함
                     else:
-                        user_id = None
-                        is_new = False
-
-                # level이 1이 아니라면 인식 실패시 신규 등록 해야함
-                else:
-                    # 인식 결과가 있다면
-                    if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:
-                        df = dfs[0]
-                        result = df.applymap(
-                            lambda x: (
-                                int(x) if isinstance(x, (np.int64, np.int32)) else x
-                            )
-                        ).to_dict(orient="records")
-                        detected_uuid = result[0]["identity"]
-
-                        # uuid가 있다면
-                        if provided_uuid:
-                            # uuid가 같다면 강제로 신규 등록
-                            if provided_uuid == detected_uuid:
-                                logger.info("uuid가 같음")
-                                user_id = str(uuid.uuid4())
-                                is_new = True
-
-                                new_rep = DeepFace.update(
-                                    user_id=user_id,
-                                    image_path=temp_file_path,
-                                    db_path=db_path,
-                                    model_name=model,
-                                    detector_backend=detector_backend,
-                                    silent=True,
+                        # 인식 결과가 있다면
+                        if isinstance(dfs, list) and len(dfs) > 0 and not dfs[0].empty:
+                            df = dfs[0]
+                            result = df.applymap(
+                                lambda x: (
+                                    int(x) if isinstance(x, (np.int64, np.int32)) else x
                                 )
+                            ).to_dict(orient="records")
+                            detected_uuid = result[0]["identity"]
 
-                                # 이미지 저장 경로
-                                user_image_path = os.path.join(
-                                    db_path, f"{user_id}.jpg"
-                                )
+                            # uuid가 있다면
+                            if provided_uuid:
+                                # uuid가 같다면 강제로 신규 등록
+                                if provided_uuid == detected_uuid:
+                                    logger.info("uuid가 같음")
+                                    user_id = str(uuid.uuid4())
+                                    is_new = True
 
-                                # 얼굴 이미지 자르기
-                                face_region = (
-                                    new_rep["facial_area"]["x"],
-                                    new_rep["facial_area"]["y"],
-                                    new_rep["facial_area"]["x"]
-                                    + new_rep["facial_area"]["w"],
-                                    new_rep["facial_area"]["y"]
-                                    + new_rep["facial_area"]["h"],
-                                )
+                                    new_rep = DeepFace.update(
+                                        user_id=user_id,
+                                        image_path=temp_file_path,
+                                        db_path=db_path,
+                                        model_name=model,
+                                        detector_backend=detector_backend,
+                                        silent=True,
+                                    )
 
-                                # 이미지 저장 요청
-                                save_image(face_region, temp_file_path, user_image_path)
+                                    # 이미지 저장 경로
+                                    user_image_path = os.path.join(
+                                        db_path, f"{user_id}.jpg"
+                                    )
 
-                                result = [{"identity": user_id}]
+                                    # 얼굴 이미지 자르기
+                                    face_region = (
+                                        new_rep["facial_area"]["x"],
+                                        new_rep["facial_area"]["y"],
+                                        new_rep["facial_area"]["x"]
+                                        + new_rep["facial_area"]["w"],
+                                        new_rep["facial_area"]["y"]
+                                        + new_rep["facial_area"]["h"],
+                                    )
 
-                            # 다른 사람, 기존 인식 결과만 반환
+                                    # 이미지 저장 요청
+                                    save_image(face_region, temp_file_path, user_image_path)
+
+                                    result = [{"identity": user_id}]
+
+                                # 다른 사람, 기존 인식 결과만 반환
+                                else:
+                                    user_id = detected_uuid
+                                    is_new = False
+
+                            # uuid가 없는 경우: 기존 사용자로 응답
                             else:
                                 user_id = detected_uuid
                                 is_new = False
 
-                        # uuid가 없는 경우: 기존 사용자로 응답
+                        # 인식 결과가 없다면
                         else:
-                            user_id = detected_uuid
-                            is_new = False
+                            logger.info("인식 결과 없음")
+                            user_id = provided_uuid if provided_uuid else str(uuid.uuid4())
+                            is_new = True
 
-                    # 인식 결과가 없다면
-                    else:
-                        logger.info("인식 결과 없음")
-                        user_id = provided_uuid if provided_uuid else str(uuid.uuid4())
-                        is_new = True
+                            new_rep = DeepFace.update(
+                                user_id=user_id,
+                                image_path=temp_file_path,
+                                db_path=db_path,
+                                model_name=model,
+                                detector_backend=detector_backend,
+                                silent=True,
+                            )
 
-                        new_rep = DeepFace.update(
-                            user_id=user_id,
-                            image_path=temp_file_path,
-                            db_path=db_path,
-                            model_name=model,
-                            detector_backend=detector_backend,
-                            silent=True,
-                        )
+                            # 이미지 저장 경로
+                            user_image_path = os.path.join(db_path, f"{user_id}.jpg")
 
-                        # 이미지 저장 경로
-                        user_image_path = os.path.join(db_path, f"{user_id}.jpg")
+                            # 얼굴 이미지 자르기
+                            face_region = (
+                                new_rep["facial_area"]["x"],
+                                new_rep["facial_area"]["y"],
+                                new_rep["facial_area"]["x"] + new_rep["facial_area"]["w"],
+                                new_rep["facial_area"]["y"] + new_rep["facial_area"]["h"],
+                            )
 
-                        # 얼굴 이미지 자르기
-                        face_region = (
-                            new_rep["facial_area"]["x"],
-                            new_rep["facial_area"]["y"],
-                            new_rep["facial_area"]["x"] + new_rep["facial_area"]["w"],
-                            new_rep["facial_area"]["y"] + new_rep["facial_area"]["h"],
-                        )
+                            # 이미지 저장
+                            save_image(face_region, temp_file_path, user_image_path)
 
-                        # 이미지 저장
-                        save_image(face_region, temp_file_path, user_image_path)
+                            result = [{"identity": user_id}]
 
-                        result = [{"identity": user_id}]
+                    await websocket.send_json({"result": result, "is_new": is_new})
 
-                await websocket.send_json({"result": result, "is_new": is_new})
+                except Exception as e:
+                    logger.error(f"예외 발생: {str(e)}\n{traceback.format_exc()}")
+                    await websocket.send_json({"status": "error", "message": str(e)})
 
             except Exception as e:
-                logger.error(f"예외 발생: {str(e)}\n{traceback.format_exc()}")
+                logger.error(f"Error processing message: {e}")
                 await websocket.send_json({"status": "error", "message": str(e)})
-
     except Exception as e:
-        logger.error(f"웹소켓 종료 예외: {str(e)}\n{traceback.format_exc()}")
-        await websocket.send_json({"status": "error", "message": str(e)})
+        logger.error(f"WebSocket connection error: {e}")
+        if not websocket.client_state.disconnected:
+            await websocket.close()
 
 
 # 사용자 얼굴 이미지 Get
@@ -257,4 +261,19 @@ async def get_faces(user_id: str):
     return FileResponse(user_image_path, media_type="image/jpeg")
 
 
+# WebSocket 연결을 위한 CORS 설정
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    try:
+        await websocket.accept()
+        # WebSocket 연결 처리
+        while True:
+            data = await websocket.receive_text()
+            # 여기에 WebSocket 메시지 처리 로직 추가
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        await websocket.close()
+
+
+# 기존 라우터 등록
 app.include_router(vision_router)
