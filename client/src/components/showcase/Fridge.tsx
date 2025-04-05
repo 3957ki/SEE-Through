@@ -1,6 +1,5 @@
 import bespokeOpenedImage from "@/assets/bespoke-opened-crop.png";
 import FridgeDisplay from "@/components/FridgeDisplay";
-import Screensaver from "@/components/Screensaver";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import Ingredient from "@/interfaces/Ingredient";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
@@ -396,7 +395,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
                     position: "relative",
                   }}
                 >
-                  {isActive ? <Screensaver /> : <FridgeDisplay />}
+                  <FridgeDisplay isScreensaverActive={isActive} />
                 </div>
               </div>
             </div>

@@ -15,9 +15,34 @@ import React, { useMemo, useRef, useState } from "react";
 interface FridgeDisplayProps {
   className?: string;
   ref?: React.RefObject<HTMLDivElement | null>;
+  isScreensaverActive?: boolean;
 }
 
-function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
+function Screensaver({ isActive }: { isActive: boolean }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#1c1c1c",
+        opacity: isActive ? 1 : 0,
+        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)", // quick pop transition for both on/off
+        pointerEvents: isActive ? "auto" : "none",
+        zIndex: 10,
+        borderRadius: "0.375rem",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
+      }}
+    >
+      <div className="w-full h-full flex items-center justify-center" />
+    </div>
+  );
+}
+
+function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: FridgeDisplayProps) {
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
   const { dialogContent, hideDialog } = useDialog();
   const displayRef = useRef<HTMLDivElement>(null);
@@ -70,6 +95,22 @@ function FridgeDisplay({ ref, className = "" }: FridgeDisplayProps) {
             <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
           </div>
           <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
+
+          {/* Screensaver Overlay */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              opacity: isScreensaverActive ? 1 : 0,
+              transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+              pointerEvents: isScreensaverActive ? "auto" : "none",
+            }}
+          >
+            <Screensaver isActive={isScreensaverActive} />
+          </div>
         </div>
       </PageContext>
     </div>
