@@ -18,7 +18,7 @@ interface FridgeDisplayProps {
   isScreensaverActive?: boolean;
 }
 
-function Screensaver() {
+function Screensaver({ isActive }: { isActive: boolean }) {
   return (
     <div
       style={{
@@ -28,8 +28,9 @@ function Screensaver() {
         width: "100%",
         height: "100%",
         backgroundColor: "#1c1c1c",
-        opacity: 1,
-        transition: "opacity 0.5s ease",
+        opacity: isActive ? 1 : 0,
+        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)", // quick pop transition for both on/off
+        pointerEvents: isActive ? "auto" : "none",
         zIndex: 10,
         borderRadius: "0.375rem",
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
@@ -104,11 +105,11 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
               width: "100%",
               height: "100%",
               opacity: isScreensaverActive ? 1 : 0,
-              transition: "opacity 0.5s ease",
+              transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
               pointerEvents: isScreensaverActive ? "auto" : "none",
             }}
           >
-            <Screensaver />
+            <Screensaver isActive={isScreensaverActive} />
           </div>
         </div>
       </PageContext>
