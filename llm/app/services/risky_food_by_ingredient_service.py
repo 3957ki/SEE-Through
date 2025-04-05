@@ -12,14 +12,16 @@ def check_risky_food_by_ingredient(ingredient: str, db: Session):
 
     # 사용자별 알레르기 + 질병 정보 함께 JSON으로 구성
     health_data = {
-        member.member_id: {
-            "allergies": member.allergies or [],
-            "diseases": member.diseases or [],
-            "age": member.age,  # 반드시 정수형으로 포함
-        }
-        for member in members
-        if member.allergies or member.diseases or member.age is not None
+    member.member_id: {
+        "allergies": member.allergies or [],
+        "diseases": member.diseases or [],
+        "age": member.age,  # 반드시 정수형으로 포함
+        "is_child": member.age is not None and member.age <= 12  
     }
+    for member in members
+    if member.allergies or member.diseases or member.age is not None
+}
+
 
     health_data_json = json.dumps(health_data, ensure_ascii=False)
 

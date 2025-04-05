@@ -29,7 +29,8 @@ def generate_food_comment(member_id: str, ingredient_id: str, db: Session):
         related_food=related_food,
         recently_eaten=recently_eaten,
         birth=birth,
-        diseases=diseases
+        diseases=diseases,
+        age=user.age,
     )
 
     return {

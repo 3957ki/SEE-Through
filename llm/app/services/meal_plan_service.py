@@ -5,13 +5,10 @@ import asyncio
 from app.schemas.meal_plan import (
     SimpleMealPlanRequest,
     SimpleMealPlanResponse,
-    SimpleMealScheduleResponse,
+    SimpleMealScheduleResponse
 )
 
-
-async def create_meal_plan_service(
-    request: SimpleMealPlanRequest, db: Session
-) -> SimpleMealPlanResponse:
+async def create_meal_plan_service(request: SimpleMealPlanRequest, db: Session) -> SimpleMealPlanResponse:
     member = db.query(Member).filter(Member.member_id == request.member_id).first()
     if not member:
         raise ValueError("해당 member_id를 가진 사용자를 찾을 수 없습니다.")
@@ -34,7 +31,7 @@ async def create_meal_plan_service(
             allergies=allergies,
             diseases=diseases,
             birthday=birthday,
-            available_ingredients=available_ingredients,
+            available_ingredients=available_ingredients
         )
         for schedule in request.schedules
     ]
@@ -47,7 +44,9 @@ async def create_meal_plan_service(
     for i, (meal, required_ings) in enumerate(meal_results):
         response_schedules.append(
             SimpleMealScheduleResponse(
-                meal_id=request.schedules[i].meal_id, menu=meal.menu, reason=meal.reason
+                meal_id=request.schedules[i].meal_id,
+                menu=meal.menu,
+                reason=meal.reason
             )
         )
         all_required_ingredients.update(required_ings)
@@ -55,5 +54,5 @@ async def create_meal_plan_service(
     return SimpleMealPlanResponse(
         member_id=request.member_id,
         schedules=response_schedules,
-        required_ingredients=list(all_required_ingredients),
+        required_ingredients=list(all_required_ingredients)
     )
