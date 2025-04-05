@@ -6,10 +6,11 @@ import {
 } from "@/api/members";
 import { Spinner } from "@/components/ui/spinner";
 import { useCurrentMember, useCurrentMemberMealsOf, useMutateRefreshMeal } from "@/queries/members";
+import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useState } from "react";
 import {
   BsArrowClockwise,
   BsCalendarEvent,
@@ -74,27 +75,24 @@ function DateSelector({
   );
 }
 
-function MealItem({
-  name,
-  feedback,
-  setFeedbackMap,
-  memberId,
-}: {
-  name: string;
-  feedback: "like" | "dislike" | null;
-  setFeedbackMap: Dispatch<SetStateAction<Record<string, "like" | "dislike" | null>>>;
-  memberId: string;
-}) {
+function MealItem({ name, memberId }: { name: string; memberId: string }) {
+  const { data: currentMember } = useCurrentMember();
+  const queryClient = useQueryClient();
+
+  const isLiked = currentMember?.preferred_foods.includes(name) ?? false;
+  const isDisliked = currentMember?.disliked_foods.includes(name) ?? false;
+
   const handleLike = async () => {
     try {
-      if (feedback === "like") {
+      if (isLiked) {
         await removePreferredFood(memberId, name);
-        setFeedbackMap((prev) => ({ ...prev, [name]: null }));
       } else {
-        if (feedback === "dislike") await removeDislikedFood(memberId, name);
+        if (isDisliked) await removeDislikedFood(memberId, name);
         await addPreferredFood(memberId, name);
-        setFeedbackMap((prev) => ({ ...prev, [name]: "like" }));
       }
+
+      // Invalidate the current member query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["members", "current"] });
     } catch (err) {
       console.error("선호 처리 실패", err);
     }
@@ -102,14 +100,15 @@ function MealItem({
 
   const handleDislike = async () => {
     try {
-      if (feedback === "dislike") {
+      if (isDisliked) {
         await removeDislikedFood(memberId, name);
-        setFeedbackMap((prev) => ({ ...prev, [name]: null }));
       } else {
-        if (feedback === "like") await removePreferredFood(memberId, name);
+        if (isLiked) await removePreferredFood(memberId, name);
         await addDislikedFood(memberId, name);
-        setFeedbackMap((prev) => ({ ...prev, [name]: "dislike" }));
       }
+
+      // Invalidate the current member query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["members", "current"] });
     } catch (err) {
       console.error("비선호 처리 실패", err);
     }
@@ -118,9 +117,9 @@ function MealItem({
   return (
     <div
       className={`flex items-center justify-start gap-2 rounded-md transition ${
-        feedback === "like"
+        isLiked
           ? "bg-orange-50 border-l-4 border-orange-400"
-          : feedback === "dislike"
+          : isDisliked
             ? "bg-gray-100 border-l-4 border-gray-400"
             : ""
       }`}
@@ -128,17 +127,13 @@ function MealItem({
       <span className="text-sm font-medium">{name}</span>
 
       <BsHandThumbsUp
-        className={`w-4 h-4 ${
-          feedback === "like" ? "text-orange-500" : "text-gray-400"
-        } cursor-pointer`}
+        className={`w-4 h-4 ${isLiked ? "text-orange-500" : "text-gray-400"} cursor-pointer`}
         onClick={handleLike}
         title="선호 토글"
       />
 
       <BsHandThumbsDown
-        className={`w-4 h-4 ${
-          feedback === "dislike" ? "text-gray-700" : "text-gray-400"
-        } cursor-pointer`}
+        className={`w-4 h-4 ${isDisliked ? "text-gray-700" : "text-gray-400"} cursor-pointer`}
         onClick={handleDislike}
         title="비선호 토글"
       />
@@ -153,8 +148,6 @@ function MealSection({
   mealId,
   onRefresh,
   isRefreshing,
-  feedbackMap,
-  setFeedbackMap,
   memberId,
 }: {
   title: string;
@@ -163,8 +156,6 @@ function MealSection({
   mealId: string;
   onRefresh: (mealId: string) => void;
   isRefreshing: boolean;
-  feedbackMap: Record<string, "like" | "dislike" | null>;
-  setFeedbackMap: Dispatch<SetStateAction<Record<string, "like" | "dislike" | null>>>;
   memberId: string;
 }) {
   return (
@@ -174,13 +165,7 @@ function MealSection({
           <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
           <div className="mt-2 space-y-1">
             {items.map((item, index) => (
-              <MealItem
-                key={index}
-                name={item}
-                feedback={feedbackMap[item] ?? null}
-                setFeedbackMap={setFeedbackMap}
-                memberId={memberId}
-              />
+              <MealItem key={index} name={item} memberId={memberId} />
             ))}
           </div>
           {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
@@ -205,28 +190,6 @@ export default function MealPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
   const refreshMutation = useMutateRefreshMeal(selectedDate);
-  const [feedbackMap, setFeedbackMap] = useState<Record<string, "like" | "dislike" | null>>({});
-  const [isFeedbackInitialized, setIsFeedbackInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!currentMember || isFeedbackInitialized) return;
-
-    const preferred = currentMember.preferred_foods || [];
-    const disliked = currentMember.disliked_foods || [];
-
-    const initialFeedback: Record<string, "like" | "dislike"> = {};
-
-    preferred.forEach((food: string) => {
-      initialFeedback[food] = "like";
-    });
-
-    disliked.forEach((food: string) => {
-      initialFeedback[food] = "dislike";
-    });
-
-    setFeedbackMap(initialFeedback);
-    setIsFeedbackInitialized(true);
-  }, [currentMember, isFeedbackInitialized]);
 
   const handleGoToday = () => {
     setSelectedDate(new Date());
@@ -272,8 +235,6 @@ export default function MealPage() {
             isRefreshing={
               refreshMutation.isPending && refreshMutation.variables === meals.breakfast.meal_id
             }
-            feedbackMap={feedbackMap}
-            setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
           />
           <MealSection
@@ -285,8 +246,6 @@ export default function MealPage() {
             isRefreshing={
               refreshMutation.isPending && refreshMutation.variables === meals.lunch.meal_id
             }
-            feedbackMap={feedbackMap}
-            setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
           />
           <MealSection
@@ -298,8 +257,6 @@ export default function MealPage() {
             isRefreshing={
               refreshMutation.isPending && refreshMutation.variables === meals.dinner.meal_id
             }
-            feedbackMap={feedbackMap}
-            setFeedbackMap={setFeedbackMap}
             memberId={currentMember.member_id}
           />
         </div>
