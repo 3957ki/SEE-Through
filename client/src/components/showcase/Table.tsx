@@ -3,7 +3,8 @@ import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
-import { speakWithOpenAI } from "@/lib/textToSpeech";
+import { speakWithOpenAIStreaming } from "@/lib/textToSpeech";
+import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
 interface TableProps {
@@ -13,6 +14,7 @@ interface TableProps {
 export default function Table({ outsideIngredients }: TableProps) {
   const { removeIngredient } = useOptimisticIngredientUpdates();
   const { showDialog } = useDialog();
+  const { data: currentMember } = useCurrentMember();
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -40,8 +42,23 @@ export default function Table({ outsideIngredients }: TableProps) {
                 ? data.comment
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
-            showDialog(<CommentDialog message={messageText} />);
-            speakWithOpenAI(messageText);
+            // TTS 먼저 실행
+            // speakWithOpenAIStreaming(
+            //   messageText,
+            //   currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
+            //   data.danger === true
+            // );
+
+            speakWithOpenAIStreaming(
+              messageText,
+              currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
+              true
+            );
+
+            // CommentDialog는 1초 뒤에 띄움
+            setTimeout(() => {
+              showDialog(<CommentDialog message={messageText} />);
+            }, 1000); // 1000ms = 1초
           },
         });
       }
