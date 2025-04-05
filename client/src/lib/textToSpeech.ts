@@ -1,52 +1,4 @@
 import warningSound from "@/assets/warning.mp3";
-export async function speakWithOpenAI(message: string, voice: string = "nova") {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const startTime = Date.now();
-  const seconds = (ms: number) => (ms / 1000).toFixed(2) + "s";
-
-  console.log(`[TTS] 요청 시작: ${new Date().toISOString()}`);
-  console.log(`[TTS] 입력 메시지: "${message}", voice: ${voice}`);
-
-  try {
-    const fetchStart = Date.now();
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "tts-1", // 또는 "tts-1-hd"
-        voice,
-        input: message,
-        response_format: "mp3",
-      }),
-    });
-
-    const fetchEnd = Date.now();
-    console.log(`[TTS] Fetch 완료 (소요 시간: ${seconds(fetchEnd - fetchStart)})`);
-
-    if (!response.ok) throw new Error("TTS 요청 실패");
-
-    const blobStart = Date.now();
-    const blob = await response.blob();
-    const blobEnd = Date.now();
-    console.log(`[TTS] blob 추출 완료 (소요 시간: ${seconds(blobEnd - blobStart)})`);
-
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-
-    audio.onplay = () => {
-      const total = Date.now() - startTime;
-      console.log(`[TTS] 오디오 재생 시작! 전체 소요 시간: ${seconds(total)}`);
-    };
-
-    audio.play();
-  } catch (error) {
-    console.error("OpenAI TTS 실패:", error);
-  }
-}
-
 export function speakWithWebSpeech(message: string, lang: string = "ko-KR") {
   const utterance = new SpeechSynthesisUtterance(message);
   utterance.lang = lang;
@@ -134,7 +86,7 @@ export async function speakWithOpenAIStreaming(
 }
 function getSystemPrompt(type: "child" | "adult"): string {
   if (type === "child") {
-    return "너는 친절하고 재밌는 어린이 도우미야. 사용자가 한 말을 어린이 눈높이에 맞게 더 쉽고 재미있게, 반말로 바꿔서 말해 줘. 예를 들어 '~했어!', '~해보자!', '~야!' 같은 식으로 말해. 말은 꼭 한국어로 해.";
+    return "Y너는 어린이를 위한 AI야. 사용자가 한 문장을 **밝고 경쾌한 말투로 그대로 읽어 줘**. 내용은 절대 바꾸지 마. 톤만 명랑하게!";
   }
   return "You are a TTS system. Repeat the user's message exactly, without paraphrasing.";
 }
