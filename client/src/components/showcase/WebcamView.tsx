@@ -16,7 +16,7 @@ const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const SMALL_FACE_CUT = 15000;
 const LARGE_FACE_CUT = 30000;
-const IOU_CUT = 0.5;
+const IOU_CUT = 0.8;
 const MIN_FACE_ANGLE_THRESHOLD = 0.3;
 const MIN_FACE_VERTICAL_THRESHOLD = 0.3;
 const EDGE_MARGIN = 40;
@@ -132,11 +132,6 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
       Math.abs(leftEyeWidth - rightEyeWidth) / Math.max(leftEyeWidth, rightEyeWidth);
 
     // 상하 기울임 확인
-    // 턱 - 이마 길이
-    const faceHeight = Math.sqrt(
-      Math.pow(foreHead.x - chin.x, 2) + Math.pow(foreHead.y - chin.y, 2)
-    );
-
     // 코 - 이마 길이
     const noseToForeheadDist = Math.sqrt(
       Math.pow(noseTop.x - foreHead.x, 2) + Math.pow(noseTop.y - foreHead.y, 2)
@@ -445,26 +440,24 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
           if (currentBox) {
             const area = currentBox.width * currentBox.height;
+            const prevBox = prevBoundingBoxRef.current;
+            let iou = 0;
 
-            // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음
+            // IOU 계산
+            if (prevBox) {
+              iou = calculateIOU(currentBox, prevBox);
+              iouText = `IOU: ${iou.toFixed(2)}`;
+            }
+
+            // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음 AND 큰 IOU
             if (
               area >= currentCut &&
               !isTooCloseToEdge &&
-              (isFront || faceLevelRef.current.level == 2)
+              ((isFront && iou > IOU_CUT) || faceLevelRef.current.level == 2)
             ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
               nextFaceLevel = { level: 1, cut: LARGE_FACE_CUT };
-            }
-
-            const prevBox = prevBoundingBoxRef.current;
-            if (prevBox) {
-              const iou = calculateIOU(currentBox, prevBox);
-              iouText = `IOU: ${iou.toFixed(2)}`;
-
-              if (nextFaceLevel.level === 2 && iou < IOU_CUT && !requestQueue.current.pending) {
-                console.log("[IOU] 낮은 IOU 감지됨:", iou.toFixed(2));
-              }
             }
 
             prevBoundingBoxRef.current = currentBox;
