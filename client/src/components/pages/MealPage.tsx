@@ -6,6 +6,7 @@ import {
 } from "@/api/members";
 import { Spinner } from "@/components/ui/spinner";
 import { useCurrentMember, useCurrentMemberMealsOf, useMutateRefreshMeal } from "@/queries/members";
+import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -76,6 +77,7 @@ function DateSelector({
 
 function MealItem({ name, memberId }: { name: string; memberId: string }) {
   const { data: currentMember } = useCurrentMember();
+  const queryClient = useQueryClient();
 
   const isLiked = currentMember?.preferred_foods.includes(name) ?? false;
   const isDisliked = currentMember?.disliked_foods.includes(name) ?? false;
@@ -88,6 +90,9 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
         if (isDisliked) await removeDislikedFood(memberId, name);
         await addPreferredFood(memberId, name);
       }
+
+      // Invalidate the current member query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["members", "current"] });
     } catch (err) {
       console.error("선호 처리 실패", err);
     }
@@ -101,6 +106,9 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
         if (isLiked) await removePreferredFood(memberId, name);
         await addDislikedFood(memberId, name);
       }
+
+      // Invalidate the current member query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["members", "current"] });
     } catch (err) {
       console.error("비선호 처리 실패", err);
     }
