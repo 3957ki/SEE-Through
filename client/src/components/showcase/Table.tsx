@@ -1,9 +1,9 @@
-import { speakWithTTS } from "@/api/tts";
 import tableImage from "@/assets/table.png";
 import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
+import { speakWithOpenAIStreaming } from "@/lib/textToSpeech";
 import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
@@ -42,17 +42,23 @@ export default function Table({ outsideIngredients }: TableProps) {
                 ? data.comment
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
-            showDialog(<CommentDialog message={messageText} />);
-            // currentMember.age로 actor 분기
-            // const age = currentMember?.age;
-            // console.log("사용자 나이:", age);
-            // const actorId =
-            //   age !== undefined && age >= 0 && age < 13
-            //     ? "619d7eb59233f1f0771197ed" // 어린이: 머루
-            //     : "632293f759d649937b97f323"; // 어른: 진우
-            // console.log("actorId: ", actorId);
-            // speakWithTTS(messageText, actorId);
-            speakWithTTS(messageText, "632293f759d649937b97f323");
+            // TTS 먼저 실행
+            // speakWithOpenAIStreaming(
+            //   messageText,
+            //   currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
+            //   data.danger === true
+            // );
+
+            speakWithOpenAIStreaming(
+              messageText,
+              currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
+              true
+            );
+
+            // CommentDialog는 1초 뒤에 띄움
+            setTimeout(() => {
+              showDialog(<CommentDialog message={messageText} />);
+            }, 1000); // 1000ms = 1초
           },
         });
       }
