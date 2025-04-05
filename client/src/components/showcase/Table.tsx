@@ -55,10 +55,10 @@ export default function Table({ outsideIngredients }: TableProps) {
             //   true
             // );
 
-            // CommentDialog는 1초 뒤에 띄움
+            // CommentDialog는 2초 뒤에 띄움
             setTimeout(() => {
-              showDialog(<CommentDialog message={messageText} />);
-            }, 1000); // 1000ms = 1초
+              showDialog(<CommentDialog message={messageText} danger={data.danger === true} />);
+            }, 2000); // 1000ms = 1초
           },
         });
       }
