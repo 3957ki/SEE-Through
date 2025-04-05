@@ -1,4 +1,4 @@
-import { updateMember } from "@/api/members";
+import { SimpleDialog } from "@/components/dialog/SimpleDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,83 +11,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDialog } from "@/contexts/DialogContext";
-import { useCurrentMember } from "@/queries/members";
+import { useCurrentMember, useUpdateMember } from "@/queries/members";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 const MEASUREMENT_TYPES = ["선호 음식", "비선호 음식", "질병", "알러지"] as const;
 
 type MeasurementType = (typeof MEASUREMENT_TYPES)[number];
 
-// Interface for saved state
-interface SavedState {
-  name: string;
-  birth?: string;
-  color: string;
-  font_size: string;
-  preferred_foods: string[];
-  disliked_foods: string[];
-  allergies: string[];
-  diseases: string[];
-}
-
 export default function MyPage() {
   const { data: currentMember } = useCurrentMember();
+  const { mutate: updateMember } = useUpdateMember();
   const { showDialog, hideDialog } = useDialog();
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
-  const [name, setName] = useState(currentMember?.name || "");
-  const [isColorBlind, setIsColorBlind] = useState(currentMember?.color === "색맹");
-  const [fontSize, setFontSize] = useState(currentMember?.font_size || "보통");
+  const [name, setName] = useState("");
+  const [birthday, setBirthday] = useState<Date | undefined>();
+  const [isColorBlind, setIsColorBlind] = useState(false);
+  const [fontSize, setFontSize] = useState("");
+  const [preferredFoods, setPreferredFoods] = useState<string[]>([]);
+  const [dislikedFoods, setDislikedFoods] = useState<string[]>([]);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [diseases, setDiseases] = useState<string[]>([]);
 
-  const [birthday, setBirthday] = useState<Date | undefined>(
-    currentMember && "birth" in currentMember && currentMember.birth
-      ? new Date(currentMember.birth)
-      : undefined
-  );
-  const [preferredFoods, setPreferredFoods] = useState<string[]>(
-    currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : []
-  );
-  const [dislikedFoods, setDislikedFoods] = useState<string[]>(
-    currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : []
-  );
-  const [allergies, setAllergies] = useState<string[]>(
-    currentMember && "allergies" in currentMember ? currentMember.allergies : []
-  );
-  const [diseases, setDiseases] = useState<string[]>(
-    currentMember && "diseases" in currentMember ? currentMember.diseases : []
-  );
+  useEffect(() => {
+    if (!currentMember) return;
 
-  // Track the last saved state
-  const [savedState, setSavedState] = useState<SavedState>({
-    name: currentMember?.name || "",
-    birth: currentMember && "birth" in currentMember ? currentMember.birth : undefined,
-    color: currentMember && "color" in currentMember ? currentMember.color : "보통",
-    font_size: currentMember && "font_size" in currentMember ? currentMember.font_size : "보통",
-    preferred_foods:
-      currentMember && "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
-    disliked_foods:
-      currentMember && "disliked_foods" in currentMember ? currentMember.disliked_foods : [],
-    allergies: currentMember && "allergies" in currentMember ? currentMember.allergies : [],
-    diseases: currentMember && "diseases" in currentMember ? currentMember.diseases : [],
-  });
+    setName(currentMember.name || "");
+    setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
+    setIsColorBlind(currentMember.color === "색맹");
+    setFontSize(currentMember.font_size);
+    setPreferredFoods(currentMember.preferred_foods || []);
+    setDislikedFoods(currentMember.disliked_foods || []);
+    setAllergies(currentMember.allergies || []);
+    setDiseases(currentMember.diseases || []);
+  }, [currentMember]);
 
-  // Check if any changes were made compared to the saved state
   const isModified = useMemo(() => {
     if (!currentMember) return false;
 
-    const birthdayString = birthday ? birthday.toISOString().split("T")[0] : undefined;
+    const birthdayString = birthday ? format(birthday, "yyyy-MM-dd") : null;
+    const currentColor = isColorBlind ? "색맹" : "정상";
+
+    const areArraysEqual = (arr1: string[], arr2: string[]) => {
+      if (arr1.length !== arr2.length) return false;
+      return arr1.every((item, index) => item === arr2[index]);
+    };
 
     return (
-      name !== savedState.name ||
-      birthdayString !== savedState.birth ||
-      (isColorBlind ? "색맹" : "보통") !== savedState.color ||
-      fontSize !== savedState.font_size ||
-      JSON.stringify(preferredFoods) !== JSON.stringify(savedState.preferred_foods) ||
-      JSON.stringify(dislikedFoods) !== JSON.stringify(savedState.disliked_foods) ||
-      JSON.stringify(allergies) !== JSON.stringify(savedState.allergies) ||
-      JSON.stringify(diseases) !== JSON.stringify(savedState.diseases)
+      name !== (currentMember.name || "") ||
+      birthdayString !== currentMember.birth ||
+      currentColor !== (currentMember.color || "정상") ||
+      fontSize !== (currentMember.font_size || "") ||
+      !areArraysEqual(preferredFoods, currentMember.preferred_foods || []) ||
+      !areArraysEqual(dislikedFoods, currentMember.disliked_foods || []) ||
+      !areArraysEqual(allergies, currentMember.allergies || []) ||
+      !areArraysEqual(diseases, currentMember.diseases || [])
     );
   }, [
     currentMember,
@@ -99,34 +79,7 @@ export default function MyPage() {
     dislikedFoods,
     allergies,
     diseases,
-    savedState,
   ]);
-
-  // Update state values when currentMember changes
-  useEffect(() => {
-    if (!currentMember) return;
-
-    setName(currentMember.name || "");
-    setBirthday(
-      "birth" in currentMember && currentMember.birth ? new Date(currentMember.birth) : undefined
-    );
-    setPreferredFoods("preferred_foods" in currentMember ? currentMember.preferred_foods : []);
-    setDislikedFoods("disliked_foods" in currentMember ? currentMember.disliked_foods : []);
-    setAllergies("allergies" in currentMember ? currentMember.allergies : []);
-    setDiseases("diseases" in currentMember ? currentMember.diseases : []);
-
-    // Update saved state when currentMember changes
-    setSavedState({
-      name: currentMember.name || "",
-      birth: "birth" in currentMember ? currentMember.birth : undefined,
-      color: "color" in currentMember ? currentMember.color : "정상",
-      font_size: "font_size" in currentMember ? currentMember.font_size : "보통",
-      preferred_foods: "preferred_foods" in currentMember ? currentMember.preferred_foods : [],
-      disliked_foods: "disliked_foods" in currentMember ? currentMember.disliked_foods : [],
-      allergies: "allergies" in currentMember ? currentMember.allergies : [],
-      diseases: "diseases" in currentMember ? currentMember.diseases : [],
-    });
-  }, [currentMember]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, setter: (value: string) => void) => {
     setter(e.target.value);
@@ -142,7 +95,6 @@ export default function MyPage() {
             setBirthday(date);
             hideDialog();
           }}
-          initialFocus
           defaultMonth={birthday}
         />
       </div>
@@ -216,6 +168,41 @@ export default function MyPage() {
         break;
     }
   };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!currentMember) return;
+
+    try {
+      updateMember(
+        {
+          member_id: currentMember.member_id,
+          name,
+          birth: birthday ? format(birthday, "yyyy-MM-dd") : "",
+          color: isColorBlind ? "색맹" : "정상",
+          font_size: fontSize,
+          preferred_foods: preferredFoods,
+          disliked_foods: dislikedFoods,
+          allergies,
+          diseases,
+        },
+        {
+          onSuccess: () => {
+            showDialog(<SimpleDialog title="회원 정보가 수정되었습니다." />);
+          },
+          onError: (error) => {
+            console.error("Error updating member:", error);
+            showDialog(<SimpleDialog title="회원 정보 수정에 실패했습니다." isError />);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error updating member:", error);
+      showDialog(<SimpleDialog title="회원 정보 수정에 실패했습니다." isError />);
+    }
+  };
+
+  if (!currentMember) return null;
 
   return (
     <div className="pb-16 relative">
@@ -332,28 +319,14 @@ export default function MyPage() {
             variant="outline"
             className="flex-1"
             onClick={() => {
-              setName(currentMember?.name || "");
-              setBirthday(
-                currentMember && "birth" in currentMember && currentMember.birth
-                  ? new Date(currentMember.birth)
-                  : undefined
-              );
-              setPreferredFoods(
-                currentMember && "preferred_foods" in currentMember
-                  ? currentMember.preferred_foods
-                  : []
-              );
-              setDislikedFoods(
-                currentMember && "disliked_foods" in currentMember
-                  ? currentMember.disliked_foods
-                  : []
-              );
-              setAllergies(
-                currentMember && "allergies" in currentMember ? currentMember.allergies : []
-              );
-              setDiseases(
-                currentMember && "diseases" in currentMember ? currentMember.diseases : []
-              );
+              setName(currentMember.name || "");
+              setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
+              setIsColorBlind(currentMember.color === "색맹");
+              setFontSize(currentMember.font_size);
+              setPreferredFoods(currentMember.preferred_foods || []);
+              setDislikedFoods(currentMember.disliked_foods || []);
+              setAllergies(currentMember.allergies || []);
+              setDiseases(currentMember.diseases || []);
             }}
             disabled={!isModified}
           >
@@ -362,61 +335,7 @@ export default function MyPage() {
           <Button
             className="flex-1 bg-orange-500 text-white hover:bg-orange-600"
             disabled={!isModified}
-            onClick={async () => {
-              if (!currentMember) return;
-
-              try {
-                await updateMember({
-                  member_id: currentMember.member_id,
-                  name,
-                  birth: birthday ? format(birthday, "yyyy-MM-dd") : "",
-                  color: isColorBlind ? "색맹" : "보통",
-                  font_size: fontSize,
-                  preferred_foods: preferredFoods,
-                  disliked_foods: dislikedFoods,
-                  allergies,
-                  diseases,
-                });
-
-                // Update the saved state after successful save
-                setSavedState({
-                  name,
-                  birth: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
-                  color: isColorBlind ? "색맹" : "보통",
-                  font_size: fontSize,
-                  preferred_foods: [...preferredFoods],
-                  disliked_foods: [...dislikedFoods],
-                  allergies: [...allergies],
-                  diseases: [...diseases],
-                });
-
-                showDialog(
-                  <div className="p-4 space-y-4">
-                    <h2 className="text-lg font-medium">알림</h2>
-                    <p>사용자 정보가 성공적으로 업데이트되었습니다.</p>
-                    <div className="flex justify-end">
-                      <Button onClick={() => hideDialog()}>확인</Button>
-                    </div>
-                  </div>
-                );
-              } catch (error) {
-                console.error("업데이트 실패:", error);
-                showDialog(
-                  <div className="p-4 space-y-4">
-                    <h2 className="text-lg font-medium">오류</h2>
-                    <p>사용자 정보 업데이트 중 오류가 발생했습니다.</p>
-                    <div className="flex justify-end">
-                      <Button
-                        className="bg-orange-500 text-white hover:bg-orange-600"
-                        onClick={() => hideDialog()}
-                      >
-                        확인
-                      </Button>
-                    </div>
-                  </div>
-                );
-              }
-            }}
+            onClick={handleSubmit}
           >
             저장
           </Button>
