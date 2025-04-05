@@ -1,4 +1,4 @@
-import { PageType } from "@/components/layout/BottomNavigation";
+import { PageType } from "@/interfaces/PageType";
 import { createContext, use } from "react";
 
 export interface PageContextType {
