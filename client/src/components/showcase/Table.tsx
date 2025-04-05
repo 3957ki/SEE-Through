@@ -43,17 +43,17 @@ export default function Table({ outsideIngredients }: TableProps) {
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
             // TTS 먼저 실행
-            // speakWithOpenAIStreaming(
-            //   messageText,
-            //   currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
-            //   data.danger === true
-            // );
-
             speakWithOpenAIStreaming(
               messageText,
               currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
-              true
+              data.danger === true
             );
+
+            // speakWithOpenAIStreaming(
+            //   messageText,
+            //   currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
+            //   true
+            // );
 
             // CommentDialog는 1초 뒤에 띄움
             setTimeout(() => {
