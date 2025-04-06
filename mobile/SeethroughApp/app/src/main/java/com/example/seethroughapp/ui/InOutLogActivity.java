@@ -31,7 +31,7 @@ public class InOutLogActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(SeeThroughViewModel.class);
         viewModel.getInOutLogs().observe(this, this::updateInOutLogs);
 
-        viewModel.fetchInOutLogs();
+        viewModel.fetchInOutLogs(100);
     }
 
     private void updateInOutLogs(List<InOutLog> inOutLogs) {

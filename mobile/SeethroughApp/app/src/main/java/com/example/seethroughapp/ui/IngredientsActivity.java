@@ -30,7 +30,7 @@ public class IngredientsActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(SeeThroughViewModel.class);
         viewModel.getIngredients().observe(this, this::updateIngredients);
 
-        viewModel.fetchIngredients();
+        viewModel.fetchIngredients(100);
     }
 
     private void updateIngredients(List<Ingredient> ingredients) {
