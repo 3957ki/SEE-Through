@@ -1,19 +1,34 @@
-import { type ReactNode } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
-interface CustomDialogProps {
+interface DialogProps {
   content: ReactNode;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function Dialog({ content, isOpen, onClose }: CustomDialogProps) {
+export function Dialog({ content, isOpen, onClose }: DialogProps) {
+  const theme = useTheme();
+
   if (!isOpen) return null;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+      onClick={onClose}
+    >
       <div
-        className="relative z-10 bg-white rounded-lg p-6 shadow-lg mx-4 max-w-[90%] max-h-[90%] overflow-auto"
+        className={cn(
+          "w-full max-w-md p-6 rounded-lg shadow-xl",
+          "transform transition-all duration-300 ease-out"
+        )}
+        style={{
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.border,
+          color: theme.colors.text,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {content}

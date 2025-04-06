@@ -106,12 +106,12 @@ export default function LogPage() {
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center">로딩 중...</div>;
+    return <div className="text-center">로딩 중...</div>;
   }
 
   if (isError) {
     return (
-      <div className="p-4 text-center text-red-500">
+      <div className="text-center text-red-500">
         {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
       </div>
     );
@@ -120,12 +120,12 @@ export default function LogPage() {
   // No logs to display
   if (Object.keys(groupedLogs).length === 0) {
     return (
-      <div className="max-w-md mx-auto p-4">
+      <div className="max-w-md mx-auto">
         <div className="flex items-center justify-end mb-4">
           <span className="text-sm mr-2">내 로그만 보기</span>
           <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
         </div>
-        <div className="p-4 text-center">입출고 기록이 없습니다</div>
+        <div className="text-center">입출고 기록이 없습니다</div>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function LogPage() {
   return (
     <div className="max-w-md mx-auto">
       {/* 내 로그만 보기 토글 */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end mb-4">
         <span className="text-sm mr-2">내 로그만 보기</span>
         <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
       </div>
@@ -145,15 +145,15 @@ export default function LogPage() {
           <h2 className="text-xl font-bold text-center mb-4">{date}</h2>
 
           {/* 로그 항목들 */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             {entries.map((entry, index) => (
-              <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="flex items-center mb-2">
+              <div key={index} className="bg-white rounded-lg p-2 shadow-sm">
+                <div className="flex items-center">
                   {/* 재료 이미지 */}
-                  <Avatar className="h-10 w-10 mr-3">
+                  <Avatar className="h-8 w-8 mr-2">
                     <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
                     <AvatarFallback>
-                      <Package className="h-5 w-5" />
+                      <Package className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
 
@@ -167,10 +167,10 @@ export default function LogPage() {
                     <div className="flex items-center mt-1">
                       {/* 사용자 이미지와 이름 */}
                       <div className="flex items-center">
-                        <Avatar className="h-5 w-5 mr-1">
+                        <Avatar className="h-4 w-4 mr-1">
                           <AvatarImage src={entry.user_image} alt={entry.user_name} />
                           <AvatarFallback>
-                            <User className="h-3 w-3" />
+                            <User className="h-2 w-2" />
                           </AvatarFallback>
                         </Avatar>
                         <span className="text-sm text-gray-600">{entry.user_name}</span>
@@ -195,7 +195,7 @@ export default function LogPage() {
       ))}
 
       {/* Infinite scroll loading trigger */}
-      <div ref={loadMoreRef} className="text-center p-4" style={{ minHeight: "50px" }}>
+      <div ref={loadMoreRef} className="text-center py-2" style={{ minHeight: "50px" }}>
         {isFetchingNextPage ? (
           <div className="text-sm text-gray-500">로딩 중...</div>
         ) : hasNextPage ? (

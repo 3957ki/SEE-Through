@@ -1,5 +1,7 @@
 import { useDialog } from "@/contexts/DialogContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useState } from "react";
+import PinInput from "./PinInput";
 
 interface ChangePinDialogProps {
   currentPin: string;
@@ -14,6 +16,7 @@ enum PinChangeStep {
 
 function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
   const { hideDialog } = useDialog();
+  const theme = useTheme();
 
   const [step, setStep] = useState<PinChangeStep>(PinChangeStep.VERIFY_CURRENT);
   const [inputPin, setInputPin] = useState<string>("");
@@ -128,59 +131,35 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <h2 className="text-[#FF9933] text-xl font-semibold mb-4">{getStepTitle()}</h2>
+      <h2 className="text-xl font-semibold mb-4" style={{ color: theme.colors.text }}>
+        {getStepTitle()}
+      </h2>
 
-      {error && <p className="text-red-500 mb-4 text-center text-sm">{error}</p>}
+      {error && (
+        <p className="text-red-500 mb-4 text-center text-sm" style={{ color: theme.colors.text }}>
+          {error}
+        </p>
+      )}
 
-      {/* PIN display */}
-      <div className="flex justify-center gap-3 mb-6 w-full">
-        {[...Array(4)].map((_, index) => (
-          <div
-            key={index}
-            className="w-[30px] h-[30px] border-b-2 border-gray-400 flex justify-center items-center text-2xl"
-          >
-            {inputPin.length > index ? "•" : ""}
-          </div>
-        ))}
-      </div>
-
-      {/* Number pad */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <button
-            type="button"
-            key={num}
-            className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-2xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
-            onClick={() => handleNumberClick(num)}
-            disabled={isProcessing}
-          >
-            {num}
-          </button>
-        ))}
-        <button
-          type="button"
-          className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
-          onClick={handleDelete}
-          disabled={isProcessing}
-        >
-          ←
-        </button>
-        <button
-          type="button"
-          className="w-[60px] h-[60px] rounded-full bg-gray-600 text-white text-2xl border-none cursor-pointer flex justify-center items-center hover:bg-gray-500 transition-colors"
-          onClick={() => handleNumberClick(0)}
-          disabled={isProcessing}
-        >
-          0
-        </button>
-        <div className="col-span-1"></div>
-      </div>
+      <PinInput
+        pin={inputPin}
+        error={!!error}
+        onNumberClick={handleNumberClick}
+        onDelete={handleDelete}
+        disabled={isProcessing}
+      />
 
       {/* Action buttons */}
       <div className="flex gap-3 mt-2">
         <button
           type="button"
-          className="bg-gray-300 text-gray-800 border-none rounded-lg px-6 py-2.5 text-base cursor-pointer hover:bg-gray-400 transition-colors"
+          className="px-6 py-2.5 text-base rounded-lg transition-colors"
+          style={{
+            backgroundColor: theme.colors.background,
+            color: theme.colors.text,
+            borderColor: theme.colors.border,
+            borderWidth: 1,
+          }}
           onClick={hideDialog}
           disabled={isProcessing}
         >

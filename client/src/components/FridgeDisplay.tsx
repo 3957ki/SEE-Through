@@ -1,5 +1,9 @@
 import { Dialog } from "@/components/Dialog";
+import LogHeader from "@/components/headers/LogHeader";
 import MainHeader from "@/components/headers/MainHeader";
+import MealHeader from "@/components/headers/MealHeader";
+import MonitoringHeader from "@/components/headers/MonitoringHeader";
+import MyHeader from "@/components/headers/MyHeader";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LogPage from "@/components/pages/LogPage";
 import MainPage from "@/components/pages/MainPage";
@@ -8,6 +12,7 @@ import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
 import { useDialog } from "@/contexts/DialogContext";
 import { PageContext } from "@/contexts/PageContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
 import React, { useMemo, useRef, useState } from "react";
@@ -42,10 +47,15 @@ function Screensaver({ isActive }: { isActive: boolean }) {
   );
 }
 
-function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: FridgeDisplayProps) {
+function FridgeDisplayContent({
+  ref,
+  className = "",
+  isScreensaverActive = false,
+}: FridgeDisplayProps) {
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
   const { dialogContent, hideDialog } = useDialog();
   const displayRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const navigateTo = (page: PageType) => {
@@ -56,10 +66,10 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
 
   const headers = {
     main: <MainHeader />,
-    logs: <MainHeader />,
-    monitoring: <MainHeader />,
-    meal: <MainHeader />,
-    my: <MainHeader />,
+    logs: <LogHeader />,
+    monitoring: <MonitoringHeader />,
+    meal: <MealHeader />,
+    my: <MyHeader />,
   };
 
   const pages = {
@@ -75,23 +85,27 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
       <PageContext value={pageContextValue}>
         <div
           ref={displayRef}
-          className="bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative"
+          className="overflow-hidden flex flex-col rounded shadow border relative"
           style={{
             width: "100%",
             height: "100%",
+            backgroundColor: theme.colors.background,
+            borderColor: theme.colors.border,
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            fontSize: theme.fontSize,
+            color: theme.colors.text,
           }}
         >
           {/* Header Section */}
-          <div className="w-full shrink-0 h-14 px-4">{headers[currentPage]}</div>
+          <div className="w-full shrink-0 h-14 px-4 py-2">{headers[currentPage]}</div>
 
           {/* Content Section */}
-          <div className="flex-1 overflow-auto px-4">
-            <div className="py-4">{pages[currentPage]}</div>
+          <div className="flex-1 overflow-auto">
+            <div className="px-4 py-4">{pages[currentPage]}</div>
           </div>
 
           {/* Navigation Section */}
-          <div className="w-full shrink-0 h-14 px-4">
+          <div className="w-full shrink-0 h-14 px-4 py-2">
             <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
           </div>
           <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
@@ -114,6 +128,14 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
         </div>
       </PageContext>
     </div>
+  );
+}
+
+function FridgeDisplay(props: FridgeDisplayProps) {
+  return (
+    <ThemeProvider>
+      <FridgeDisplayContent {...props} />
+    </ThemeProvider>
   );
 }
 
