@@ -23,14 +23,7 @@ export function CurrentMemberIdProvider({ children }: { children: ReactNode }) {
   const [currentMemberId, setCurrentMemberId] = useState<string>("");
 
   // Use TanStack Query to fetch members
-  const { data: membersList, isLoading } = useQuery(members.list);
-
-  // Set the first member ID when data is loaded
-  useMemo(() => {
-    if (membersList && membersList.length > 0 && !currentMemberId) {
-      setCurrentMemberId(membersList[0].member_id);
-    }
-  }, [membersList, currentMemberId]);
+  const { isLoading } = useQuery(members.list);
 
   const currentMemberIdValue = useMemo(
     () => ({
