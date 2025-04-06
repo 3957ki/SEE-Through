@@ -59,7 +59,6 @@ prompt_comment = ChatPromptTemplate.from_template(
 )
 
 
-
 def generate_food_comment_from_llm(
     food_name: str,
     preferred_foods: list,
@@ -76,10 +75,13 @@ def generate_food_comment_from_llm(
 
     # 👉 나이에 따라 반말 문체 조건 추가
     comment_style_clause = (
-        "- 사용자의 나이가 **만 12세 이하**인 경우, 코멘트는 **친절하고 쉬운 반말로** 작성해주세요."
+        "- 사용자의 나이가 **만 12세 이하**인 경우, 코멘트는 **친절한   반말로** 작성해주세요."
         if age <= 12
         else ""
     )
+    print(f"사용자 나이: {age} ")
+    print(f"comment_style_clause:\n{comment_style_clause}")
+
     response = llm.invoke(
         prompt_comment.format(
             food_name=food_name,
