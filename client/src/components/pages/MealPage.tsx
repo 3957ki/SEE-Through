@@ -18,10 +18,6 @@ import {
   BsHandThumbsUp,
 } from "react-icons/bs";
 
-function generateDateRange(start: Date): Date[] {
-  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-}
-
 function DateSelector({
   selectedDate,
   onSelect,
@@ -33,7 +29,7 @@ function DateSelector({
   const [offset, setOffset] = useState(0);
 
   const currentStartDate = addDays(today, offset);
-  const visibleDates = generateDateRange(currentStartDate);
+  const visibleDates = Array.from({ length: 7 }, (_, i) => addDays(currentStartDate, i));
 
   const handlePrev = () => {
     if (offset > 0) setOffset(offset - 1);
@@ -71,6 +67,36 @@ function DateSelector({
       <button type="button" onClick={handleNext} className="p-1" disabled>
         <ChevronRight className="w-5 h-5 text-gray-300" />
       </button>
+    </div>
+  );
+}
+
+function DateSelectorSection({
+  selectedDate,
+  setSelectedDate,
+  handleGoToday,
+}: {
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
+  handleGoToday: () => void;
+}) {
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-1">
+          <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+          <h2 className="text-lg font-medium">식단 캘린더</h2>
+        </div>
+        <button
+          type="button"
+          onClick={handleGoToday}
+          className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
+        >
+          오늘
+        </button>
+      </div>
+
+      <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
     </div>
   );
 }
@@ -159,28 +185,39 @@ function MealSection({
   memberId: string;
 }) {
   return (
-    <div>
-      <div className="flex justify-between items-stretch">
-        <div>
-          <h3 className="text-orange-600 text-lg font-bold">{title}</h3>
-          <div className="mt-2 space-y-1">
-            {items.map((item, index) => (
-              <MealItem key={index} name={item} memberId={memberId} />
-            ))}
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 relative">
+      {isRefreshing && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center z-10">
+          <div className="flex flex-col items-center">
+            <BsArrowClockwise className="text-4xl text-orange-400 animate-spin mb-2" />
+            <span className="text-sm font-medium text-gray-600">AI가 식단을 생성중입니다...</span>
           </div>
-          {reason && <div className="mt-2 text-sm text-gray-400">💡 {reason}</div>}
         </div>
+      )}
+      <div className="flex items-center justify-between">
+        <h3 className="text-orange-600 text-lg font-bold mb-3">{title}</h3>
         <button
           type="button"
-          className="self-center pl-4"
+          className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
           onClick={() => onRefresh(mealId)}
           disabled={isRefreshing}
+          aria-label={`${title} 식단 새로고침`}
         >
           <BsArrowClockwise
-            className={`text-4xl ${isRefreshing ? "animate-spin text-orange-400" : "text-gray-600"} cursor-pointer`}
+            className={`text-2xl ${isRefreshing ? "animate-spin text-orange-400" : "text-gray-500 hover:text-gray-700"} cursor-pointer`}
           />
         </button>
       </div>
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <MealItem key={index} name={item} memberId={memberId} />
+        ))}
+      </div>
+      {reason && (
+        <div className="mt-3 text-sm text-gray-500 bg-gray-50 p-2 rounded-md">
+          <span className="text-orange-400 mr-1">💡</span> {reason}
+        </div>
+      )}
     </div>
   );
 }
@@ -203,29 +240,19 @@ export default function MealPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center px-4">
-        <div className="flex items-center gap-1">
-          <BsCalendarEvent className="w-4 h-4 text-gray-600" />
-          <h2 className="text-lg font-medium">식단 캘린더</h2>
-        </div>
-        <button
-          type="button"
-          onClick={handleGoToday}
-          className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
-        >
-          오늘
-        </button>
-      </div>
-
-      <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
+      <DateSelectorSection
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        handleGoToday={handleGoToday}
+      />
 
       {isMealsLoading ? (
-        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
           <Spinner size={36} />
           <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
         </div>
       ) : meals ? (
-        <div className="px-4 space-y-4">
+        <div className="space-y-4 p-4">
           <MealSection
             title="아침"
             items={meals.breakfast.menu}
@@ -261,7 +288,7 @@ export default function MealPage() {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
           <p className="text-gray-500">식단 정보가 없습니다.</p>
         </div>
       )}
