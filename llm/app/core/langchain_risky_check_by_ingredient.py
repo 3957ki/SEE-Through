@@ -42,7 +42,7 @@ prompt_risky = ChatPromptTemplate.from_template(
 1. 아래 조건 중 하나라도 충족하는 사용자에 대해서만 응답하세요:
    - 해당 재료가 사용자의 **알레르기 목록에 포함**된 경우
    - 해당 재료가 사용자의 **질병으로 인해 섭취 제한이 필요한 경우**
-   - 나이가 만 19세 미만 경우 **술, 카페인, 자극적인 음식**에 대해 주의
+   - 나이가 만 19세 미만인 경우, **주류(소주, 맥주, 와인 등)는 법적으로 섭취가 금지**되어 있으므로 반드시 경고 메시지를 포함해야 합니다. 또한 카페인, 자극적인 음식도 주의가 필요합니다.
    - 나이가 고령층(만 65세 이상)인 경우 **딱딱한 음식, 고염분/고지방 음식, 소화 어려운 음식**에 대해 주의
 
 2. comment는 다음 기준을 따릅니다:
@@ -58,6 +58,11 @@ prompt_risky = ChatPromptTemplate.from_template(
    - `ingredient` 필드는 절대 생략하지 말고, 분석한 재료명을 그대로 명시하세요.
    - `risky_members`는 위험한 사용자만 포함하고, 위험하지 않다면 빈 리스트로 주세요.
 
+6. 각 사용자의 나이에 따라 말투를 구분해야 합니다:
+- 만 12세 이하 사용자에게는 부드럽고 이해하기 쉬운 반말을 사용하세요.
+- 그 외 사용자에게는 전문적이고 정중한 존댓말을 사용하세요.
+- 절대 모든 사용자에게 같은 말투를 사용하지 마세요.
+
 ---
 
 🧾 확인할 음식 재료:
@@ -69,7 +74,7 @@ prompt_risky = ChatPromptTemplate.from_template(
 📚 참고할 수 있는 의료 정보:
 {medical_info}
 
- {comment_style_clause}
+{comment_style_clause}
 
 📄 응답 형식 (JSON):
 {format_instructions}
@@ -146,11 +151,21 @@ def analyze_risky_food_for_members(
 
         print(f"🧒 반말 대상 어린이 사용자 ID 목록: {child_ids}")
 
-        child_comment_clause = (
-            f"- 다음 사용자들({', '.join(child_ids)})은 12세 이하이므로 반말로 작성해주세요. 이해하기 쉽고 친절하게 설명해주세요"
-            if child_ids
-            else ""
-        )
+        child_comment_clause = ""
+        if child_ids:
+            child_comment_clause = f"""
+        💬 [중요] 사용자별 comment 작성 지침:
+
+        - 다음 사용자 ID는 어린이입니다: {', '.join(child_ids)}
+        - 이 사용자들에게는 친근하고 부드러운 **반말**로 comment를 작성해주세요.
+        - 나머지 사용자들에게는 전문적이고 정중한 **존댓말**로 comment를 작성해주세요.
+        - 각 comment는 해당 사용자에게 맞는 말투로 구분되어 작성되어야 합니다.
+        - 절대 모든 사용자에게 동일한 말투를 사용하지 마세요.
+        """
+        else:
+            child_comment_clause = """
+        💬 [중요] 모든 사용자에게 전문적이고 정중한 **존댓말**로 comment를 작성해주세요.
+        """
 
         # 프롬프트 구성
         formatted_prompt = prompt_risky.format(
