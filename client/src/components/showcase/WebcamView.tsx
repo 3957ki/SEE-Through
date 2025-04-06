@@ -16,8 +16,9 @@ const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const SMALL_FACE_CUT = 15000;
 const LARGE_FACE_CUT = 30000;
-const IOU_CUT = 0.5;
+const IOU_CUT = 0.8;
 const MIN_FACE_ANGLE_THRESHOLD = 0.3;
+const MIN_FACE_VERTICAL_THRESHOLD = 0.3;
 const EDGE_MARGIN = 40;
 
 interface WebcamViewProps {
@@ -100,7 +101,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
   const isFacingFront = (landmarks: any[]) => {
     if (!landmarks || landmarks.length === 0) return false;
 
-    // 눈의 위치 추출 (MediaPipe Face Mesh의 랜드마크 인덱스)
+    // 눈의 위치 추출
     // 왼쪽 눈 바깥쪽, 안쪽 꼭지점
     const leftEyeOuter = landmarks[0][33]; // 왼쪽 눈 바깥쪽 좌표
     const leftEyeInner = landmarks[0][133]; // 왼쪽 눈 안쪽 좌표
@@ -108,6 +109,12 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     // 오른쪽 눈 안쪽, 바깥쪽 꼭지점
     const rightEyeInner = landmarks[0][362]; // 오른쪽 눈 안쪽 좌표
     const rightEyeOuter = landmarks[0][263]; // 오른쪽 눈 바깥쪽 좌표
+
+    // 상하 방향 확인을 위한 추가 랜드마크
+    const noseTop = landmarks[0][1]; // 코 윗부분
+    const noseTip = landmarks[0][4]; // 코끝
+    const foreHead = landmarks[0][10]; // 이마 중앙
+    const chin = landmarks[0][152]; // 턱 중앙
 
     // 왼쪽 눈 너비
     const leftEyeWidth = Math.sqrt(
@@ -124,8 +131,24 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     const eyeWidthDiff =
       Math.abs(leftEyeWidth - rightEyeWidth) / Math.max(leftEyeWidth, rightEyeWidth);
 
-    // 눈 너비 비율이 임계값보다 작으면 정면으로 판단
-    return eyeWidthDiff < MIN_FACE_ANGLE_THRESHOLD;
+    // 상하 기울임 확인
+    // 코 - 이마 길이
+    const noseToForeheadDist = Math.sqrt(
+      Math.pow(noseTop.x - foreHead.x, 2) + Math.pow(noseTop.y - foreHead.y, 2)
+    );
+
+    // 코 - 턱 길이
+    const noseToChinDist = Math.sqrt(
+      Math.pow(noseTip.x - chin.x, 2) + Math.pow(noseTip.y - chin.y, 2)
+    );
+
+    // 이상적인 상황에서는 코가 이마와 턱 사이의 중간쯤에 위치
+    // 비율이 크게 차이나면 고개를 숙이거나 들고 있는 것
+    const verticalRatio = noseToForeheadDist / noseToChinDist;
+    const isVerticallyAligned = Math.abs(verticalRatio - 1) < MIN_FACE_VERTICAL_THRESHOLD;
+
+    // 좌우와 상하 모두 확인하여 정면 여부 판단
+    return eyeWidthDiff < MIN_FACE_ANGLE_THRESHOLD && isVerticallyAligned;
   };
 
   // 얼굴이 화면 가장자리에 너무 가까운지 확인하는 함수
@@ -417,26 +440,24 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
           if (currentBox) {
             const area = currentBox.width * currentBox.height;
+            const prevBox = prevBoundingBoxRef.current;
+            let iou = 0;
 
-            // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음
+            // IOU 계산
+            if (prevBox) {
+              iou = calculateIOU(currentBox, prevBox);
+              iouText = `IOU: ${iou.toFixed(2)}`;
+            }
+
+            // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음 AND 큰 IOU
             if (
               area >= currentCut &&
               !isTooCloseToEdge &&
-              (isFront || faceLevelRef.current.level == 2)
+              ((isFront && iou > IOU_CUT) || faceLevelRef.current.level == 2)
             ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
               nextFaceLevel = { level: 1, cut: LARGE_FACE_CUT };
-            }
-
-            const prevBox = prevBoundingBoxRef.current;
-            if (prevBox) {
-              const iou = calculateIOU(currentBox, prevBox);
-              iouText = `IOU: ${iou.toFixed(2)}`;
-
-              if (nextFaceLevel.level === 2 && iou < IOU_CUT && !requestQueue.current.pending) {
-                console.log("[IOU] 낮은 IOU 감지됨:", iou.toFixed(2));
-              }
             }
 
             prevBoundingBoxRef.current = currentBox;
