@@ -42,7 +42,7 @@ prompt_risky = ChatPromptTemplate.from_template(
 1. 아래 조건 중 하나라도 충족하는 사용자에 대해서만 응답하세요:
    - 해당 재료가 사용자의 **알레르기 목록에 포함**된 경우
    - 해당 재료가 사용자의 **질병으로 인해 섭취 제한이 필요한 경우**
-   - 나이가 어린이(만 19세 미만)인 경우 **술, 카페인, 자극적인 음식**에 대해 주의
+   - 나이가 만 19세 미만 경우 **술, 카페인, 자극적인 음식**에 대해 주의
    - 나이가 고령층(만 65세 이상)인 경우 **딱딱한 음식, 고염분/고지방 음식, 소화 어려운 음식**에 대해 주의
 
 2. comment는 다음 기준을 따릅니다:
@@ -69,10 +69,7 @@ prompt_risky = ChatPromptTemplate.from_template(
 📚 참고할 수 있는 의료 정보:
 {medical_info}
 
-- 각 사용자 객체에는 "is_child"가 true이면 **어린이로 판단**하고, 해당 사용자에 대한 설명은 **친근하고 쉬운 반말로** 작성해주세요.
-- 각 사용자 객체에 "is_child": true가 설정된 경우, comment는 **따뜻하고 쉬운 반말로 작성하세요.**
-- 그 외 사용자의 comment는 **전문적이고 존댓말로 작성하세요.**
-- 반말 예시: "조개는 너가 알레르기가 있는 음식이야. 먹으면 알레르기 반응이 생길 수 있어서 조심해야 해. 가려움증이나 발진이 생길 수 있고, 심하면 호흡이 어려워질 수도 있어. 다음엔 다른 음식을 먹는 게 좋겠어."
+ {comment_style_clause}
 
 📄 응답 형식 (JSON):
 {format_instructions}
@@ -139,11 +136,28 @@ def analyze_risky_food_for_members(
         medical_info = retrieve_medical_info(ingredient, list(diseases), db)
         logger.info("📚 프롬프트에 포함된 의료 정보:\n%s", medical_info)
 
+        # 프롬프트 구성 전: 어린이 사용자 확인
+        child_ids = []
+        for member_id, info in parsed_health.items():
+            age = info.get("age")
+            if age is not None and age <= 12:
+                print("어린이 나이: ", age, " member_id: ", member_id)
+                child_ids.append(member_id)
+
+        print(f"🧒 반말 대상 어린이 사용자 ID 목록: {child_ids}")
+
+        child_comment_clause = (
+            f"- 다음 사용자들({', '.join(child_ids)})은 12세 이하이므로 반말로 작성해주세요. 이해하기 쉽고 친절하게 설명해주세요"
+            if child_ids
+            else ""
+        )
+
         # 프롬프트 구성
         formatted_prompt = prompt_risky.format(
             ingredient=ingredient,
             health_data=health_data,
             medical_info=medical_info,
+            comment_style_clause=child_comment_clause,
             format_instructions=parser.get_format_instructions(),
         )
         logger.debug("📤 LLM 최종 프롬프트:\n%s", formatted_prompt)
