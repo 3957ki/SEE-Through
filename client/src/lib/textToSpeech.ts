@@ -1,4 +1,4 @@
-import warningSound from "@/assets/warning.mp3";
+import warningSound from "@/assets/warning_2.mp3";
 export function speakWithWebSpeech(message: string, lang: string = "ko-KR") {
   const utterance = new SpeechSynthesisUtterance(message);
   utterance.lang = lang;
