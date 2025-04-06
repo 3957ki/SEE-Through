@@ -6,14 +6,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.IngredientsActivity"
-    android:background="@color/black">
+    android:background="@color/st_gray"
+    android:fitsSystemWindows="true">
 
+    <!-- 제목 텍스트 -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="냉장고 재료"
+        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp" />
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewIngredients"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:padding="8dp"
         android:scrollbars="vertical"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
