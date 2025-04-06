@@ -86,13 +86,13 @@ export async function speakWithOpenAIStreaming(
 }
 function getSystemPrompt(type: "child" | "adult"): string {
   if (type === "child") {
-    return "Y너는 어린이를 위한 AI야. 사용자가 한 문장을 **밝고 경쾌한 말투로 그대로 읽어 줘**. 내용은 절대 바꾸지 마. 톤만 명랑하게!";
+    return "너는 어린이를 위한 AI야. 사용자의 문장을 귀엽고 장난기 있게, 재미있게 읽어 줘. 하지만 문장은 그대로 말해!";
   }
   return "You are a TTS system. Repeat the user's message exactly, without paraphrasing.";
 }
 
 function getVoiceByType(type: "child" | "adult"): string {
-  return type === "child" ? "fable" : "nova";
+  return type === "child" ? "nova" : "nova";
 }
 
 function base64ToBlob(base64: string, mimeType: string): Blob {
