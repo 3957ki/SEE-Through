@@ -1,4 +1,3 @@
-import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
@@ -9,8 +8,6 @@ interface DialogProps {
 }
 
 export function Dialog({ content, isOpen, onClose }: DialogProps) {
-  const theme = useTheme();
-
   if (!isOpen) return null;
 
   return (
@@ -21,14 +18,9 @@ export function Dialog({ content, isOpen, onClose }: DialogProps) {
     >
       <div
         className={cn(
-          "w-full max-w-md p-6 rounded-lg shadow-xl",
+          "w-full max-w-md p-6 rounded-lg shadow-xl bg-background text-foreground border border-border",
           "transform transition-all duration-300 ease-out"
         )}
-        style={{
-          backgroundColor: theme.colors.background,
-          borderColor: theme.colors.border,
-          color: theme.colors.text,
-        }}
         onClick={(e) => e.stopPropagation()}
       >
         {content}

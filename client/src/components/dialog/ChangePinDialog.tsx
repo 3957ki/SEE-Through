@@ -1,5 +1,4 @@
 import { useDialog } from "@/contexts/DialogContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useState } from "react";
 import PinInput from "./PinInput";
 
@@ -16,7 +15,6 @@ enum PinChangeStep {
 
 function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
   const { hideDialog } = useDialog();
-  const theme = useTheme();
 
   const [step, setStep] = useState<PinChangeStep>(PinChangeStep.VERIFY_CURRENT);
   const [inputPin, setInputPin] = useState<string>("");
@@ -131,15 +129,9 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <h2 className="text-xl font-semibold mb-4" style={{ color: theme.colors.text }}>
-        {getStepTitle()}
-      </h2>
+      <h2 className="text-xl font-semibold mb-4 text-foreground">{getStepTitle()}</h2>
 
-      {error && (
-        <p className="text-red-500 mb-4 text-center text-sm" style={{ color: theme.colors.text }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="text-red-500 mb-4 text-center text-sm text-foreground">{error}</p>}
 
       <PinInput
         pin={inputPin}
@@ -153,13 +145,7 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
       <div className="flex gap-3 mt-2">
         <button
           type="button"
-          className="px-6 py-2.5 text-base rounded-lg transition-colors"
-          style={{
-            backgroundColor: theme.colors.background,
-            color: theme.colors.text,
-            borderColor: theme.colors.border,
-            borderWidth: 1,
-          }}
+          className="px-6 py-2.5 text-base rounded-lg transition-colors bg-background text-foreground border border-border"
           onClick={hideDialog}
           disabled={isProcessing}
         >

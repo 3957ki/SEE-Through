@@ -1,7 +1,6 @@
 import PinDialog from "@/components/dialog/PinDialog";
 import { useDialog } from "@/contexts/DialogContext";
 import { usePage } from "@/contexts/PageContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
 import { BsCalendarEvent, BsClockHistory, BsHouseDoor, BsPersonCircle } from "react-icons/bs";
@@ -14,7 +13,6 @@ interface BottomNavigationProps {
 
 export default function BottomNavigation({ currentPin, currentPage }: BottomNavigationProps) {
   const { navigateTo } = usePage();
-  const theme = useTheme();
   const { showDialog } = useDialog();
 
   const handleNavigate = (page: PageType) => {
@@ -62,11 +60,9 @@ export default function BottomNavigation({ currentPin, currentPage }: BottomNavi
           onClick={() => handleNavigate(item.page)}
           className={cn(
             "flex flex-col items-center justify-center gap-1 w-16 h-full",
-            "transition-colors duration-200"
+            "transition-colors duration-200",
+            currentPage === item.page ? "text-primary" : "text-foreground"
           )}
-          style={{
-            color: currentPage === item.page ? theme.colors.primary : theme.colors.text,
-          }}
         >
           {item.icon}
           <span className="text-xs">{item.label}</span>

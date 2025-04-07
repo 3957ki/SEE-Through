@@ -111,7 +111,7 @@ export default function LogPage() {
 
   if (isError) {
     return (
-      <div className="text-center text-red-500">
+      <div className="text-center text-destructive">
         {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
       </div>
     );
@@ -147,7 +147,7 @@ export default function LogPage() {
           {/* 로그 항목들 */}
           <div className="space-y-2">
             {entries.map((entry, index) => (
-              <div key={index} className="bg-white rounded-lg p-2 shadow-sm">
+              <div key={index} className="bg-card rounded-lg p-2 shadow-sm">
                 <div className="flex items-center">
                   {/* 재료 이미지 */}
                   <Avatar className="h-8 w-8 mr-2">
@@ -161,7 +161,7 @@ export default function LogPage() {
                     {/* 재료 이름과 시간 */}
                     <div className="flex justify-between items-center">
                       <span className="text-base font-medium">{entry.ingredient}</span>
-                      <span className="text-sm text-gray-500">{entry.time}</span>
+                      <span className="text-sm text-muted-foreground">{entry.time}</span>
                     </div>
 
                     <div className="flex items-center mt-1">
@@ -173,15 +173,15 @@ export default function LogPage() {
                             <User className="h-2 w-2" />
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-gray-600">{entry.user_name}</span>
+                        <span className="text-sm text-muted-foreground">{entry.user_name}</span>
                       </div>
 
                       {/* 구분자 */}
-                      <span className="mx-2 text-gray-400">•</span>
+                      <span className="mx-2 text-muted-foreground/70">•</span>
 
                       {/* 입고/출고 표시 (색상 구분) */}
                       <span
-                        className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
+                        className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-primary"}`}
                       >
                         {entry.type}
                       </span>
@@ -197,7 +197,7 @@ export default function LogPage() {
       {/* Infinite scroll loading trigger */}
       <div ref={loadMoreRef} className="text-center py-2" style={{ minHeight: "50px" }}>
         {isFetchingNextPage ? (
-          <div className="text-sm text-gray-500">로딩 중...</div>
+          <div className="text-sm text-muted-foreground">로딩 중...</div>
         ) : hasNextPage ? (
           <Button
             variant="ghost"
@@ -208,7 +208,7 @@ export default function LogPage() {
             더 보기 <ChevronDown className="h-4 w-4" />
           </Button>
         ) : (
-          <div className="text-sm text-gray-500">모든 데이터를 불러왔습니다</div>
+          <div className="text-sm text-muted-foreground">모든 데이터를 불러왔습니다</div>
         )}
       </div>
     </div>

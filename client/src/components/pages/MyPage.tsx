@@ -210,7 +210,7 @@ export default function MyPage() {
         {/* User Info Section */}
         <div className="flex gap-4">
           <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">이름</div>
+            <div className="text-sm text-muted-foreground mb-1">이름</div>
             <Input
               placeholder="이름을 입력하세요"
               value={name}
@@ -218,7 +218,7 @@ export default function MyPage() {
             />
           </div>
           <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">생일</div>
+            <div className="text-sm text-muted-foreground mb-1">생일</div>
             <Button
               variant="outline"
               onClick={handleShowCalendar}
@@ -228,7 +228,7 @@ export default function MyPage() {
               {birthday ? (
                 format(birthday, "yyyy.MM.dd", { locale: ko })
               ) : (
-                <span className="text-gray-400">생일을 알려주세요!</span>
+                <span className="text-muted-foreground/70">생일을 알려주세요!</span>
               )}
             </Button>
           </div>
@@ -238,7 +238,7 @@ export default function MyPage() {
         <div className="flex gap-4">
           <div className="flex-1 flex items-center gap-2">
             <label htmlFor="colorBlind" className="flex items-center gap-2 cursor-pointer">
-              <span className="text-sm text-gray-500 mb-1">색맹 여부</span>
+              <span className="text-sm text-muted-foreground mb-1">색맹 여부</span>
               <Checkbox
                 id="colorBlind"
                 checked={isColorBlind}
@@ -248,7 +248,7 @@ export default function MyPage() {
           </div>
 
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm text-gray-500 mb-1">폰트 크기</span>
+            <span className="text-sm text-muted-foreground mb-1">폰트 크기</span>
             <Select value={fontSize} onValueChange={setFontSize}>
               <SelectTrigger className="w-[80px] h-9">
                 <SelectValue placeholder="폰트 크기" className="text-sm" />
@@ -276,8 +276,8 @@ export default function MyPage() {
               key={type}
               className={`py-2 px-2 text-sm ${
                 measurementType === type
-                  ? "text-orange-500 border-b-2 border-orange-500"
-                  : "text-gray-500"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-muted-foreground"
               }`}
               style={{ flex: type.length }}
               onClick={() => setMeasurementType(type)}
@@ -296,12 +296,12 @@ export default function MyPage() {
             {getCurrentList().map((item, index) => (
               <div
                 key={index}
-                className="flex-1 py-2 px-3 border rounded-md bg-gray-50 flex items-center justify-between gap-2"
+                className="flex-1 py-2 px-3 border rounded-md bg-card flex items-center justify-between gap-2"
               >
                 <div className="break-words flex-1">{item}</div>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  className="text-muted hover:text-foreground p-1 rounded-full hover:bg-muted"
                   onClick={() => {
                     const newList = getCurrentList().filter((_, i) => i !== index);
                     setCurrentList(newList);
@@ -333,7 +333,7 @@ export default function MyPage() {
             취소
           </Button>
           <Button
-            className="flex-1 bg-orange-500 text-white hover:bg-orange-600"
+            className="flex-1 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             disabled={!isModified}
             onClick={handleSubmit}
           >

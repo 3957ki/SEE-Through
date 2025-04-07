@@ -54,7 +54,7 @@ function DateSelector({
             <div
               key={date.toDateString()}
               className={`flex flex-col items-center px-2 py-1 rounded-full cursor-pointer ${
-                isSelected ? "bg-orange-400 text-white" : "text-gray-700"
+                isSelected ? "bg-primary text-primary-foreground" : "text-foreground"
               }`}
               onClick={() => onSelect(date)}
             >
@@ -84,13 +84,13 @@ function DateSelectorSection({
     <div className="p-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-1">
-          <BsCalendarEvent className="w-4 h-4 text-gray-600" />
+          <BsCalendarEvent className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-lg font-medium">식단 캘린더</h2>
         </div>
         <button
           type="button"
           onClick={handleGoToday}
-          className="text-sm text-orange-500 border border-orange-300 rounded-full px-3 py-1 hover:bg-orange-50"
+          className="text-sm text-primary border border-primary/30 rounded-full px-3 py-1 hover:bg-primary/10"
         >
           오늘
         </button>
@@ -144,22 +144,22 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
     <div
       className={`flex items-center justify-start gap-2 rounded-md transition ${
         isLiked
-          ? "bg-orange-50 border-l-4 border-orange-400"
+          ? "bg-primary/10 border-l-4 border-primary"
           : isDisliked
-            ? "bg-gray-100 border-l-4 border-gray-400"
+            ? "bg-muted border-l-4 border-muted-foreground"
             : ""
       }`}
     >
       <span className="text-sm font-medium">{name}</span>
 
       <BsHandThumbsUp
-        className={`w-4 h-4 ${isLiked ? "text-orange-500" : "text-gray-400"} cursor-pointer`}
+        className={`w-4 h-4 ${isLiked ? "text-primary" : "text-muted-foreground"} cursor-pointer`}
         onClick={handleLike}
         title="선호 토글"
       />
 
       <BsHandThumbsDown
-        className={`w-4 h-4 ${isDisliked ? "text-gray-700" : "text-gray-400"} cursor-pointer`}
+        className={`w-4 h-4 ${isDisliked ? "text-foreground" : "text-muted-foreground"} cursor-pointer`}
         onClick={handleDislike}
         title="비선호 토글"
       />
@@ -187,24 +187,26 @@ function MealSection({
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6 relative">
       {isRefreshing && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center z-10">
           <div className="flex flex-col items-center">
-            <BsArrowClockwise className="text-4xl text-orange-400 animate-spin mb-2" />
-            <span className="text-sm font-medium text-gray-600">AI가 식단을 생성중입니다...</span>
+            <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
+            <span className="text-sm font-medium text-muted-foreground">
+              AI가 식단을 생성중입니다...
+            </span>
           </div>
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h3 className="text-orange-600 text-lg font-bold mb-3">{title}</h3>
+        <h3 className="text-primary text-lg font-bold mb-3">{title}</h3>
         <button
           type="button"
-          className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="ml-4 p-2 rounded-full hover:bg-muted transition-colors"
           onClick={() => onRefresh(mealId)}
           disabled={isRefreshing}
           aria-label={`${title} 식단 새로고침`}
         >
           <BsArrowClockwise
-            className={`text-2xl ${isRefreshing ? "animate-spin text-orange-400" : "text-gray-500 hover:text-gray-700"} cursor-pointer`}
+            className={`text-2xl ${isRefreshing ? "animate-spin text-primary" : "text-muted-foreground hover:text-foreground"} cursor-pointer`}
           />
         </button>
       </div>
@@ -214,8 +216,8 @@ function MealSection({
         ))}
       </div>
       {reason && (
-        <div className="mt-3 text-sm text-gray-500 bg-gray-50 p-2 rounded-md">
-          <span className="text-orange-400 mr-1">💡</span> {reason}
+        <div className="mt-3 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+          <span className="text-primary mr-1">💡</span> {reason}
         </div>
       )}
     </div>
@@ -247,7 +249,7 @@ export default function MealPage() {
       />
 
       {isMealsLoading ? (
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
           <Spinner size={36} />
           <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
         </div>
@@ -288,8 +290,8 @@ export default function MealPage() {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-          <p className="text-gray-500">식단 정보가 없습니다.</p>
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+          <p className="text-muted-foreground">식단 정보가 없습니다.</p>
         </div>
       )}
     </div>

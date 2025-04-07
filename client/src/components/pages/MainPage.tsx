@@ -175,7 +175,7 @@ function Meals() {
     return (
       <div className="mt-2 px-4">
         <div className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 border-t-4 border-solid border-orange-500 rounded-full animate-spin mb-3"></div>
+          <div className="w-12 h-12 border-t-4 border-solid border-primary rounded-full animate-spin mb-3"></div>
           <p className="text-base font-medium text-gray-700">AI가 일주일 식단 생성중</p>
           <p className="text-sm text-gray-500 mt-1">잠시만 기다려주세요...</p>
         </div>
@@ -190,7 +190,7 @@ function Meals() {
         <button
           type="button"
           onClick={() => createMeals()}
-          className="w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+          className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
         >
           식단 생성하기
         </button>
@@ -207,7 +207,7 @@ function Meals() {
           <button
             type="button"
             onClick={() => createMeals()}
-            className="mt-2 w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
           >
             식단 생성하기
           </button>
@@ -232,7 +232,7 @@ function Meals() {
           <button
             type="button"
             onClick={() => createMeals()}
-            className="mt-2 w-full bg-orange-500 text-white rounded-lg py-2 px-4"
+            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
           >
             식단 다시 생성하기
           </button>
@@ -244,18 +244,18 @@ function Meals() {
   const selectedMeals = (() => {
     if (hour >= 0 && hour < 11) {
       return [
-        { title: "아침", data: mealsToday.breakfast, color: "bg-orange-400" },
-        { title: "점심", data: mealsToday.lunch, color: "bg-gray-700" },
+        { title: "아침", data: mealsToday.breakfast, color: "bg-primary" },
+        { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
       ];
     } else if (hour >= 11 && hour < 16) {
       return [
-        { title: "점심", data: mealsToday.lunch, color: "bg-gray-700" },
-        { title: "저녁", data: mealsToday.dinner, color: "bg-orange-400" },
+        { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
+        { title: "저녁", data: mealsToday.dinner, color: "bg-primary" },
       ];
     } else {
       return [
-        { title: "저녁", data: mealsToday.dinner, color: "bg-gray-700" },
-        { title: "아침", data: mealsTomorrow.breakfast, color: "bg-orange-400" },
+        { title: "저녁", data: mealsToday.dinner, color: "bg-secondary" },
+        { title: "아침", data: mealsTomorrow.breakfast, color: "bg-primary" },
       ];
     }
   })();
@@ -331,7 +331,7 @@ function GreetingSection({ name }: { name?: string }) {
     <div className="py-4">
       <div className="flex items-center gap-4 px-4">
         <Avatar
-          className="h-12 w-12 cursor-pointer bg-gray-100 rounded-full"
+          className="h-12 w-12 cursor-pointer bg-muted rounded-full"
           onClick={() => showDialog(<MemberSwitcherDialog />)}
         >
           <AvatarImage src={currentMember?.image_path} alt="User avatar" />
@@ -374,7 +374,7 @@ function MainPage() {
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
       <TodaysDietSection />
-      <div className="h-2 bg-gray-50 my-3 w-full" />
+      <div className="h-2 bg-muted/50 my-3 w-full" />
       <IngredientsSection />
     </div>
   );
