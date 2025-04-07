@@ -1,3 +1,4 @@
+import backgroundImage from "@/assets/background.png";
 import Fridge from "@/components/showcase/Fridge";
 import Table from "@/components/showcase/Table";
 import UserInfoCard from "@/components/showcase/UserInfoCard";
@@ -26,8 +27,32 @@ function ShowcaseScreen() {
   }
 
   return (
-    <div className="min-h-screen relative bg-blue-50">
-      <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5">
+    <div
+      className="min-h-screen relative bg-blue-50"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* 배경 이미지 컨테이너 */}
+      <div
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.5, // 투명도 설정 (0.0 - 1.0)
+          zIndex: 0,
+        }}
+      ></div>
+
+      {/* 콘텐츠 컨테이너 */}
+      <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5 relative z-10">
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
           <Fridge insideIngredients={insideIngredients} isActive={screensaverActive} />
@@ -48,7 +73,7 @@ function ShowcaseScreen() {
       </div>
 
       {/* Table positioned outside the flex container */}
-      <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none">
+      <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none z-20">
         <Table outsideIngredients={outsideIngredients} />
       </div>
     </div>
