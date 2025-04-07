@@ -87,7 +87,12 @@ function IngredientsContent() {
 
   // Show loading state
   if (isLoading) {
-    return <div className="text-center py-4">재료를 불러오는 중...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
+        <span className="text-sm font-medium text-muted-foreground">재료를 불러오는 중...</span>
+      </div>
+    );
   }
 
   return (
@@ -109,7 +114,12 @@ function IngredientsContent() {
           </div>
         </div>
       ))}
-      {isFetchingNextPage && <div className="text-center py-4">로딩 중...</div>}
+      {isFetchingNextPage && (
+        <div className="col-span-5 flex flex-col items-center justify-center py-4">
+          <BsArrowClockwise className="text-2xl text-primary animate-spin mb-1" />
+          <span className="text-xs font-medium text-muted-foreground">로딩 중...</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -172,9 +182,10 @@ function Meals() {
     return (
       <div className="mt-2 px-4">
         <div className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 border-t-4 border-solid border-primary rounded-full animate-spin mb-3"></div>
-          <p className="text-base font-medium text-gray-700">AI가 일주일 식단 생성중</p>
-          <p className="text-sm text-gray-500 mt-1">잠시만 기다려주세요...</p>
+          <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
+          <span className="text-sm font-medium text-muted-foreground">
+            AI가 일주일 식단 생성중...
+          </span>
         </div>
       </div>
     );
@@ -299,60 +310,51 @@ function MealCard({
   onCardClick,
 }: MealCardProps) {
   const isRefreshing = refreshingMealId === data.meal_id;
+  const isLoading = isRefreshing || isMealsLoading;
 
   return (
     <div
-      className={`relative w-full h-[180px] rounded-2xl shadow-lg text-white cursor-pointer overflow-hidden transition-transform duration-200 transform hover:scale-[1.02] hover:shadow-xl ${color} flex flex-col justify-between p-4`}
+      className={`relative w-full h-[180px] rounded-2xl shadow-lg text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-between p-4`}
       onClick={onCardClick}
     >
-      {/* 새로고침 로딩 스피너 */}
-      {isRefreshing && (
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
-          <div className="flex flex-col items-center">
-            <BsArrowClockwise className="text-3xl text-white animate-spin mb-2" />
-            <span className="text-sm font-medium text-white">AI가 식단을 생성중입니다...</span>
-          </div>
-        </div>
-      )}
-
-      {/* 전체 로딩 스피너 */}
-      {isMealsLoading && (
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-20">
-          <div className="flex flex-col items-center">
-            <BsArrowClockwise className="text-3xl text-white animate-spin mb-2" />
-            <span className="text-sm font-medium text-white">AI가 식단을 생성중입니다...</span>
-          </div>
-        </div>
-      )}
-
       {/* 제목 + 버튼 */}
       <div className="flex justify-between items-start">
         <h3 className="text-base font-semibold">{title}</h3>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRefresh(data.meal_id);
-          }}
-          disabled={isRefreshing}
-          className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-          aria-label="새로고침"
-        >
-          <BsArrowClockwise
-            className={`w-3.5 h-3.5 text-white ${isRefreshing ? "animate-spin" : ""}`}
-          />
-        </button>
+        {!isLoading && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRefresh(data.meal_id);
+            }}
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            aria-label="새로고침"
+          >
+            <BsArrowClockwise className="w-3.5 h-3.5 text-white" />
+          </button>
+        )}
       </div>
 
-      {/* 메뉴 목록 */}
-      <div className="flex-1 overflow-y-auto mt-2 scrollbar-hide">
-        <ul className="space-y-0.5">
-          {data.menu.map((item, index) => (
-            <li key={index} className="flex items-center text-sm font-medium leading-tight">
-              <span className="truncate">• {item}</span>
-            </li>
-          ))}
-        </ul>
+      {/* 메뉴 목록 또는 로딩 스피너 */}
+      <div className="flex-1 flex items-center justify-center">
+        {isLoading ? (
+          <div className="flex flex-col items-center">
+            <BsArrowClockwise className="text-3xl text-white animate-spin mb-2" />
+            <span className="text-sm font-medium text-white text-center">
+              AI가 식단을 생성중입니다...
+            </span>
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-y-auto scrollbar-hide">
+            <ul className="space-y-0.5">
+              {data.menu.map((item, index) => (
+                <li key={index} className="flex items-center text-sm font-medium leading-tight">
+                  <span className="truncate">• {item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* 바닥 장식 */}

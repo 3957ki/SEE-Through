@@ -4,7 +4,6 @@ import {
   removeDislikedFood,
   removePreferredFood,
 } from "@/api/members";
-import { Spinner } from "@/components/ui/spinner";
 import { useCurrentMember, useCurrentMemberMealsOf, useMutateRefreshMeal } from "@/queries/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
@@ -249,9 +248,11 @@ export default function MealPage() {
       />
 
       {isMealsLoading ? (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-          <Spinner size={36} />
-          <p className="mt-2 text-sm">식단을 불러오는 중입니다...</p>
+        <div className="flex flex-col items-center justify-center py-8">
+          <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
+          <span className="text-sm font-medium text-muted-foreground">
+            식단을 불러오는 중입니다...
+          </span>
         </div>
       ) : meals ? (
         <div className="space-y-4 p-4">
