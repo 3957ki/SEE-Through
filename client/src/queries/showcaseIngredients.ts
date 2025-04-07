@@ -6,29 +6,31 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
 export const showcaseIngredients = [
   {
-    ingredient_id: "99999999-0000-0000-0000-000000000001",
+    ingredient_id: "01960e59-db82-7c6c-9fa6-b4a0cd4d044c",
+    name: "땅콩버터",
+    image_path:
+      "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/peanut-butter.png",
+  },
+  {
+    ingredient_id: "01960e59-db82-7c6c-9f9a-1e130b41e7f6",
+    name: "딸기잼",
+    image_path:
+      "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/strawberry-jam.png",
+  },
+  {
+    ingredient_id: "01960e59-db82-7c6c-9f99-9a4a43040ddc",
     name: "두부",
     image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/tofu.png",
   },
   {
-    ingredient_id: "99999999-0000-0000-0000-000000000002",
-    name: "버섯",
-    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/mushroom.png",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000003",
-    name: "오이",
-    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cucumber.png",
-  },
-  {
-    ingredient_id: "99999999-0000-0000-0000-000000000004",
+    ingredient_id: "01960e59-db82-7c6c-9f9f-4be039992361",
     name: "계란",
     image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/eggs.png",
   },
   {
-    ingredient_id: "99999999-0000-0000-0000-000000000005",
-    name: "치즈",
-    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/cheese.png",
+    ingredient_id: "01960e59-db82-7c6c-9fa9-6cf9339d17ab",
+    name: "돼지고기",
+    image_path: "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/pork.png",
   },
 ];
 
