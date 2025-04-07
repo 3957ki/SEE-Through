@@ -1,7 +1,6 @@
 import { SimpleDialog } from "@/components/dialog/SimpleDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,7 +27,7 @@ export default function MyPage() {
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState<Date | undefined>();
-  const [isColorBlind, setIsColorBlind] = useState(false);
+  const [colorVision, setColorVision] = useState("정상");
   const [fontSize, setFontSize] = useState("");
   const [preferredFoods, setPreferredFoods] = useState<string[]>([]);
   const [dislikedFoods, setDislikedFoods] = useState<string[]>([]);
@@ -40,7 +39,7 @@ export default function MyPage() {
 
     setName(currentMember.name || "");
     setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
-    setIsColorBlind(currentMember.color === "색맹");
+    setColorVision(currentMember.color || "정상");
     setFontSize(currentMember.font_size);
     setPreferredFoods(currentMember.preferred_foods || []);
     setDislikedFoods(currentMember.disliked_foods || []);
@@ -52,7 +51,6 @@ export default function MyPage() {
     if (!currentMember) return false;
 
     const birthdayString = birthday ? format(birthday, "yyyy-MM-dd") : null;
-    const currentColor = isColorBlind ? "색맹" : "정상";
 
     const areArraysEqual = (arr1: string[], arr2: string[]) => {
       if (arr1.length !== arr2.length) return false;
@@ -62,7 +60,7 @@ export default function MyPage() {
     return (
       name !== (currentMember.name || "") ||
       birthdayString !== currentMember.birth ||
-      currentColor !== (currentMember.color || "정상") ||
+      colorVision !== (currentMember.color || "정상") ||
       fontSize !== (currentMember.font_size || "") ||
       !areArraysEqual(preferredFoods, currentMember.preferred_foods || []) ||
       !areArraysEqual(dislikedFoods, currentMember.disliked_foods || []) ||
@@ -73,7 +71,7 @@ export default function MyPage() {
     currentMember,
     name,
     birthday,
-    isColorBlind,
+    colorVision,
     fontSize,
     preferredFoods,
     dislikedFoods,
@@ -87,7 +85,7 @@ export default function MyPage() {
 
   const handleShowCalendar = () => {
     showDialog(
-      <div className="p-4">
+      <div className="p-4 flex justify-center">
         <Calendar
           mode="single"
           selected={birthday}
@@ -179,7 +177,7 @@ export default function MyPage() {
           member_id: currentMember.member_id,
           name,
           birth: birthday ? format(birthday, "yyyy-MM-dd") : "",
-          color: isColorBlind ? "색맹" : "정상",
+          color: colorVision,
           font_size: fontSize,
           preferred_foods: preferredFoods,
           disliked_foods: dislikedFoods,
@@ -210,7 +208,7 @@ export default function MyPage() {
         {/* User Info Section */}
         <div className="flex gap-4">
           <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">이름</div>
+            <div className="text-sm text-muted-foreground mb-1">이름</div>
             <Input
               placeholder="이름을 입력하세요"
               value={name}
@@ -218,7 +216,7 @@ export default function MyPage() {
             />
           </div>
           <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">생일</div>
+            <div className="text-sm text-muted-foreground mb-1">생일</div>
             <Button
               variant="outline"
               onClick={handleShowCalendar}
@@ -228,29 +226,37 @@ export default function MyPage() {
               {birthday ? (
                 format(birthday, "yyyy.MM.dd", { locale: ko })
               ) : (
-                <span className="text-gray-400">생일을 알려주세요!</span>
+                <span className="text-muted-foreground/70">생일을 알려주세요!</span>
               )}
             </Button>
           </div>
         </div>
 
-        {/* Color Blindness and Font Size Section */}
+        {/* Color Vision and Font Size Section */}
         <div className="flex gap-4">
           <div className="flex-1 flex items-center gap-2">
-            <label htmlFor="colorBlind" className="flex items-center gap-2 cursor-pointer">
-              <span className="text-sm text-gray-500 mb-1">색맹 여부</span>
-              <Checkbox
-                id="colorBlind"
-                checked={isColorBlind}
-                onCheckedChange={(checked) => setIsColorBlind(checked as boolean)}
-              />
-            </label>
+            <span className="text-sm text-muted-foreground mb-1">색맹/색약</span>
+            <div className="flex-grow"></div>
+            <Select value={colorVision} onValueChange={setColorVision}>
+              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
+                <SelectValue placeholder="색맹/색약" className="text-sm" />
+              </SelectTrigger>
+              <SelectContent sideOffset={0} align="center">
+                <SelectItem value="정상" className="text-sm text-center">
+                  정상
+                </SelectItem>
+                <SelectItem value="색맹" className="text-sm text-center">
+                  색맹
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm text-gray-500 mb-1">폰트 크기</span>
+            <span className="text-sm text-muted-foreground mb-1">폰트 크기</span>
+            <div className="flex-grow"></div>
             <Select value={fontSize} onValueChange={setFontSize}>
-              <SelectTrigger className="w-[80px] h-9">
+              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
                 <SelectValue placeholder="폰트 크기" className="text-sm" />
               </SelectTrigger>
               <SelectContent sideOffset={0} align="center">
@@ -276,8 +282,8 @@ export default function MyPage() {
               key={type}
               className={`py-2 px-2 text-sm ${
                 measurementType === type
-                  ? "text-orange-500 border-b-2 border-orange-500"
-                  : "text-gray-500"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-muted-foreground"
               }`}
               style={{ flex: type.length }}
               onClick={() => setMeasurementType(type)}
@@ -296,12 +302,12 @@ export default function MyPage() {
             {getCurrentList().map((item, index) => (
               <div
                 key={index}
-                className="flex-1 py-2 px-3 border rounded-md bg-gray-50 flex items-center justify-between gap-2"
+                className="flex-1 py-2 px-3 border rounded-md bg-card flex items-center justify-between gap-2"
               >
                 <div className="break-words flex-1">{item}</div>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  className="text-muted hover:text-foreground p-1 rounded-full hover:bg-muted"
                   onClick={() => {
                     const newList = getCurrentList().filter((_, i) => i !== index);
                     setCurrentList(newList);
@@ -321,7 +327,7 @@ export default function MyPage() {
             onClick={() => {
               setName(currentMember.name || "");
               setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
-              setIsColorBlind(currentMember.color === "색맹");
+              setColorVision(currentMember.color || "정상");
               setFontSize(currentMember.font_size);
               setPreferredFoods(currentMember.preferred_foods || []);
               setDislikedFoods(currentMember.disliked_foods || []);
@@ -333,7 +339,7 @@ export default function MyPage() {
             취소
           </Button>
           <Button
-            className="flex-1 bg-orange-500 text-white hover:bg-orange-600"
+            className="flex-1 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             disabled={!isModified}
             onClick={handleSubmit}
           >
