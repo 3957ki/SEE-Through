@@ -20,10 +20,8 @@ function CommentDialog({ message, danger = false }: { message: string; danger?: 
   };
 
   return (
-    <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-xl border border-gray-200 animate-fade-in transition-all duration-300">
-      <div
-        className={`flex justify-center items-center ${styles.iconBg} rounded-full w-14 h-14 mb-4 mx-auto`}
-      >
+    <div className="flex flex-col items-center text-center">
+      <div className={`${styles.iconBg} rounded-full p-3 mb-4 flex items-center justify-center`}>
         {icon}
       </div>
 
@@ -36,6 +34,7 @@ function CommentDialog({ message, danger = false }: { message: string; danger?: 
       </p>
 
       <button
+        type="button"
         onClick={hideDialog}
         className={`mt-6 w-full ${styles.buttonColor} text-white py-2.5 rounded-md font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
       >

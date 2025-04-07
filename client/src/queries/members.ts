@@ -234,7 +234,7 @@ export function useUpdateMember() {
       allergies: string[];
       diseases: string[];
     }) => updateMember(data),
-    onSuccess: () => {
+    onSuccess: (_, submittedData) => {
       // Invalidate both the member list and the current member's details
       queryClient.invalidateQueries({ queryKey: members.list.queryKey });
       if (currentMemberId) {
@@ -242,6 +242,39 @@ export function useUpdateMember() {
           queryKey: members.current._ctx.detail(currentMemberId).queryKey,
         });
       }
+
+      console.log("submittedData", submittedData);
+
+      // // Apply theme class based on color preference if it was changed
+      // if (submittedData.color !== undefined) {
+      //   // Remove all theme classes first
+      //   document.documentElement.classList.remove("default", "orange-theme", "colorblind-theme");
+
+      //   // Add appropriate theme class
+      //   if (submittedData.color === "색맹") {
+      //     document.documentElement.classList.add("colorblind-theme");
+      //   } else if (submittedData.color) {
+      //     document.documentElement.classList.add("orange-theme");
+      //   }
+      // }
+
+      // // Apply font size class based on font_size preference if it was changed
+      // if (submittedData.font_size !== undefined) {
+      //   // Remove all font size classes first
+      //   document.documentElement.classList.remove("font-small", "font-regular", "font-large");
+
+      //   // Add appropriate font size class
+      //   let fontSizeClass = "font-regular";
+      //   switch (submittedData.font_size) {
+      //     case "작게":
+      //       fontSizeClass = "font-small";
+      //       break;
+      //     case "크게":
+      //       fontSizeClass = "font-large";
+      //       break;
+      //   }
+      //   document.documentElement.classList.add(fontSizeClass);
+      // }
     },
   });
 }

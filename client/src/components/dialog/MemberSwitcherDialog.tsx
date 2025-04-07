@@ -77,7 +77,7 @@ export function MemberSwitcherDialog() {
         )}
       </div>
 
-      <div className="flex justify-center gap-3 mt-2">
+      <div className="flex justify-center gap-3 mt-2 text-center">
         <button
           className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium"
           onClick={hideDialog}
