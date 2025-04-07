@@ -12,7 +12,7 @@ function IngredientDialog({ ingredientId }: IngredientDialogProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg p-4 w-80 max-w-md">
+      <div className="bg-white rounded-lg p-4 w-80 max-w-md mx-auto text-center">
         <div className="flex justify-center items-center h-48">
           <Spinner size={24} />
         </div>
@@ -22,7 +22,7 @@ function IngredientDialog({ ingredientId }: IngredientDialogProps) {
 
   if (error || !ingredient) {
     return (
-      <div className="bg-white rounded-lg p-4 w-80 max-w-md">
+      <div className="bg-white rounded-lg p-4 w-80 max-w-md mx-auto text-center">
         <div className="flex justify-center items-center h-48">
           <p className="text-red-500">데이터를 불러오는데 실패했습니다.</p>
         </div>
@@ -31,10 +31,10 @@ function IngredientDialog({ ingredientId }: IngredientDialogProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 w-80 max-w-md">
-      <div className="flex flex-col gap-4">
-        <div className="relative">
-          <div className="w-full aspect-[2/1] rounded-md overflow-hidden">
+    <div className="bg-white rounded-lg p-4 w-80 max-w-md mx-auto">
+      <div className="flex flex-col gap-4 items-center">
+        <div className="relative w-full">
+          <div className="w-full aspect-[2/1] rounded-md overflow-hidden flex justify-center">
             <img
               src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
               alt={ingredient.name ?? "Ingredient image"}
@@ -43,7 +43,7 @@ function IngredientDialog({ ingredientId }: IngredientDialogProps) {
           </div>
         </div>
 
-        <div>
+        <div className="w-full text-center">
           <h3 className="font-bold text-2xl">{ingredient.name}</h3>
           <div className="mt-4 flex flex-col gap-3">
             <div className="flex items-center gap-3 py-2 border-b border-gray-100">
@@ -78,13 +78,15 @@ function IngredientDialog({ ingredientId }: IngredientDialogProps) {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md w-full font-medium"
-          onClick={hideDialog}
-        >
-          닫기
-        </button>
+        <div className="w-full">
+          <button
+            type="button"
+            className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md w-full font-medium"
+            onClick={hideDialog}
+          >
+            닫기
+          </button>
+        </div>
       </div>
     </div>
   );

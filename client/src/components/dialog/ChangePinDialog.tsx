@@ -128,7 +128,7 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full text-center">
       <h2 className="text-xl font-semibold mb-4 text-foreground">{getStepTitle()}</h2>
 
       {error && <p className="text-red-500 mb-4 text-center text-sm text-foreground">{error}</p>}

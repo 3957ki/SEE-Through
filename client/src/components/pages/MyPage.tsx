@@ -87,7 +87,7 @@ export default function MyPage() {
 
   const handleShowCalendar = () => {
     showDialog(
-      <div className="p-4">
+      <div className="p-4 flex justify-center">
         <Calendar
           mode="single"
           selected={birthday}

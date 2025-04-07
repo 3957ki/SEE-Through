@@ -16,7 +16,9 @@ function CommentDialog({ message, danger = false }: { message: string; danger?: 
 
   return (
     <div className="flex flex-col items-center text-center p-6 bg-white rounded-2xl shadow-md max-w-md mx-auto border border-gray-200">
-      <div className={`${iconBg} rounded-full p-3 mb-4`}>{icon}</div>
+      <div className={`${iconBg} rounded-full p-3 mb-4 flex items-center justify-center`}>
+        {icon}
+      </div>
 
       <h3 className={`text-xl font-semibold mb-2 ${titleColor}`}>{title}</h3>
 

@@ -36,8 +36,8 @@ export default function PinDialog({ correctPin, onSuccess }: PinDialogProps) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="text-center">
+    <div className="flex flex-col items-center gap-6 text-center">
+      <div>
         <h2 className="text-lg font-semibold mb-1 text-foreground">PIN 번호 입력</h2>
         <p className="text-sm text-foreground">모니터링 페이지 접근을 위해 PIN을 입력하세요</p>
       </div>

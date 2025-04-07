@@ -19,11 +19,11 @@ export function Dialog({ content, isOpen, onClose }: DialogProps) {
       <div
         className={cn(
           "w-full max-w-md p-6 rounded-lg shadow-xl bg-background text-foreground border border-border",
-          "transform transition-all duration-300 ease-out"
+          "transform transition-all duration-300 ease-out flex flex-col"
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {content}
+        <div className="w-full flex justify-center items-center">{content}</div>
       </div>
     </div>
   );
