@@ -11,7 +11,7 @@ function CommentDialog({ message, danger = false }: { message: string; danger?: 
   );
   const iconBg = danger ? "bg-red-100" : "bg-blue-100";
   const buttonColor = danger ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600";
-  const title = danger ? "⚠️ 위험 알림" : "ℹ️ 알림";
+  const title = danger ? "주의 알림" : "알림 메시지";
   const titleColor = danger ? "text-red-700" : "text-gray-800";
 
   return (
