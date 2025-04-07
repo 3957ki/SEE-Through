@@ -1,7 +1,6 @@
 import { SimpleDialog } from "@/components/dialog/SimpleDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,7 +27,7 @@ export default function MyPage() {
   const [measurementType, setMeasurementType] = useState<MeasurementType>("선호 음식");
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState<Date | undefined>();
-  const [isColorBlind, setIsColorBlind] = useState(false);
+  const [colorVision, setColorVision] = useState("정상");
   const [fontSize, setFontSize] = useState("");
   const [preferredFoods, setPreferredFoods] = useState<string[]>([]);
   const [dislikedFoods, setDislikedFoods] = useState<string[]>([]);
@@ -40,7 +39,7 @@ export default function MyPage() {
 
     setName(currentMember.name || "");
     setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
-    setIsColorBlind(currentMember.color === "색맹");
+    setColorVision(currentMember.color || "정상");
     setFontSize(currentMember.font_size);
     setPreferredFoods(currentMember.preferred_foods || []);
     setDislikedFoods(currentMember.disliked_foods || []);
@@ -52,7 +51,6 @@ export default function MyPage() {
     if (!currentMember) return false;
 
     const birthdayString = birthday ? format(birthday, "yyyy-MM-dd") : null;
-    const currentColor = isColorBlind ? "색맹" : "정상";
 
     const areArraysEqual = (arr1: string[], arr2: string[]) => {
       if (arr1.length !== arr2.length) return false;
@@ -62,7 +60,7 @@ export default function MyPage() {
     return (
       name !== (currentMember.name || "") ||
       birthdayString !== currentMember.birth ||
-      currentColor !== (currentMember.color || "정상") ||
+      colorVision !== (currentMember.color || "정상") ||
       fontSize !== (currentMember.font_size || "") ||
       !areArraysEqual(preferredFoods, currentMember.preferred_foods || []) ||
       !areArraysEqual(dislikedFoods, currentMember.disliked_foods || []) ||
@@ -73,7 +71,7 @@ export default function MyPage() {
     currentMember,
     name,
     birthday,
-    isColorBlind,
+    colorVision,
     fontSize,
     preferredFoods,
     dislikedFoods,
@@ -179,7 +177,7 @@ export default function MyPage() {
           member_id: currentMember.member_id,
           name,
           birth: birthday ? format(birthday, "yyyy-MM-dd") : "",
-          color: isColorBlind ? "색맹" : "정상",
+          color: colorVision,
           font_size: fontSize,
           preferred_foods: preferredFoods,
           disliked_foods: dislikedFoods,
@@ -234,23 +232,31 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* Color Blindness and Font Size Section */}
+        {/* Color Vision and Font Size Section */}
         <div className="flex gap-4">
           <div className="flex-1 flex items-center gap-2">
-            <label htmlFor="colorBlind" className="flex items-center gap-2 cursor-pointer">
-              <span className="text-sm text-muted-foreground mb-1">색맹 여부</span>
-              <Checkbox
-                id="colorBlind"
-                checked={isColorBlind}
-                onCheckedChange={(checked) => setIsColorBlind(checked as boolean)}
-              />
-            </label>
+            <span className="text-sm text-muted-foreground mb-1">색맹/색약</span>
+            <div className="flex-grow"></div>
+            <Select value={colorVision} onValueChange={setColorVision}>
+              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
+                <SelectValue placeholder="색맹/색약" className="text-sm" />
+              </SelectTrigger>
+              <SelectContent sideOffset={0} align="center">
+                <SelectItem value="정상" className="text-sm text-center">
+                  정상
+                </SelectItem>
+                <SelectItem value="색맹" className="text-sm text-center">
+                  색맹
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex-1 flex items-center gap-2">
             <span className="text-sm text-muted-foreground mb-1">폰트 크기</span>
+            <div className="flex-grow"></div>
             <Select value={fontSize} onValueChange={setFontSize}>
-              <SelectTrigger className="w-[80px] h-9">
+              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
                 <SelectValue placeholder="폰트 크기" className="text-sm" />
               </SelectTrigger>
               <SelectContent sideOffset={0} align="center">
@@ -321,7 +327,7 @@ export default function MyPage() {
             onClick={() => {
               setName(currentMember.name || "");
               setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
-              setIsColorBlind(currentMember.color === "색맹");
+              setColorVision(currentMember.color || "정상");
               setFontSize(currentMember.font_size);
               setPreferredFoods(currentMember.preferred_foods || []);
               setDislikedFoods(currentMember.disliked_foods || []);
