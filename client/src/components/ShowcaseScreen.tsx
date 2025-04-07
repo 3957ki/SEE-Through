@@ -26,7 +26,7 @@ function ShowcaseScreen() {
   }
 
   return (
-    <div className="min-h-screen relative bg-blue-50">
+    <div className="min-h-screen relative bg-background/80">
       <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5">
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
