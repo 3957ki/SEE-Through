@@ -25,6 +25,8 @@ export function CustomDropdown({
 }: CustomDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const selectedOptionRef = useRef<HTMLButtonElement>(null);
+  const dropdownListRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -39,6 +41,20 @@ export function CustomDropdown({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Scroll to selected option when dropdown opens
+  useEffect(() => {
+    if (isOpen && selectedOptionRef.current && dropdownListRef.current) {
+      const dropdownList = dropdownListRef.current;
+      const selectedOption = selectedOptionRef.current;
+
+      // Calculate the scroll position to center the selected option
+      const scrollTop =
+        selectedOption.offsetTop - dropdownList.clientHeight / 2 + selectedOption.clientHeight / 2;
+
+      dropdownList.scrollTop = Math.max(0, scrollTop);
+    }
+  }, [isOpen]);
 
   const handleOptionSelect = (option: string) => {
     onChange(option);
@@ -61,14 +77,16 @@ export function CustomDropdown({
 
       {isOpen && (
         <div
+          ref={dropdownListRef}
           className={cn(
-            "absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 max-h-60 overflow-auto",
+            "absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 rounded-md shadow-lg max-h-60 overflow-auto",
             dropdownClassName
           )}
         >
           {options.map((option) => (
             <button
               key={option}
+              ref={option === value ? selectedOptionRef : null}
               type="button"
               onClick={() => handleOptionSelect(option)}
               className={cn(

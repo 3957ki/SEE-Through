@@ -18,9 +18,9 @@ export function Calendar({ ...props }: CalendarProps) {
     return date;
   });
 
-  // Generate years for dropdown (current year ± 10 years)
-  const currentYear = currentMonth.getFullYear();
-  const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
+  // Generate years from 1900 to current year in ascending order
+  const maxYear = new Date().getFullYear();
+  const years = Array.from({ length: maxYear - 1900 + 1 }, (_, i) => 1900 + i);
 
   const handlePrevMonth = () => {
     const newMonth = subMonths(currentMonth, 1);
@@ -81,7 +81,7 @@ export function Calendar({ ...props }: CalendarProps) {
           onChange={handleYearSelect}
           className="w-32"
           buttonClassName="px-2 py-2 text-base font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
-          dropdownClassName="w-32 bg-popover shadow-md"
+          dropdownClassName="w-32 bg-popover shadow-md max-h-[200px] overflow-y-auto"
           optionClassName="text-center text-base hover:bg-accent hover:text-accent-foreground"
         />
 
