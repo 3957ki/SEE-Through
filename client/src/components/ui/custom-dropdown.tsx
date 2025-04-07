@@ -67,7 +67,7 @@ export function CustomDropdown({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center justify-between w-full px-2 py-1 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md",
+          "flex items-center justify-between w-full px-2 py-1 text-sm font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md",
           buttonClassName
         )}
       >
@@ -79,7 +79,7 @@ export function CustomDropdown({
         <div
           ref={dropdownListRef}
           className={cn(
-            "absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 rounded-md shadow-lg max-h-60 overflow-auto",
+            "absolute z-50 mt-1 w-full bg-popover text-popover-foreground rounded-md shadow-md max-h-60 overflow-auto",
             dropdownClassName
           )}
         >
@@ -90,8 +90,8 @@ export function CustomDropdown({
               type="button"
               onClick={() => handleOptionSelect(option)}
               className={cn(
-                "w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800",
-                option === value && "bg-slate-100 dark:bg-slate-800 font-medium",
+                "w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
+                option === value && "bg-accent text-accent-foreground font-medium",
                 optionClassName
               )}
             >
