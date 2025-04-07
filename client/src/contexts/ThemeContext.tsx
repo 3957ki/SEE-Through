@@ -1,12 +1,16 @@
 import { useCurrentMember } from "@/queries/members";
-import React, { createContext, use, useEffect, useState } from "react";
+import { createContext, use, useEffect, useMemo, useState, type ReactNode } from "react";
 
 // Define theme types
 export type ThemeType = "default" | "orange-theme" | "colorblind-theme";
 
+// Define font size types
+export type FontSizeType = "font-small" | "font-regular" | "font-large";
+
 // Theme context type
 type ThemeContextType = {
   theme: ThemeType;
+  fontSize: FontSizeType;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 };
@@ -16,70 +20,95 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Theme provider props
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  // Get current member's color preference
+  // Get current member's preferences
   const { data: currentMember } = useCurrentMember();
 
-  // Initialize theme based on currentMember's color attribute
-  const [theme, setTheme] = useState<ThemeType>(() => {
-    // Default to localStorage if no currentMember
-    if (!currentMember?.color) {
-      const savedTheme = localStorage.getItem("theme");
-      return (savedTheme as ThemeType) || "default";
+  useEffect(() => {
+    if (currentMember) {
+      console.log("[ThemeProvider] currentMember updated:", currentMember);
     }
+  }, [currentMember]);
 
-    // Map member color preference to theme
-    return currentMember.color === "색맹" ? "colorblind-theme" : "orange-theme";
-  });
-
-  // Initialize to light mode, but keep the dark mode toggle functionality
+  // Initialize to light mode
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
-  // Update theme when currentMember changes
-  useEffect(() => {
-    if (currentMember?.color) {
-      setTheme(currentMember.color === "색맹" ? "colorblind-theme" : "orange-theme");
-    }
-  }, [currentMember?.color]);
+  // Calculate theme based on currentMember color
+  const theme = useMemo<ThemeType>(() => {
+    console.log("[ThemeProvider] Calculating theme for:", currentMember?.color);
+    if (currentMember?.color === "색맹") return "colorblind-theme";
+    if (currentMember?.color) return "orange-theme";
+    return "default";
+  }, [currentMember]);
 
-  // Update the theme class on the document element
+  // Calculate font size based on currentMember font_size
+  const fontSize = useMemo<FontSizeType>(() => {
+    console.log("[ThemeProvider] Calculating fontSize for:", currentMember?.font_size);
+    if (!currentMember?.font_size) return "font-regular";
+
+    switch (currentMember.font_size) {
+      case "작게":
+        return "font-small";
+      case "크게":
+        return "font-large";
+      default:
+        return "font-regular"; // "보통" is the default
+    }
+  }, [currentMember]);
+
+  // Apply theme class to document root
   useEffect(() => {
-    // Remove all theme classes
+    // Remove all theme classes first
     document.documentElement.classList.remove("default", "orange-theme", "colorblind-theme");
 
-    // Add the current theme class
+    // Add current theme class if not default
     if (theme !== "default") {
       document.documentElement.classList.add(theme);
     }
-
-    // Save to localStorage
-    localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Update dark mode class
+  // Apply font size class to document root
+  useEffect(() => {
+    // Remove all font size classes first
+    document.documentElement.classList.remove("font-small", "font-regular", "font-large");
+
+    // Add current font size class
+    document.documentElement.classList.add(fontSize);
+  }, [fontSize]);
+
+  // Apply dark mode class to document root
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-
-    // Save to localStorage
-    localStorage.setItem("darkMode", isDarkMode.toString());
   }, [isDarkMode]);
 
-  // Function to toggle dark mode
+  // Toggle dark mode function
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
   };
 
-  return <ThemeContext value={{ theme, isDarkMode, toggleDarkMode }}>{children}</ThemeContext>;
+  // Create context value
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      fontSize,
+      isDarkMode,
+      toggleDarkMode,
+    }),
+    [theme, fontSize, isDarkMode]
+  );
+
+  // Use React 19 context syntax
+  return <ThemeContext value={contextValue}>{children}</ThemeContext>;
 }
 
-// Hook for using theme context
+// Custom hook for using theme context with React 19 'use' function
 export function useTheme() {
   const context = use(ThemeContext);
   if (context === undefined) {

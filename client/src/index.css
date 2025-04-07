@@ -36,6 +36,22 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  /* Base font size - "보통" (Regular) is the default */
+  --font-size-multiplier: 1;
+}
+
+/* Font size classes */
+.font-small {
+  --font-size-multiplier: 0.85;
+}
+
+.font-regular {
+  --font-size-multiplier: 1;
+}
+
+.font-large {
+  --font-size-multiplier: 1.2;
 }
 
 .dark {
@@ -132,6 +148,46 @@
   /* For IE/Edge */
   * {
     -ms-overflow-style: none;
+  }
+}
+
+/* Apply font size multiplier to text elements */
+@layer base {
+  html {
+    font-size: calc(100% * var(--font-size-multiplier));
+  }
+
+  /* Scale specific text classes for better readability */
+  .text-xs {
+    font-size: calc(0.75rem * var(--font-size-multiplier));
+  }
+
+  .text-sm {
+    font-size: calc(0.875rem * var(--font-size-multiplier));
+  }
+
+  .text-base {
+    font-size: calc(1rem * var(--font-size-multiplier));
+  }
+
+  .text-lg {
+    font-size: calc(1.125rem * var(--font-size-multiplier));
+  }
+
+  .text-xl {
+    font-size: calc(1.25rem * var(--font-size-multiplier));
+  }
+
+  .text-2xl {
+    font-size: calc(1.5rem * var(--font-size-multiplier));
+  }
+
+  .text-3xl {
+    font-size: calc(1.875rem * var(--font-size-multiplier));
+  }
+
+  .text-4xl {
+    font-size: calc(2.25rem * var(--font-size-multiplier));
   }
 }
 
