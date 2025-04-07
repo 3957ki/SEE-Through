@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BsArrowClockwise,
   BsCalendarEvent,
@@ -229,6 +229,43 @@ export default function MealPage() {
   const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
   const refreshMutation = useMutateRefreshMeal(selectedDate);
 
+  // State for managing loading visibility
+  const [showLoading, setShowLoading] = useState(false);
+  const loadStartTime = useRef<number>(0);
+  const minLoadingTime = 300; // Shorter minimum display time (300ms)
+
+  // Keep track of the last successfully loaded meal data
+  const [lastMeals, setLastMeals] = useState(meals);
+
+  // Update lastMeals whenever we get new meal data
+  useEffect(() => {
+    if (meals) {
+      setLastMeals(meals);
+    }
+  }, [meals]);
+
+  // Effect to handle loading state with smart timing
+  useEffect(() => {
+    if (isMealsLoading) {
+      // Record when loading started
+      loadStartTime.current = Date.now();
+      setShowLoading(true);
+    } else if (showLoading) {
+      // Calculate how long the loading has been visible
+      const loadingDuration = Date.now() - loadStartTime.current;
+
+      // If loading was visible for less than our minimum time, add a small delay
+      // This prevents quick flashes but doesn't add unnecessary delay for longer operations
+      if (loadingDuration < minLoadingTime) {
+        const remainingTime = minLoadingTime - loadingDuration;
+        setTimeout(() => setShowLoading(false), remainingTime);
+      } else {
+        // If it was already visible long enough, hide immediately
+        setShowLoading(false);
+      }
+    }
+  }, [isMealsLoading, showLoading]);
+
   const handleGoToday = () => {
     setSelectedDate(new Date());
   };
@@ -239,6 +276,10 @@ export default function MealPage() {
 
   if (!currentMember) return null;
 
+  // Determine which meal data to display - current or last loaded
+  const displayMeals = meals || lastMeals;
+  const showNoDataMessage = !displayMeals && !isMealsLoading && !showLoading;
+
   return (
     <div>
       <DateSelectorSection
@@ -247,54 +288,74 @@ export default function MealPage() {
         handleGoToday={handleGoToday}
       />
 
-      {isMealsLoading ? (
-        <div className="flex flex-col items-center justify-center py-8">
+      <div className="relative">
+        {/* Loading spinner with fast fade-in, slightly slower fade-out */}
+        <div
+          className={`flex flex-col items-center justify-center py-8 absolute w-full
+            transition-opacity duration-150 ease-in-out
+            ${showLoading ? "opacity-100 z-10" : "opacity-0 z-0"}
+          `}
+        >
           <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
           <span className="text-sm font-medium text-muted-foreground">
             식단을 불러오는 중입니다...
           </span>
         </div>
-      ) : meals ? (
-        <div className="space-y-4 p-4">
-          <MealSection
-            title="아침"
-            items={meals.breakfast.menu}
-            reason={meals.breakfast.reason}
-            mealId={meals.breakfast.meal_id}
-            onRefresh={handleRefreshMeal}
-            isRefreshing={
-              refreshMutation.isPending && refreshMutation.variables === meals.breakfast.meal_id
-            }
-            memberId={currentMember.member_id}
-          />
-          <MealSection
-            title="점심"
-            items={meals.lunch.menu}
-            reason={meals.lunch.reason}
-            mealId={meals.lunch.meal_id}
-            onRefresh={handleRefreshMeal}
-            isRefreshing={
-              refreshMutation.isPending && refreshMutation.variables === meals.lunch.meal_id
-            }
-            memberId={currentMember.member_id}
-          />
-          <MealSection
-            title="저녁"
-            items={meals.dinner.menu}
-            reason={meals.dinner.reason}
-            mealId={meals.dinner.meal_id}
-            onRefresh={handleRefreshMeal}
-            isRefreshing={
-              refreshMutation.isPending && refreshMutation.variables === meals.dinner.meal_id
-            }
-            memberId={currentMember.member_id}
-          />
+
+        {/* Content with conditional opacity based on loading state */}
+        <div
+          className={`transition-opacity duration-200 
+            ${showLoading ? "opacity-0" : "opacity-100"}
+          `}
+        >
+          {displayMeals ? (
+            <div className="space-y-4 p-4">
+              <MealSection
+                title="아침"
+                items={displayMeals.breakfast.menu}
+                reason={displayMeals.breakfast.reason}
+                mealId={displayMeals.breakfast.meal_id}
+                onRefresh={handleRefreshMeal}
+                isRefreshing={
+                  refreshMutation.isPending &&
+                  refreshMutation.variables === displayMeals.breakfast.meal_id
+                }
+                memberId={currentMember.member_id}
+              />
+              <MealSection
+                title="점심"
+                items={displayMeals.lunch.menu}
+                reason={displayMeals.lunch.reason}
+                mealId={displayMeals.lunch.meal_id}
+                onRefresh={handleRefreshMeal}
+                isRefreshing={
+                  refreshMutation.isPending &&
+                  refreshMutation.variables === displayMeals.lunch.meal_id
+                }
+                memberId={currentMember.member_id}
+              />
+              <MealSection
+                title="저녁"
+                items={displayMeals.dinner.menu}
+                reason={displayMeals.dinner.reason}
+                mealId={displayMeals.dinner.meal_id}
+                onRefresh={handleRefreshMeal}
+                isRefreshing={
+                  refreshMutation.isPending &&
+                  refreshMutation.variables === displayMeals.dinner.meal_id
+                }
+                memberId={currentMember.member_id}
+              />
+            </div>
+          ) : (
+            showNoDataMessage && (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <p className="text-muted-foreground">식단 정보가 없습니다.</p>
+              </div>
+            )
+          )}
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-          <p className="text-muted-foreground">식단 정보가 없습니다.</p>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
