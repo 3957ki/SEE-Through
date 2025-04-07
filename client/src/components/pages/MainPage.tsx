@@ -12,24 +12,21 @@ import { BsArrowClockwise, BsCalendarEvent, BsPersonCircle } from "react-icons/b
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
 
-  // Use try-catch pattern for the hook
-  let ingredients: Ingredient[] = [];
-  let loadMoreIngredients = () => {};
-  let hasMore = false;
-  let isLoading = false;
-  let isFetchingNextPage = false;
+  // Call the hook unconditionally at the top level
+  const {
+    ingredients,
+    loadMoreIngredients,
+    hasMore,
+    isLoading,
+    isFetchingNextPage,
+    isError,
+    error: hookError,
+  } = useCurrentMemberIngredients();
 
+  // Handle errors from the hook
   try {
-    const result = useCurrentMemberIngredients();
-    ingredients = result.ingredients;
-    loadMoreIngredients = result.loadMoreIngredients;
-    hasMore = result.hasMore;
-    isLoading = result.isLoading;
-    isFetchingNextPage = result.isFetchingNextPage;
-
-    // Handle error from the hook
-    if (result.isError && result.error) {
-      setError(result.error instanceof Error ? result.error : new Error(String(result.error)));
+    if (isError && hookError) {
+      setError(hookError instanceof Error ? hookError : new Error(String(hookError)));
     }
   } catch (err) {
     console.error("Error in useCurrentMemberIngredients:", err);
