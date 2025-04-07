@@ -147,10 +147,10 @@ export default function LogPage() {
           {/* 로그 항목들 */}
           <div className="space-y-2">
             {entries.map((entry, index) => (
-              <div key={index} className="bg-card rounded-lg p-2 shadow-sm">
-                <div className="flex items-center">
-                  {/* 재료 이미지 */}
-                  <Avatar className="h-8 w-8 mr-2">
+              <div key={index} className="bg-card rounded-lg p-3 shadow-sm">
+                <div className="flex items-center mb-2">
+                  {/* 재료 이미지 - 왼쪽 */}
+                  <Avatar className="h-10 w-10 mr-3">
                     <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
                     <AvatarFallback>
                       <Package className="h-4 w-4" />
@@ -158,34 +158,33 @@ export default function LogPage() {
                   </Avatar>
 
                   <div className="flex-1">
-                    {/* 재료 이름과 시간 */}
-                    <div className="flex justify-between items-center">
+                    {/* 재료 이름만 표시 */}
+                    <div className="flex flex-col">
                       <span className="text-base font-medium">{entry.ingredient}</span>
-                      <span className="text-sm text-muted-foreground">{entry.time}</span>
-                    </div>
 
-                    <div className="flex items-center mt-1">
-                      {/* 사용자 이미지와 이름 */}
+                      {/* 시간과 입출고 표시를 같이 배치 */}
                       <div className="flex items-center">
-                        <Avatar className="h-4 w-4 mr-1">
-                          <AvatarImage src={entry.user_image} alt={entry.user_name} />
-                          <AvatarFallback>
-                            <User className="h-2 w-2" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm text-muted-foreground">{entry.user_name}</span>
+                        <span
+                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-primary"}`}
+                        >
+                          {entry.type}
+                        </span>
+                        <span className="mx-1 text-muted-foreground/70">•</span>
+                        <span className="text-xs text-muted-foreground">{entry.time}</span>
                       </div>
-
-                      {/* 구분자 */}
-                      <span className="mx-2 text-muted-foreground/70">•</span>
-
-                      {/* 입고/출고 표시 (색상 구분) */}
-                      <span
-                        className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-primary"}`}
-                      >
-                        {entry.type}
-                      </span>
                     </div>
+                  </div>
+
+                  {/* 오른쪽 영역: 사용자 정보 */}
+                  <div className="flex items-center">
+                    <span className="text-base text-gray-600 mr-1">{entry.user_name}</span>
+
+                    <Avatar className="h-10 w-10 ml-1">
+                      <AvatarImage src={entry.user_image} alt={entry.user_name} />
+                      <AvatarFallback>
+                        <User className="h-3 w-3" />
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                 </div>
               </div>

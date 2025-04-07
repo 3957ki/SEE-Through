@@ -12,13 +12,13 @@ export function Dialog({ content, isOpen, onClose }: DialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="absolute inset-0 z-30 flex items-center justify-center"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
       onClick={onClose}
     >
       <div
         className={cn(
-          "w-full max-w-md p-6 rounded-lg shadow-xl bg-background text-foreground border border-border",
+          "w-11/12 max-w-[300px] p-5 rounded-lg shadow-xl bg-background text-foreground border border-border",
           "transform transition-all duration-300 ease-out flex flex-col"
         )}
         onClick={(e) => e.stopPropagation()}

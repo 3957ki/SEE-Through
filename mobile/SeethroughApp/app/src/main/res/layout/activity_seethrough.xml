@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/st_gray"
+    android:fitsSystemWindows="true">
 
     <TextView
         android:id="@+id/tv_title"
@@ -13,7 +14,8 @@
         android:layout_height="wrap_content"
         android:text="See-Through"
         android:textSize="20sp"
-        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textColor="@color/st_black"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
@@ -22,12 +24,156 @@
         android:id="@+id/tv_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="우리 집 - 거실"
+        android:text="우리 집 - 부엌"
         android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
+        android:paddingLeft="16dp"
+        android:textColor="@color/st_black"
         app:layout_constraintTop_toBottomOf="@id/tv_title"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_top_cards"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_location"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="8dp"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:id="@+id/card_first"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/card_second"
+            app:layout_constraintWidth_percent="0.45">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_card_first_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="식사"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/st_black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <ImageButton
+                    android:id="@+id/btn_first_refresh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_rotate"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/tv_card_first_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="내용"
+                    android:textSize="16sp"
+                    android:textColor="@color/st_black"
+                    android:textAlignment="viewStart"/>
+
+                <ProgressBar
+                    android:id="@+id/progress_first_meal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:indeterminate="true"/>
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/card_second"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded_card"
+            app:layout_constraintStart_toEndOf="@id/card_first"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.45">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_card_second_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="식사"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/st_black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <ImageButton
+                    android:id="@+id/btn_second_refresh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_rotate"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- FrameLayout으로 겹치기 -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/tv_card_second_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="내용"
+                    android:textSize="16sp"
+                    android:textColor="@color/st_black"
+                    android:textAlignment="viewStart"/>
+
+                <ProgressBar
+                    android:id="@+id/progress_second_meal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:indeterminate="true"/>
+            </FrameLayout>
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 기존 냉장고 재료 카드 -->
     <LinearLayout
         android:id="@+id/card_ingredients_info"
         android:layout_width="match_parent"
@@ -35,11 +181,8 @@
         android:orientation="vertical"
         android:padding="16dp"
         android:layout_margin="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_location"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_top_cards"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:background="@drawable/rounded_card">
@@ -50,7 +193,7 @@
             android:layout_height="wrap_content"
             android:text="냉장고 재료"
             android:textSize="16sp"
-            android:textColor="@android:color/white"
+            android:textColor="@color/st_black"
             android:textAlignment="viewStart"/>
 
         <TextView
@@ -60,10 +203,11 @@
             android:text=""
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@android:color/white"
+            android:textColor="@color/st_black"
             android:textAlignment="viewStart"/>
     </LinearLayout>
 
+    <!-- 기존 입출고 기록 카드 -->
     <LinearLayout
         android:id="@+id/card_inoutlogs_info"
         android:layout_width="match_parent"
@@ -72,9 +216,6 @@
         android:padding="16dp"
         android:layout_margin="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
         app:layout_constraintTop_toBottomOf="@id/card_ingredients_info"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +227,7 @@
             android:layout_height="wrap_content"
             android:text="입출고 기록"
             android:textSize="16sp"
-            android:textColor="@android:color/white"
+            android:textColor="@color/st_black"
             android:textAlignment="viewStart"/>
 
         <TextView
@@ -96,10 +237,8 @@
             android:text=""
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@android:color/white"
+            android:textColor="@color/st_black"
             android:textAlignment="viewStart"/>
     </LinearLayout>
 
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

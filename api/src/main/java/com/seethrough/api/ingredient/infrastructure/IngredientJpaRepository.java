@@ -24,7 +24,7 @@ public interface IngredientJpaRepository extends JpaRepository<Ingredient, UUID>
 			"FROM ingredients i " +
 			"LEFT JOIN members m ON m.member_id = CAST(:memberId AS varchar) " +
 			") sub_query " +
-			"ORDER BY preference_order",
+			"ORDER BY preference_order, ingredient_id",
 		countQuery = "SELECT COUNT(*) FROM ingredients",
 		nativeQuery = true)
 	Slice<Ingredient> findAllByCustomOrder(@Param("memberId") UUID memberId, Pageable pageable);

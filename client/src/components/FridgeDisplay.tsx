@@ -100,6 +100,8 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             <div className="w-full shrink-0 h-14 px-4 py-2">
               <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
             </div>
+
+            {/* Dialog should be positioned correctly relative to the container */}
             <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
 
             {/* Screensaver Overlay */}
