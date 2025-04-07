@@ -1,14 +1,8 @@
 import { SimpleDialog } from "@/components/dialog/SimpleDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { CustomDropdown } from "@/components/ui/custom-dropdown";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useDialog } from "@/contexts/DialogContext";
 import { useCurrentMember, useUpdateMember } from "@/queries/members";
 import { format } from "date-fns";
@@ -33,6 +27,10 @@ export default function MyPage() {
   const [dislikedFoods, setDislikedFoods] = useState<string[]>([]);
   const [allergies, setAllergies] = useState<string[]>([]);
   const [diseases, setDiseases] = useState<string[]>([]);
+
+  // Define options for dropdowns
+  const colorVisionOptions = ["정상", "색맹"];
+  const fontSizeOptions = ["작게", "보통", "크게"];
 
   useEffect(() => {
     if (!currentMember) return;
@@ -237,40 +235,27 @@ export default function MyPage() {
           <div className="flex-1 flex items-center gap-2">
             <span className="text-sm text-muted-foreground mb-1">색맹/색약</span>
             <div className="flex-grow"></div>
-            <Select value={colorVision} onValueChange={setColorVision}>
-              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
-                <SelectValue placeholder="색맹/색약" className="text-sm" />
-              </SelectTrigger>
-              <SelectContent sideOffset={0} align="center">
-                <SelectItem value="정상" className="text-sm text-center">
-                  정상
-                </SelectItem>
-                <SelectItem value="색맹" className="text-sm text-center">
-                  색맹
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={colorVision}
+              options={colorVisionOptions}
+              onChange={setColorVision}
+              className="w-[120px] h-9 flex-shrink-0"
+              buttonClassName="w-full h-9 flex items-center justify-between px-2 py-1 text-sm border border-input bg-background rounded-md"
+              dropdownClassName="w-[120px]"
+            />
           </div>
 
           <div className="flex-1 flex items-center gap-2">
             <span className="text-sm text-muted-foreground mb-1">폰트 크기</span>
             <div className="flex-grow"></div>
-            <Select value={fontSize} onValueChange={setFontSize}>
-              <SelectTrigger className="w-[120px] h-9 flex-shrink-0">
-                <SelectValue placeholder="폰트 크기" className="text-sm" />
-              </SelectTrigger>
-              <SelectContent sideOffset={0} align="center">
-                <SelectItem value="작게" className="text-sm text-center">
-                  작게
-                </SelectItem>
-                <SelectItem value="보통" className="text-sm text-center">
-                  보통
-                </SelectItem>
-                <SelectItem value="크게" className="text-sm text-center">
-                  크게
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={fontSize}
+              options={fontSizeOptions}
+              onChange={setFontSize}
+              className="w-[120px] h-9 flex-shrink-0"
+              buttonClassName="w-full h-9 flex items-center justify-between px-2 py-1 text-sm border border-input bg-background rounded-md"
+              dropdownClassName="w-[120px]"
+            />
           </div>
         </div>
 
