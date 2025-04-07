@@ -20,7 +20,7 @@ export default function PinDialog({ correctPin, onSuccess }: PinDialogProps) {
       } else {
         setError(true);
         setPin("");
-        setTimeout(() => setError(false), 500);
+        setError(false);
       }
     }
   }, [pin, correctPin, onSuccess, hideDialog]);

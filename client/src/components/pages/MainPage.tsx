@@ -405,17 +405,10 @@ function TodaysDietSection() {
 function MainPage() {
   const { data: currentMember } = useCurrentMember();
 
-  // useEffect(() => {
-  //   if (currentMember) {
-  //     console.log(currentMember);
-  //   }
-  // }, [currentMember]);
-
   return (
     <div className="pb-16 relative">
       <GreetingSection name={currentMember?.name} />
       <TodaysDietSection />
-      <div className="h-2 bg-muted/50 my-3 w-full" />
       <IngredientsSection />
     </div>
   );

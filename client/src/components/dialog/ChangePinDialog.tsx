@@ -36,13 +36,13 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
         // Verify current PIN when 4 digits are entered
         if (updatedPin.length === 4) {
           if (updatedPin === currentPin) {
-            setTimeout(() => {
-              setInputPin("");
-              setStep(PinChangeStep.ENTER_NEW);
-            }, 300);
+            // Remove timeout for faster transition
+            setInputPin("");
+            setStep(PinChangeStep.ENTER_NEW);
           } else {
             setError("현재 PIN이 일치하지 않습니다.");
-            setTimeout(() => setInputPin(""), 300);
+            // Remove timeout for faster response
+            setInputPin("");
           }
         }
       }
@@ -53,11 +53,10 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
 
         // Move to confirmation step when 4 digits are entered
         if (updatedPin.length === 4) {
-          setTimeout(() => {
-            setNewPin(updatedPin);
-            setInputPin("");
-            setStep(PinChangeStep.CONFIRM_NEW);
-          }, 300);
+          // Remove timeout for faster transition
+          setNewPin(updatedPin);
+          setInputPin("");
+          setStep(PinChangeStep.CONFIRM_NEW);
         }
       }
     } else if (step === PinChangeStep.CONFIRM_NEW) {
@@ -71,11 +70,10 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
             handleSaveNewPin(updatedPin);
           } else {
             setError("새 PIN이 일치하지 않습니다. 다시 시도해주세요.");
-            setTimeout(() => {
-              setInputPin("");
-              setNewPin("");
-              setStep(PinChangeStep.ENTER_NEW);
-            }, 300);
+            // Remove timeout for faster response
+            setInputPin("");
+            setNewPin("");
+            setStep(PinChangeStep.ENTER_NEW);
           }
         }
       }
@@ -95,9 +93,8 @@ function ChangePinDialog({ currentPin, onPinChange }: ChangePinDialogProps) {
     try {
       const success = await onPinChange(confirmedPin);
       if (success) {
-        setTimeout(() => {
-          hideDialog();
-        }, 200);
+        // Remove timeout for faster dialog closing
+        hideDialog();
       } else {
         setError("PIN 변경에 실패했습니다. 다시 시도해주세요.");
         setStep(PinChangeStep.VERIFY_CURRENT);
