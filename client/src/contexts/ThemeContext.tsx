@@ -1,4 +1,4 @@
-import { useCurrentMember } from "@/queries/members";
+import { type DetailedMember } from "@/interfaces/Member";
 import { createContext, use, useEffect, useMemo, useState, type ReactNode } from "react";
 
 // Define theme types
@@ -21,12 +21,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 // Theme provider props
 interface ThemeProviderProps {
   children: ReactNode;
+  currentMember?: DetailedMember | null;
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  // Get current member's preferences
-  const { data: currentMember } = useCurrentMember();
-
+export function ThemeProvider({ children, currentMember }: ThemeProviderProps) {
   useEffect(() => {
     if (currentMember) {
       console.log("[ThemeProvider] currentMember updated:", currentMember);
