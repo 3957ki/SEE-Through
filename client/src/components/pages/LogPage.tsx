@@ -149,7 +149,7 @@ export default function LogPage() {
             {entries.map((entry, index) => (
               <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
-                  {/* 재료 이미지 */}
+                  {/* 재료 이미지 - 왼쪽 */}
                   <Avatar className="h-10 w-10 mr-3">
                     <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
                     <AvatarFallback>
@@ -158,34 +158,33 @@ export default function LogPage() {
                   </Avatar>
 
                   <div className="flex-1">
-                    {/* 재료 이름과 시간 */}
-                    <div className="flex justify-between items-center">
+                    {/* 재료 이름만 표시 */}
+                    <div className="flex flex-col">
                       <span className="text-base font-medium">{entry.ingredient}</span>
-                      <span className="text-sm text-gray-500">{entry.time}</span>
-                    </div>
 
-                    <div className="flex items-center mt-1">
-                      {/* 사용자 이미지와 이름 */}
+                      {/* 시간과 입출고 표시를 같이 배치 */}
                       <div className="flex items-center">
-                        <Avatar className="h-5 w-5 mr-1">
-                          <AvatarImage src={entry.user_image} alt={entry.user_name} />
-                          <AvatarFallback>
-                            <User className="h-3 w-3" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm text-gray-600">{entry.user_name}</span>
+                        <span
+                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
+                        >
+                          {entry.type}
+                        </span>
+                        <span className="mx-1 text-gray-400">•</span>
+                        <span className="text-xs text-gray-500">{entry.time}</span>
                       </div>
-
-                      {/* 구분자 */}
-                      <span className="mx-2 text-gray-400">•</span>
-
-                      {/* 입고/출고 표시 (색상 구분) */}
-                      <span
-                        className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
-                      >
-                        {entry.type}
-                      </span>
                     </div>
+                  </div>
+
+                  {/* 오른쪽 영역: 사용자 정보 */}
+                  <div className="flex items-center">
+                    <span className="text-base text-gray-600 mr-1">{entry.user_name}</span>
+
+                    <Avatar className="h-10 w-10 ml-1">
+                      <AvatarImage src={entry.user_image} alt={entry.user_name} />
+                      <AvatarFallback>
+                        <User className="h-3 w-3" />
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                 </div>
               </div>
