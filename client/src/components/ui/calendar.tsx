@@ -62,26 +62,27 @@ export function Calendar({ ...props }: CalendarProps) {
     }
   };
 
-  // Custom caption component
-  const CustomCaption = () => (
-    <div className="flex items-center justify-between px-1">
+  // Custom navigation component
+  const CustomNavigation = () => (
+    <div className="flex items-center justify-between px-1 mb-4 relative z-10">
       <button
         type="button"
         onClick={handlePrevMonth}
-        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+        className="p-1 hover:bg-accent hover:text-accent-foreground rounded-full"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      <div className="flex gap-1">
+      <div className="flex">
         {/* Year Dropdown */}
         <CustomDropdown
           value={format(currentMonth, "yyyy년", { locale: ko })}
           options={years.map((year) => `${year}년`)}
           onChange={handleYearSelect}
-          className="w-24"
-          buttonClassName="px-2 py-1 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
-          dropdownClassName="w-24"
+          className="w-32"
+          buttonClassName="px-2 py-2 text-base font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
+          dropdownClassName="w-32 bg-popover shadow-md"
+          optionClassName="text-center text-base hover:bg-accent hover:text-accent-foreground"
         />
 
         {/* Month Dropdown */}
@@ -89,16 +90,17 @@ export function Calendar({ ...props }: CalendarProps) {
           value={format(currentMonth, "MMMM", { locale: ko })}
           options={months.map((month) => format(month, "MMMM", { locale: ko }))}
           onChange={handleMonthSelect}
-          className="w-32"
-          buttonClassName="px-2 py-1 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
-          dropdownClassName="w-32"
+          className="w-24"
+          buttonClassName="px-2 py-2 text-base font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
+          dropdownClassName="w-24 bg-popover shadow-md"
+          optionClassName="text-center text-base hover:bg-accent hover:text-accent-foreground"
         />
       </div>
 
       <button
         type="button"
         onClick={handleNextMonth}
-        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+        className="p-1 hover:bg-accent hover:text-accent-foreground rounded-full"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -106,30 +108,45 @@ export function Calendar({ ...props }: CalendarProps) {
   );
 
   return (
-    <div className="flex justify-center">
-      <DayPicker
-        animate
-        locale={ko}
-        showOutsideDays
-        month={currentMonth}
-        onMonthChange={setCurrentMonth}
-        formatters={{
-          formatCaption: (date) => {
-            return format(date, "yyyy년 MMMM", { locale: ko });
-          },
-        }}
-        classNames={{
-          month: "space-y-4",
-          day: cn(
-            "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
-          ),
-          caption: "hidden", // Hide the default caption
-        }}
-        components={{
-          CaptionLabel: CustomCaption,
-        }}
-        {...props}
-      />
+    <div className="flex flex-col items-center">
+      <CustomNavigation />
+      <div className="mt-[-4rem]">
+        <DayPicker
+          animate
+          locale={ko}
+          showOutsideDays
+          month={currentMonth}
+          onMonthChange={setCurrentMonth}
+          formatters={{
+            formatCaption: () => "", // Empty caption to hide the default one
+          }}
+          modifiersClassNames={{
+            selected:
+              "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+            today: "bg-accent text-accent-foreground",
+          }}
+          classNames={{
+            month: "space-y-4",
+            day: cn(
+              "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-full transition-colors",
+              "focus-visible:bg-accent focus-visible:text-accent-foreground",
+              "[&:not(.[data-selected])]:hover:bg-accent [&:not(.[data-selected])]:hover:text-accent-foreground",
+              "[&[data-selected]]:bg-primary [&[data-selected]]:text-primary-foreground"
+            ),
+            caption: "hidden", // Hide the default caption
+            nav: "hidden", // Hide the default navigation
+            nav_button: "hidden", // Hide the default navigation buttons
+            nav_button_previous: "hidden", // Hide the previous button
+            nav_button_next: "hidden", // Hide the next button,
+            head_cell: "text-muted-foreground font-normal text-sm",
+            cell: "p-0 relative [&:has([aria-selected])]:bg-transparent",
+            day_today: "bg-accent text-accent-foreground",
+            day_selected:
+              "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          }}
+          {...props}
+        />
+      </div>
     </div>
   );
 }
