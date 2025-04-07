@@ -106,12 +106,12 @@ export default function LogPage() {
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center">로딩 중...</div>;
+    return <div className="text-center">로딩 중...</div>;
   }
 
   if (isError) {
     return (
-      <div className="p-4 text-center text-red-500">
+      <div className="text-center text-destructive">
         {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
       </div>
     );
@@ -120,12 +120,12 @@ export default function LogPage() {
   // No logs to display
   if (Object.keys(groupedLogs).length === 0) {
     return (
-      <div className="max-w-md mx-auto p-4">
+      <div className="max-w-md mx-auto">
         <div className="flex items-center justify-end mb-4">
           <span className="text-sm mr-2">내 로그만 보기</span>
           <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
         </div>
-        <div className="p-4 text-center">입출고 기록이 없습니다</div>
+        <div className="text-center">입출고 기록이 없습니다</div>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function LogPage() {
   return (
     <div className="max-w-md mx-auto">
       {/* 내 로그만 보기 토글 */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end mb-4">
         <span className="text-sm mr-2">내 로그만 보기</span>
         <Switch checked={myLogsOnly} onCheckedChange={handleToggleMyLogs} />
       </div>
@@ -145,15 +145,15 @@ export default function LogPage() {
           <h2 className="text-xl font-bold text-center mb-4">{date}</h2>
 
           {/* 로그 항목들 */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             {entries.map((entry, index) => (
-              <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
+              <div key={index} className="bg-card rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
                   {/* 재료 이미지 - 왼쪽 */}
                   <Avatar className="h-10 w-10 mr-3">
                     <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
                     <AvatarFallback>
-                      <Package className="h-5 w-5" />
+                      <Package className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
 
@@ -165,12 +165,12 @@ export default function LogPage() {
                       {/* 시간과 입출고 표시를 같이 배치 */}
                       <div className="flex items-center">
                         <span
-                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
+                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-primary"}`}
                         >
                           {entry.type}
                         </span>
-                        <span className="mx-1 text-gray-400">•</span>
-                        <span className="text-xs text-gray-500">{entry.time}</span>
+                        <span className="mx-1 text-muted-foreground/70">•</span>
+                        <span className="text-xs text-muted-foreground">{entry.time}</span>
                       </div>
                     </div>
                   </div>
@@ -194,9 +194,9 @@ export default function LogPage() {
       ))}
 
       {/* Infinite scroll loading trigger */}
-      <div ref={loadMoreRef} className="text-center p-4" style={{ minHeight: "50px" }}>
+      <div ref={loadMoreRef} className="text-center py-2" style={{ minHeight: "50px" }}>
         {isFetchingNextPage ? (
-          <div className="text-sm text-gray-500">로딩 중...</div>
+          <div className="text-sm text-muted-foreground">로딩 중...</div>
         ) : hasNextPage ? (
           <Button
             variant="ghost"
@@ -207,7 +207,7 @@ export default function LogPage() {
             더 보기 <ChevronDown className="h-4 w-4" />
           </Button>
         ) : (
-          <div className="text-sm text-gray-500">모든 데이터를 불러왔습니다</div>
+          <div className="text-sm text-muted-foreground">모든 데이터를 불러왔습니다</div>
         )}
       </div>
     </div>

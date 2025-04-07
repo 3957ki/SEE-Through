@@ -45,7 +45,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
           <Spinner size={36} />
           <p className="mt-2 text-sm">사용자 정보를 불러오는 중입니다...</p>
         </div>
@@ -62,7 +62,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
                 className={`
                   p-4 rounded-lg flex flex-col items-center justify-center 
                   ${isUpdating ? "opacity-70" : "cursor-pointer"}
-                  ${user.is_monitored ? "border-2 border-orange-400" : "border border-gray-300"}
+                  ${user.is_monitored ? "border-2 border-primary" : "border border-border"}
                 `}
               >
                 <img
@@ -71,7 +71,7 @@ export default function MonitoringPage({ currentPin, onPinChange }: MonitoringPa
                   className="w-16 h-16 rounded-full mb-2 object-cover"
                 />
                 <span className="text-center">{user.name}</span>
-                {isUpdating && <span className="text-xs text-orange-500 mt-1">저장 중...</span>}
+                {isUpdating && <span className="text-xs text-primary mt-1">저장 중...</span>}
               </div>
             );
           })}

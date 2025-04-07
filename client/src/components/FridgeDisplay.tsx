@@ -1,5 +1,9 @@
 import { Dialog } from "@/components/Dialog";
+import LogHeader from "@/components/headers/LogHeader";
 import MainHeader from "@/components/headers/MainHeader";
+import MealHeader from "@/components/headers/MealHeader";
+import MonitoringHeader from "@/components/headers/MonitoringHeader";
+import MyHeader from "@/components/headers/MyHeader";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LogPage from "@/components/pages/LogPage";
 import MainPage from "@/components/pages/MainPage";
@@ -8,8 +12,10 @@ import MonitoringPage from "@/components/pages/MonitoringPage";
 import MyPage from "@/components/pages/MyPage";
 import { useDialog } from "@/contexts/DialogContext";
 import { PageContext } from "@/contexts/PageContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
+import { useCurrentMember } from "@/queries/members";
 import React, { useMemo, useRef, useState } from "react";
 
 interface FridgeDisplayProps {
@@ -46,6 +52,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
   const { dialogContent, hideDialog } = useDialog();
   const displayRef = useRef<HTMLDivElement>(null);
+  const { data: currentMember } = useCurrentMember();
 
   const [currentPage, setCurrentPage] = useState<PageType>("main");
   const navigateTo = (page: PageType) => {
@@ -56,10 +63,10 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
 
   const headers = {
     main: <MainHeader />,
-    logs: <MainHeader />,
-    monitoring: <MainHeader />,
-    meal: <MainHeader />,
-    my: <MainHeader />,
+    logs: <LogHeader />,
+    monitoring: <MonitoringHeader />,
+    meal: <MealHeader />,
+    my: <MyHeader />,
   };
 
   const pages = {
@@ -72,47 +79,49 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
 
   return (
     <div ref={ref} className={cn("w-full h-full flex items-center justify-center", className)}>
-      <PageContext value={pageContextValue}>
-        <div
-          ref={displayRef}
-          className="bg-white overflow-hidden flex flex-col rounded shadow border border-gray-300 relative"
-          style={{
-            width: "100%",
-            height: "100%",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          }}
-        >
-          {/* Header Section */}
-          <div className="w-full shrink-0 h-14 px-4">{headers[currentPage]}</div>
-
-          {/* Content Section */}
-          <div className="flex-1 overflow-auto px-4">
-            <div className="py-4">{pages[currentPage]}</div>
-          </div>
-
-          {/* Navigation Section */}
-          <div className="w-full shrink-0 h-14 px-4">
-            <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
-          </div>
-          <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
-
-          {/* Screensaver Overlay */}
+      <ThemeProvider currentMember={currentMember}>
+        <PageContext value={pageContextValue}>
           <div
+            ref={displayRef}
+            className="overflow-hidden flex flex-col rounded shadow border relative w-full h-full bg-background text-foreground border-border text-base"
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              opacity: isScreensaverActive ? 1 : 0,
-              transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-              pointerEvents: isScreensaverActive ? "auto" : "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             }}
           >
-            <Screensaver isActive={isScreensaverActive} />
+            {/* Header Section */}
+            <div className="w-full shrink-0 h-14 px-4 py-2">{headers[currentPage]}</div>
+
+            {/* Content Section */}
+            <div className="flex-1 overflow-auto">
+              <div className="px-4 py-4">{pages[currentPage]}</div>
+            </div>
+
+            {/* Navigation Section */}
+            <div className="w-full shrink-0 h-14 px-4 py-2">
+              <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
+            </div>
+
+            {/* Dialog should be positioned correctly relative to the container */}
+            <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
+
+            {/* Screensaver Overlay */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                opacity: isScreensaverActive ? 1 : 0,
+                transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                pointerEvents: isScreensaverActive ? "auto" : "none",
+              }}
+            >
+              <Screensaver isActive={isScreensaverActive} />
+            </div>
           </div>
-        </div>
-      </PageContext>
+        </PageContext>
+      </ThemeProvider>
     </div>
   );
 }
