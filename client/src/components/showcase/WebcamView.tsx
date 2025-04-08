@@ -40,8 +40,9 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
   const [error, setError] = useState<string | null>(null);
 
   // 연결 상태 관련
-  const processingTimeoutRef = useRef<number | null>(null);
-  const connectionCheckIntervalRef = useRef<number | null>(null);
+  const processingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectionCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clearMemberIdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 요청 큐
   const requestQueue = useRef<{
@@ -169,13 +170,27 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     // 레벨 0: 로그, 타이머 정리, 2 로그 상태 초기화
     if (newLevel === 0) {
       console.log("[레벨 0] 얼굴 없음");
-      setTimeout(() => {
+
+      // Clear any existing timeout first
+      if (clearMemberIdTimeoutRef.current) {
+        clearTimeout(clearMemberIdTimeoutRef.current);
+      }
+
+      // Set new timeout and store its ID
+      clearMemberIdTimeoutRef.current = setTimeout(() => {
         setCurrentMemberId("");
+        clearMemberIdTimeoutRef.current = null;
       }, 1000);
     }
 
     // 레벨 1: 주기적 요청, 2 로그 상태 초기화
     else if (newLevel === 1) {
+      // Cancel the member clearing timeout if it exists
+      if (clearMemberIdTimeoutRef.current) {
+        clearTimeout(clearMemberIdTimeoutRef.current);
+        clearMemberIdTimeoutRef.current = null;
+      }
+
       if (isLocalServerConnected()) {
         console.log("[레벨 1] 요청 시작");
         sendNextFrame(newLevel, null);
@@ -184,6 +199,12 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
     // 레벨 2: 로그는 딱 한 번만 출력, 타이머 정리
     else if (newLevel === 2) {
+      // Cancel the member clearing timeout if it exists
+      if (clearMemberIdTimeoutRef.current) {
+        clearTimeout(clearMemberIdTimeoutRef.current);
+        clearMemberIdTimeoutRef.current = null;
+      }
+
       if (isLocalServerConnected()) {
         console.log("[레벨 2] 요청");
         sendNextFrame(newLevel, null);
@@ -223,7 +244,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
           lastProcessedFrameRef.current = tempCtx.getImageData(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
           const frameData = tempCanvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
-          processingTimeoutRef.current = window.setTimeout(() => {
+          processingTimeoutRef.current = setTimeout(() => {
             console.warn("[WebSocket] 응답 타임아웃");
             requestQueue.current.pending = false;
 
@@ -312,12 +333,16 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
     // 모든 타임아웃 및 인터벌 정리
     if (connectionCheckIntervalRef.current) {
-      window.clearInterval(connectionCheckIntervalRef.current);
+      clearInterval(connectionCheckIntervalRef.current);
       connectionCheckIntervalRef.current = null;
     }
     if (processingTimeoutRef.current) {
-      window.clearTimeout(processingTimeoutRef.current);
+      clearTimeout(processingTimeoutRef.current);
       processingTimeoutRef.current = null;
+    }
+    if (clearMemberIdTimeoutRef.current) {
+      clearTimeout(clearMemberIdTimeoutRef.current);
+      clearMemberIdTimeoutRef.current = null;
     }
 
     // 웹소켓 연결 해제
