@@ -583,18 +583,22 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
       if (!memberId) {
         // 인식 결과 없음 → 무조건 null 처리
-        setCurrentMemberId("");
+        if (faceLevelRef.current.level !== 0) {
+          setCurrentMemberId("");
+        }
       }
       // 새로운 아이디라면
       else if (isNew) {
         try {
           // 신규 등록하기
-          const newMember = await createAndGetMember({
-            member_id: memberId,
-            age: 0,
-            image_path: `${import.meta.env.VITE_LOCAL_SERVER_URL}/vision/get-faces?user_id=${memberId}`,
-          });
-          setCurrentMemberId(newMember.member_id);
+          if (faceLevelRef.current.level !== 0) {
+            const newMember = await createAndGetMember({
+              member_id: memberId,
+              age: 0,
+              image_path: `${import.meta.env.VITE_LOCAL_SERVER_URL}/vision/get-faces?user_id=${memberId}`,
+            });
+            setCurrentMemberId(newMember.member_id);
+          }
         } catch (err) {
           console.error("[WebSocket] 멤버 업데이트 실패:", err);
         }
@@ -604,7 +608,9 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
       else if (memberId !== currentMemberId) {
         try {
           // 인식된 멤버가 있을때 가져오기만 함
-          setCurrentMemberId(memberId);
+          if (faceLevelRef.current.level !== 0) {
+            setCurrentMemberId(memberId);
+          }
         } catch (err) {
           console.error("[WebSocket] 멤버 업데이트 실패:", err);
         }
