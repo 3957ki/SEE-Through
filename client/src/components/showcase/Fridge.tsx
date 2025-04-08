@@ -72,12 +72,15 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" style={{ fontSize: "16px" }}>
       <svg
         width="100%"
         height="100%"
         viewBox="0 0 988 1038"
-        style={{ overflow: "visible" }}
+        style={{
+          overflow: "visible",
+          fontSize: "16px", // Prevent font-size inheritance
+        }}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -367,6 +370,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
+              fontSize: "16px",
             }}
           >
             <div

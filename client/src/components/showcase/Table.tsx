@@ -49,12 +49,6 @@ export default function Table({ outsideIngredients }: TableProps) {
               data.danger === true
             );
 
-            // speakWithOpenAIStreaming(
-            //   messageText,
-            //   currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
-            //   true
-            // );
-
             // CommentDialog는 2초 뒤에 띄움
             setTimeout(() => {
               showDialog(<CommentDialog message={messageText} danger={data.danger === true} />);
@@ -68,17 +62,29 @@ export default function Table({ outsideIngredients }: TableProps) {
   };
 
   return (
-    <div className="absolute bottom-0 right-0 w-2/5 h-1/3 overflow-hidden pointer-events-auto">
+    <div
+      className="absolute bottom-0 right-0 overflow-hidden pointer-events-auto"
+      style={{
+        width: "40vw", // Using viewport width instead of percentage
+        height: "33.33vh", // Using viewport height instead of percentage
+        fontSize: "16px", // Set absolute font size to prevent inheritance
+      }}
+    >
       {/* Table image */}
       <img
         src={tableImage}
         alt="Table surface"
         className="absolute bottom-0 left-0 h-full w-auto min-w-full object-cover object-left"
+        style={{ fontSize: "16px" }} // Prevent font-size inheritance
       />
 
       {/* Ingredients container */}
       <div
-        className="absolute inset-0 flex flex-wrap justify-start items-end p-[5%] pb-[13%]"
+        className="absolute inset-0 flex flex-wrap justify-start items-end"
+        style={{
+          padding: "5% 5% 13% 5%",
+          fontSize: "16px", // Prevent font-size inheritance
+        }}
         onDragOver={handleDragOver}
         onDrop={handleDropEvent}
       >

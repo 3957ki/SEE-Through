@@ -32,6 +32,7 @@ function ShowcaseScreen() {
       style={{
         position: "relative",
         overflow: "hidden",
+        fontSize: "16px", // Set base font size
       }}
     >
       {/* 배경 이미지 컨테이너 */}
@@ -52,14 +53,23 @@ function ShowcaseScreen() {
       ></div>
 
       {/* 콘텐츠 컨테이너 */}
-      <div className="flex w-full h-[100vh] gap-4 md:gap-8 p-5 relative z-10">
+      <div
+        className="flex w-full h-[100vh] relative z-10"
+        style={{
+          gap: "32px", // 8 * 4px = 32px (equivalent to gap-8)
+          padding: "20px", // 5 * 4px = 20px (equivalent to p-5)
+        }}
+      >
         {/* Left Area - Fridge and Drop Zone */}
         <div className="w-2/3 h-full relative">
           <Fridge insideIngredients={insideIngredients} isActive={screensaverActive} />
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
-        <div className="w-1/3 h-full flex flex-col gap-4 md:gap-6 relative">
+        <div
+          className="w-1/3 h-full flex flex-col relative"
+          style={{ gap: "24px" }} // 6 * 4px = 24px (equivalent to gap-6)
+        >
           <div className="h-1/3">
             <WebcamView
               onActivateScreensaver={activateScreensaver}
