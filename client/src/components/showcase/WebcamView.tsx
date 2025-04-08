@@ -169,7 +169,9 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     // 레벨 0: 로그, 타이머 정리, 2 로그 상태 초기화
     if (newLevel === 0) {
       console.log("[레벨 0] 얼굴 없음");
-      setCurrentMemberId("");
+      setTimeout(() => {
+        setCurrentMemberId("");
+      }, 1000);
     }
 
     // 레벨 1: 주기적 요청, 2 로그 상태 초기화
