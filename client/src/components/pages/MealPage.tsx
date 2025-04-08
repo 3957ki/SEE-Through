@@ -42,9 +42,14 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center border-b gap-2">
-      <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
-        <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
+    <div className="flex items-center gap-4 py-2">
+      <button
+        type="button"
+        onClick={handlePrev}
+        className="p-2 hover:bg-muted rounded-full transition-colors"
+        disabled={offset === 0}
+      >
+        <ChevronLeft className={`w-6 h-6 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
       <div className="flex-1 flex justify-around">
         {visibleDates.map((date) => {
@@ -54,19 +59,24 @@ function DateSelector({
           return (
             <div
               key={date.toDateString()}
-              className={`flex flex-col items-center px-2 py-1 rounded-full cursor-pointer ${
-                isSelected ? "bg-primary text-primary-foreground" : "text-foreground"
+              className={`flex flex-col items-center px-4 py-2 rounded-xl cursor-pointer transition-all hover:bg-primary/10 ${
+                isSelected ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"
               }`}
               onClick={() => onSelect(date)}
             >
-              <span className="text-xs">{dayOfWeek}</span>
-              <span className="text-base font-medium">{day}</span>
+              <span className="text-sm font-medium">{dayOfWeek}</span>
+              <span className="text-lg font-semibold mt-1">{day}</span>
             </div>
           );
         })}
       </div>
-      <button type="button" onClick={handleNext} className="p-1" disabled>
-        <ChevronRight className="w-5 h-5 text-gray-300" />
+      <button
+        type="button"
+        onClick={handleNext}
+        className="p-2 hover:bg-muted rounded-full transition-colors"
+        disabled
+      >
+        <ChevronRight className="w-6 h-6 text-gray-300" />
       </button>
     </div>
   );
