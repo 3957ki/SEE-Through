@@ -14,11 +14,11 @@ import { useEffect, useRef, useState } from "react";
 // 고정 변수
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
-const SMALL_FACE_CUT = 15000;
-const LARGE_FACE_CUT = 30000;
-const IOU_CUT = 0.8;
-const MIN_FACE_ANGLE_THRESHOLD = 0.3;
-const MIN_FACE_VERTICAL_THRESHOLD = 0.3;
+const SMALL_FACE_CUT = 8000;
+const LARGE_FACE_CUT = 15000;
+const IOU_CUT = 0.9;
+const MIN_FACE_ANGLE_THRESHOLD = 0.15;
+const MIN_FACE_VERTICAL_THRESHOLD = 0.15;
 const EDGE_MARGIN = 40;
 
 interface WebcamViewProps {
@@ -185,7 +185,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
       if (isLocalServerConnected()) {
         console.log("[레벨 2] 요청");
         sendNextFrame(newLevel, null);
-        onDeactivateScreensaver;
+        onDeactivateScreensaver();
       }
     }
   };
@@ -455,8 +455,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음 AND 큰 IOU
             if (
               area >= currentCut &&
-              !isTooCloseToEdge &&
-              ((isFront && iou > IOU_CUT) || faceLevelRef.current.level == 2)
+              ((isFront && iou > IOU_CUT && !isTooCloseToEdge) || faceLevelRef.current.level == 2)
             ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
@@ -473,12 +472,8 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
         if (nextFaceLevel.level !== faceLevelRef.current.level) {
           handleFaceLevelChange(nextFaceLevel.level);
-          // 2레벨에서 화면 보여주기
-          if (nextFaceLevel.level == 2) {
-            onDeactivateScreensaver();
-          }
           // 2레벨에서 벗어나면 화면 닫기
-          else if (faceLevelRef.current.level == 2) {
+          if (faceLevelRef.current.level == 2) {
             onActivateScreensaver();
           }
           updateFaceLevel(nextFaceLevel);
