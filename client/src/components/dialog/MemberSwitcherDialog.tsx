@@ -76,21 +76,6 @@ export function MemberSwitcherDialog() {
           </div>
         )}
       </div>
-
-      <div className="flex justify-center gap-3 mt-2 text-center">
-        <button
-          className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium"
-          onClick={hideDialog}
-        >
-          취소
-        </button>
-        <button
-          className="bg-orange-400 text-white px-5 py-2 rounded-lg font-medium"
-          onClick={hideDialog}
-        >
-          확인
-        </button>
-      </div>
     </div>
   );
 }

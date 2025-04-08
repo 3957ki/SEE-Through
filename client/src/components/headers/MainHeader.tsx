@@ -1,5 +1,6 @@
 import PageHeader from "@/components/headers/PageHeader";
+import { BsHouseDoor } from "react-icons/bs";
 
 export default function MainHeader() {
-  return <PageHeader title="SEE-Through" />;
+  return <PageHeader icon={BsHouseDoor} title="SEE-Through" />;
 }

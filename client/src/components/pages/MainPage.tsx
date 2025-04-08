@@ -7,7 +7,14 @@ import { useMemberMeals } from "@/queries/meals";
 import { useCurrentMember, useCurrentMemberIngredients } from "@/queries/members";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BsArrowClockwise, BsCalendarEvent, BsPersonCircle } from "react-icons/bs";
+import {
+  BsArrowClockwise,
+  BsCalendarEvent,
+  BsMoonStars,
+  BsPersonCircle,
+  BsSun,
+  BsSunrise,
+} from "react-icons/bs";
 
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
@@ -312,14 +319,34 @@ function MealCard({
   const isRefreshing = refreshingMealId === data.meal_id;
   const isLoading = isRefreshing || isMealsLoading;
 
+  // Determine text color based on background color
+  const textColor = color === "bg-primary" ? "text-white" : "text-black";
+
+  // Get the appropriate icon based on the meal title
+  const getMealIcon = () => {
+    switch (title) {
+      case "아침":
+        return <BsSunrise className={`${textColor} mr-2`} />;
+      case "점심":
+        return <BsSun className={`${textColor} mr-2`} />;
+      case "저녁":
+        return <BsMoonStars className={`${textColor} mr-2`} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
-      className={`relative w-full h-[180px] rounded-2xl shadow-lg text-white cursor-pointer overflow-hidden ${color} flex flex-col justify-between p-4`}
+      className={`relative w-full rounded-xl shadow-lg ${textColor} cursor-pointer overflow-hidden ${color} flex flex-col justify-between p-4`}
       onClick={onCardClick}
     >
       {/* 제목 + 버튼 */}
-      <div className="flex justify-between items-start">
-        <h3 className="text-base font-semibold">{title}</h3>
+      <div className="flex justify-between items-start mb-4">
+        <h3 className={`text-base font-semibold flex items-center ${textColor}`}>
+          {getMealIcon()}
+          {title}
+        </h3>
         {!isLoading && (
           <button
             type="button"
@@ -330,17 +357,17 @@ function MealCard({
             className="flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
             aria-label="새로고침"
           >
-            <BsArrowClockwise className="w-3.5 h-3.5 text-white" />
+            <BsArrowClockwise className={`w-3.5 h-3.5 ${textColor}`} />
           </button>
         )}
       </div>
 
       {/* 메뉴 목록 또는 로딩 스피너 */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1">
         {isLoading ? (
-          <div className="flex flex-col items-center">
-            <BsArrowClockwise className="text-3xl text-white animate-spin mb-2" />
-            <span className="text-sm font-medium text-white text-center">
+          <div className="flex flex-col items-center py-8">
+            <BsArrowClockwise className={`text-3xl ${textColor} animate-spin mb-2`} />
+            <span className={`text-sm font-medium ${textColor} text-center`}>
               AI가 식단을 생성중입니다...
             </span>
           </div>
@@ -348,7 +375,10 @@ function MealCard({
           <div className="w-full h-full overflow-y-auto scrollbar-hide">
             <ul className="space-y-0.5">
               {data.menu.map((item, index) => (
-                <li key={index} className="flex items-center text-sm font-medium leading-tight">
+                <li
+                  key={index}
+                  className={`flex items-center text-sm font-medium leading-tight ${textColor}`}
+                >
                   <span className="truncate">• {item}</span>
                 </li>
               ))}

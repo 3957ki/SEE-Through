@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { IoClose } from "react-icons/io5";
 
 interface DialogProps {
   content: ReactNode;
@@ -23,6 +24,13 @@ export function Dialog({ content, isOpen, onClose }: DialogProps) {
         )}
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Close dialog"
+        >
+          <IoClose className="w-6 h-6 text-gray-500" />
+        </button>
         <div className="w-full flex justify-center items-center">{content}</div>
       </div>
     </div>

@@ -89,7 +89,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             }}
           >
             {/* Header Section */}
-            <div className="w-full shrink-0 h-14 px-4 py-2">{headers[currentPage]}</div>
+            <div className="w-full shrink-0 h-14 relative z-20">{headers[currentPage]}</div>
 
             {/* Content Section */}
             <div className="flex-1 overflow-auto">
@@ -97,7 +97,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             </div>
 
             {/* Navigation Section */}
-            <div className="w-full shrink-0 h-14 px-4 py-2">
+            <div className="w-full shrink-0 h-14 relative z-10">
               <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
             </div>
 
@@ -115,6 +115,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
                 opacity: isScreensaverActive ? 1 : 0,
                 transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
                 pointerEvents: isScreensaverActive ? "auto" : "none",
+                zIndex: 100,
               }}
             >
               <Screensaver isActive={isScreensaverActive} />
