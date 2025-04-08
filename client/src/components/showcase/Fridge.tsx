@@ -72,12 +72,15 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" style={{ fontSize: "16px" }}>
       <svg
         width="100%"
         height="100%"
         viewBox="0 0 988 1038"
-        style={{ overflow: "visible" }}
+        style={{
+          overflow: "visible",
+          fontSize: "16px", // Prevent font-size inheritance
+        }}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -228,7 +231,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           </foreignObject>
         )}
         {/* 왼쪽 도어 끝 */}
-        <g filter="url(#filter5_d_191_1501)">
+        <g filter="url(#filter5_d_191_1501)" onClick={toggleDoor}>
           <mask id="path-11-inside-4_191_1501" fill="white">
             <path d="M7 959.039H489V984.554H7V959.039Z" />
           </mask>
@@ -367,6 +370,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
+              fontSize: "16px",
             }}
           >
             <div
