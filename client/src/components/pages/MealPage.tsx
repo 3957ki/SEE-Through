@@ -137,27 +137,47 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 rounded-md transition ${
+      className={`flex items-center justify-between px-3 py-2 font-small:py-1.5 font-large:py-2.5 font-small:px-2 font-large:px-4 rounded-md transition-all duration-300 ease-out group ${
         isLiked
-          ? "bg-primary/10 border-l-4 border-primary"
+          ? "bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/10 dark:hover:bg-emerald-950/20 hover:translate-x-0.5"
           : isDisliked
-            ? "bg-muted border-l-4 border-muted-foreground"
-            : ""
+            ? "bg-destructive/5 hover:bg-destructive/10 hover:translate-x-0.5"
+            : "hover:bg-muted/10 hover:translate-x-0.5"
       }`}
     >
-      <span className="text-sm font-medium">{name}</span>
+      <span
+        className={`text-sm font-medium transition-colors duration-300 ${
+          isLiked
+            ? "text-emerald-600 dark:text-emerald-400"
+            : isDisliked
+              ? "text-destructive"
+              : "group-hover:text-foreground/80"
+        }`}
+      >
+        {name}
+      </span>
 
-      <BsHandThumbsUp
-        className={`w-4 h-4 ${isLiked ? "text-primary" : "text-muted-foreground"} cursor-pointer`}
-        onClick={handleLike}
-        title="선호 토글"
-      />
+      <div className="flex items-center gap-3 opacity-70 group-hover:opacity-100 transition-all duration-300">
+        <BsHandThumbsUp
+          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+            isLiked
+              ? "text-emerald-600 fill-emerald-600 dark:text-emerald-400 dark:fill-emerald-400"
+              : "text-muted-foreground/50 hover:text-emerald-500/90"
+          } cursor-pointer`}
+          onClick={handleLike}
+          title="선호 토글"
+        />
 
-      <BsHandThumbsDown
-        className={`w-4 h-4 ${isDisliked ? "text-foreground" : "text-muted-foreground"} cursor-pointer`}
-        onClick={handleDislike}
-        title="비선호 토글"
-      />
+        <BsHandThumbsDown
+          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+            isDisliked
+              ? "text-destructive fill-destructive"
+              : "text-muted-foreground/50 hover:text-destructive/90"
+          } cursor-pointer`}
+          onClick={handleDislike}
+          title="비선호 토글"
+        />
+      </div>
     </div>
   );
 }
@@ -222,7 +242,7 @@ function MealSection({
           />
         </button>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1">
         {items.map((item, index) => (
           <MealItem key={index} name={item} memberId={memberId} />
         ))}
