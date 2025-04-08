@@ -4,6 +4,12 @@ import { BsPersonCircle } from "react-icons/bs";
 function UserInfoCard() {
   const { data: currentMember } = useCurrentMember();
 
+  // age가 undefined일 경우 0으로 처리
+  const age = currentMember?.age ?? 0;
+  const showAge = age > 0;
+  const color = currentMember?.color;
+  const isNormalColor = color === "정상";
+
   return (
     <div
       className="bg-white rounded-md shadow-md w-full"
@@ -18,7 +24,7 @@ function UserInfoCard() {
           {currentMember?.image_path ? (
             <img
               src={currentMember.image_path}
-              alt={currentMember.name}
+              alt={currentMember?.name || ""}
               style={{
                 width: "48px",
                 height: "48px",
@@ -30,7 +36,15 @@ function UserInfoCard() {
             <BsPersonCircle style={{ width: "48px", height: "48px" }} />
           )}
         </div>
-        <div style={{ marginLeft: "16px", flex: 1 }}>
+        <div
+          style={{
+            marginLeft: "16px",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: showAge || (!isNormalColor && color) ? "flex-start" : "center",
+          }}
+        >
           <h3
             style={{
               fontWeight: "bold",
@@ -49,11 +63,11 @@ function UserInfoCard() {
               marginTop: "4px",
             }}
           >
-            <span>만 {currentMember?.age}세</span>
-            {currentMember?.color !== "정상" && (
+            {showAge && <span>만 {age}세</span>}
+            {!isNormalColor && color && (
               <>
-                <span style={{ margin: "0 8px" }}>•</span>
-                <span>{currentMember?.color}</span>
+                {showAge && <span style={{ margin: "0 8px" }}>•</span>}
+                <span>{color}</span>
               </>
             )}
           </div>
