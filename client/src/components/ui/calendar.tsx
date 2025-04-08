@@ -79,9 +79,9 @@ export function Calendar({ ...props }: CalendarProps) {
           value={format(currentMonth, "yyyy년", { locale: ko })}
           options={years.map((year) => `${year}년`)}
           onChange={handleYearSelect}
-          className="w-32"
-          buttonClassName="px-2 py-2 text-base font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
-          dropdownClassName="w-32 bg-popover shadow-md max-h-[200px] overflow-y-auto"
+          className="w-24"
+          buttonClassName="px-2 py-2 text-base font-bold bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
+          dropdownClassName="w-24 bg-popover shadow-md max-h-[200px] overflow-y-auto"
           optionClassName="text-center text-base hover:bg-accent hover:text-accent-foreground"
         />
 
@@ -90,9 +90,9 @@ export function Calendar({ ...props }: CalendarProps) {
           value={format(currentMonth, "MMMM", { locale: ko })}
           options={months.map((month) => format(month, "MMMM", { locale: ko }))}
           onChange={handleMonthSelect}
-          className="w-24"
-          buttonClassName="px-2 py-2 text-base font-medium bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
-          dropdownClassName="w-24 bg-popover shadow-md"
+          className="w-16"
+          buttonClassName="px-2 py-2 text-base font-bold bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-center"
+          dropdownClassName="w-16 bg-popover shadow-md"
           optionClassName="text-center text-base hover:bg-accent hover:text-accent-foreground"
         />
       </div>

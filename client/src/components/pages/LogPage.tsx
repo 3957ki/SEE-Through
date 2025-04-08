@@ -4,8 +4,9 @@ import { Switch } from "@/components/ui/switch";
 import { useCurrentMemberId } from "@/contexts/CurrentMemberIdContext";
 import type { GroupedLogs } from "@/interfaces/Log";
 import { useLogs } from "@/queries/logs";
-import { ChevronDown, Package, User } from "lucide-react";
+import { ChevronDown, Package } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { BsPerson } from "react-icons/bs";
 
 export default function LogPage() {
   const [groupedLogs, setGroupedLogs] = useState<GroupedLogs>({});
@@ -150,10 +151,14 @@ export default function LogPage() {
               <div key={index} className="bg-card rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
                   {/* 재료 이미지 - 왼쪽 */}
-                  <Avatar className="h-10 w-10 mr-3">
-                    <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
+                  <Avatar className="h-14 w-14 mr-3 bg-background">
+                    <AvatarImage
+                      src={entry.ingredient_image}
+                      alt={entry.ingredient}
+                      className="object-contain"
+                    />
                     <AvatarFallback>
-                      <Package className="h-4 w-4" />
+                      <Package className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
 
@@ -165,7 +170,7 @@ export default function LogPage() {
                       {/* 시간과 입출고 표시를 같이 배치 */}
                       <div className="flex items-center">
                         <span
-                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-primary"}`}
+                          className={`text-sm font-medium ${entry.type === "입고" ? "text-blue-500" : "text-orange-500"}`}
                         >
                           {entry.type}
                         </span>
@@ -182,7 +187,7 @@ export default function LogPage() {
                     <Avatar className="h-10 w-10 ml-1">
                       <AvatarImage src={entry.user_image} alt={entry.user_name} />
                       <AvatarFallback>
-                        <User className="h-3 w-3" />
+                        <BsPerson className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                   </div>

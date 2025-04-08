@@ -3,7 +3,7 @@ import { useDialog } from "@/contexts/DialogContext";
 import { usePage } from "@/contexts/PageContext";
 import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
-import { BsCalendarEvent, BsClockHistory, BsHouseDoor, BsPersonCircle } from "react-icons/bs";
+import { BsCameraVideo, BsClockHistory, BsHouseDoor, BsPerson } from "react-icons/bs";
 import { IoFastFoodOutline } from "react-icons/io5";
 
 interface BottomNavigationProps {
@@ -25,7 +25,7 @@ export default function BottomNavigation({ currentPin, currentPage }: BottomNavi
 
   const navItems = [
     {
-      icon: <BsPersonCircle className="w-6 h-6" />,
+      icon: <BsPerson className="w-6 h-6" />,
       label: "내 정보",
       page: "my" as PageType,
     },
@@ -45,21 +45,21 @@ export default function BottomNavigation({ currentPin, currentPage }: BottomNavi
       page: "logs" as PageType,
     },
     {
-      icon: <BsCalendarEvent className="w-6 h-6" />,
+      icon: <BsCameraVideo className="w-6 h-6" />,
       label: "모니터링",
       page: "monitoring" as PageType,
     },
   ];
 
   return (
-    <nav className="w-full h-full flex items-center justify-around">
+    <nav className="w-full h-full flex items-center justify-around bg-background/95 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]">
       {navItems.map((item) => (
         <button
           type="button"
           key={item.page}
           onClick={() => handleNavigate(item.page)}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 w-16 h-full",
+            "flex flex-col items-center justify-center gap-1 flex-1 h-full",
             "transition-colors duration-200",
             currentPage === item.page ? "text-primary" : "text-foreground"
           )}

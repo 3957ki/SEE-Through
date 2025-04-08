@@ -9,12 +9,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BsArrowClockwise,
-  BsCalendarEvent,
   BsHandThumbsDown,
   BsHandThumbsUp,
+  BsMoonStars,
+  BsSun,
+  BsSunrise,
 } from "react-icons/bs";
 
 function DateSelector({
@@ -40,11 +42,18 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center border-b gap-2">
-      <button type="button" onClick={handlePrev} className="p-1" disabled={offset === 0}>
-        <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
+    <div className="flex items-center justify-between w-full max-w-3xl mx-auto px-2 py-1 font-small:py-0.5 font-large:py-2">
+      <button
+        type="button"
+        onClick={handlePrev}
+        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
+        disabled={offset === 0}
+      >
+        <ChevronLeft
+          className={`w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`}
+        />
       </button>
-      <div className="flex-1 flex justify-around">
+      <div className="flex-1 grid grid-cols-7 gap-1">
         {visibleDates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
@@ -52,19 +61,28 @@ function DateSelector({
           return (
             <div
               key={date.toDateString()}
-              className={`flex flex-col items-center px-2 py-1 rounded-full cursor-pointer ${
+              className={`flex flex-col items-center px-1 py-1.5 font-small:py-1 font-large:py-2 rounded-lg cursor-pointer transition-all hover:bg-primary/10 ${
                 isSelected ? "bg-primary text-primary-foreground" : "text-foreground"
               }`}
               onClick={() => onSelect(date)}
             >
-              <span className="text-xs">{dayOfWeek}</span>
-              <span className="text-base font-medium">{day}</span>
+              <span className="text-xs font-small:text-[10px] font-large:text-sm font-medium">
+                {dayOfWeek}
+              </span>
+              <span className="text-base font-small:text-sm font-large:text-lg font-semibold mt-0.5">
+                {day}
+              </span>
             </div>
           );
         })}
       </div>
-      <button type="button" onClick={handleNext} className="p-1" disabled>
-        <ChevronRight className="w-5 h-5 text-gray-300" />
+      <button
+        type="button"
+        onClick={handleNext}
+        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
+        disabled
+      >
+        <ChevronRight className="w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 text-gray-300" />
       </button>
     </div>
   );
@@ -73,28 +91,12 @@ function DateSelector({
 function DateSelectorSection({
   selectedDate,
   setSelectedDate,
-  handleGoToday,
 }: {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
-  handleGoToday: () => void;
 }) {
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-1">
-          <BsCalendarEvent className="w-4 h-4 text-muted-foreground" />
-          <h2 className="text-lg font-medium">식단 캘린더</h2>
-        </div>
-        <button
-          type="button"
-          onClick={handleGoToday}
-          className="text-sm text-primary border border-primary/30 rounded-full px-3 py-1 hover:bg-primary/10"
-        >
-          오늘
-        </button>
-      </div>
-
+    <div className="w-full overflow-x-hidden">
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
     </div>
   );
@@ -141,27 +143,47 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 rounded-md transition ${
+      className={`flex items-center justify-between px-3 py-2 font-small:py-1.5 font-large:py-2.5 font-small:px-2 font-large:px-4 rounded-md transition-all duration-300 ease-out group ${
         isLiked
-          ? "bg-primary/10 border-l-4 border-primary"
+          ? "bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/10 dark:hover:bg-emerald-950/20 hover:translate-x-0.5"
           : isDisliked
-            ? "bg-muted border-l-4 border-muted-foreground"
-            : ""
+            ? "bg-destructive/5 hover:bg-destructive/10 hover:translate-x-0.5"
+            : "hover:bg-muted/10 hover:translate-x-0.5"
       }`}
     >
-      <span className="text-sm font-medium">{name}</span>
+      <span
+        className={`text-sm font-medium transition-colors duration-300 ${
+          isLiked
+            ? "text-emerald-600 dark:text-emerald-400"
+            : isDisliked
+              ? "text-destructive"
+              : "group-hover:text-foreground/80"
+        }`}
+      >
+        {name}
+      </span>
 
-      <BsHandThumbsUp
-        className={`w-4 h-4 ${isLiked ? "text-primary" : "text-muted-foreground"} cursor-pointer`}
-        onClick={handleLike}
-        title="선호 토글"
-      />
+      <div className="flex items-center gap-3 opacity-70 group-hover:opacity-100 transition-all duration-300">
+        <BsHandThumbsUp
+          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+            isLiked
+              ? "text-emerald-600 fill-emerald-600 dark:text-emerald-400 dark:fill-emerald-400"
+              : "text-muted-foreground/50 hover:text-emerald-500/90"
+          } cursor-pointer`}
+          onClick={handleLike}
+          title="선호 토글"
+        />
 
-      <BsHandThumbsDown
-        className={`w-4 h-4 ${isDisliked ? "text-foreground" : "text-muted-foreground"} cursor-pointer`}
-        onClick={handleDislike}
-        title="비선호 토글"
-      />
+        <BsHandThumbsDown
+          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+            isDisliked
+              ? "text-destructive fill-destructive"
+              : "text-muted-foreground/50 hover:text-destructive/90"
+          } cursor-pointer`}
+          onClick={handleDislike}
+          title="비선호 토글"
+        />
+      </div>
     </div>
   );
 }
@@ -183,6 +205,20 @@ function MealSection({
   isRefreshing: boolean;
   memberId: string;
 }) {
+  // Get the appropriate icon based on the meal title
+  const getMealIcon = () => {
+    switch (title) {
+      case "아침":
+        return <BsSunrise className="text-orange-500 mr-2" />;
+      case "점심":
+        return <BsSun className="text-amber-500 mr-2" />;
+      case "저녁":
+        return <BsMoonStars className="text-indigo-500 mr-2" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6 relative">
       {isRefreshing && (
@@ -196,7 +232,10 @@ function MealSection({
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h3 className="text-primary text-lg font-bold mb-3">{title}</h3>
+        <h3 className="text-primary text-lg font-bold mb-3 flex items-center">
+          {getMealIcon()}
+          {title}
+        </h3>
         <button
           type="button"
           className="ml-4 p-2 rounded-full hover:bg-muted transition-colors"
@@ -209,7 +248,7 @@ function MealSection({
           />
         </button>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1">
         {items.map((item, index) => (
           <MealItem key={index} name={item} memberId={memberId} />
         ))}
@@ -229,10 +268,8 @@ export default function MealPage() {
   const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
   const refreshMutation = useMutateRefreshMeal(selectedDate);
 
-  // State for managing loading visibility
-  const [showLoading, setShowLoading] = useState(false);
-  const loadStartTime = useRef<number>(0);
-  const minLoadingTime = 300; // Shorter minimum display time (300ms)
+  // Simple state for initial loading
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Keep track of the last successfully loaded meal data
   const [lastMeals, setLastMeals] = useState(meals);
@@ -244,31 +281,12 @@ export default function MealPage() {
     }
   }, [meals]);
 
-  // Effect to handle loading state with smart timing
+  // Handle initial loading state
   useEffect(() => {
-    if (isMealsLoading) {
-      // Record when loading started
-      loadStartTime.current = Date.now();
-      setShowLoading(true);
-    } else if (showLoading) {
-      // Calculate how long the loading has been visible
-      const loadingDuration = Date.now() - loadStartTime.current;
-
-      // If loading was visible for less than our minimum time, add a small delay
-      // This prevents quick flashes but doesn't add unnecessary delay for longer operations
-      if (loadingDuration < minLoadingTime) {
-        const remainingTime = minLoadingTime - loadingDuration;
-        setTimeout(() => setShowLoading(false), remainingTime);
-      } else {
-        // If it was already visible long enough, hide immediately
-        setShowLoading(false);
-      }
+    if (!isMealsLoading && isInitialLoad) {
+      setIsInitialLoad(false);
     }
-  }, [isMealsLoading, showLoading]);
-
-  const handleGoToday = () => {
-    setSelectedDate(new Date());
-  };
+  }, [isMealsLoading, isInitialLoad]);
 
   const handleRefreshMeal = (mealId: string) => {
     refreshMutation.mutate(mealId);
@@ -278,22 +296,17 @@ export default function MealPage() {
 
   // Determine which meal data to display - current or last loaded
   const displayMeals = meals || lastMeals;
-  const showNoDataMessage = !displayMeals && !isMealsLoading && !showLoading;
+  const showNoDataMessage = !displayMeals && !isMealsLoading && !isInitialLoad;
 
   return (
     <div>
-      <DateSelectorSection
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        handleGoToday={handleGoToday}
-      />
+      <DateSelectorSection selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
       <div className="relative">
-        {/* Loading spinner with fast fade-in, slightly slower fade-out */}
+        {/* Loading spinner with fade transition */}
         <div
-          className={`flex flex-col items-center justify-center py-8 absolute w-full
-            transition-opacity duration-150 ease-in-out
-            ${showLoading ? "opacity-100 z-10" : "opacity-0 z-0"}
+          className={`absolute inset-0 flex flex-col items-center justify-center py-8 transition-opacity duration-300 ease-in-out
+            ${isMealsLoading && isInitialLoad ? "opacity-100" : "opacity-0 pointer-events-none"}
           `}
         >
           <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
@@ -302,14 +315,10 @@ export default function MealPage() {
           </span>
         </div>
 
-        {/* Content with conditional opacity based on loading state */}
-        <div
-          className={`transition-opacity duration-200 
-            ${showLoading ? "opacity-0" : "opacity-100"}
-          `}
-        >
+        {/* Content */}
+        <div className="space-y-4 p-4">
           {displayMeals ? (
-            <div className="space-y-4 p-4">
+            <>
               <MealSection
                 title="아침"
                 items={displayMeals.breakfast.menu}
@@ -346,7 +355,7 @@ export default function MealPage() {
                 }
                 memberId={currentMember.member_id}
               />
-            </div>
+            </>
           ) : (
             showNoDataMessage && (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
