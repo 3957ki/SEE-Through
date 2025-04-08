@@ -42,16 +42,18 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center gap-4 py-2">
+    <div className="flex items-center justify-between w-full max-w-3xl mx-auto px-2 py-1 font-small:py-0.5 font-large:py-2">
       <button
         type="button"
         onClick={handlePrev}
-        className="p-2 hover:bg-muted rounded-full transition-colors"
+        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
         disabled={offset === 0}
       >
-        <ChevronLeft className={`w-6 h-6 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
+        <ChevronLeft
+          className={`w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`}
+        />
       </button>
-      <div className="flex-1 flex justify-around">
+      <div className="flex-1 grid grid-cols-7 gap-1">
         {visibleDates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
@@ -59,13 +61,17 @@ function DateSelector({
           return (
             <div
               key={date.toDateString()}
-              className={`flex flex-col items-center px-4 py-2 rounded-xl cursor-pointer transition-all hover:bg-primary/10 ${
-                isSelected ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"
+              className={`flex flex-col items-center px-1 py-1.5 font-small:py-1 font-large:py-2 rounded-lg cursor-pointer transition-all hover:bg-primary/10 ${
+                isSelected ? "bg-primary text-primary-foreground" : "text-foreground"
               }`}
               onClick={() => onSelect(date)}
             >
-              <span className="text-sm font-medium">{dayOfWeek}</span>
-              <span className="text-lg font-semibold mt-1">{day}</span>
+              <span className="text-xs font-small:text-[10px] font-large:text-sm font-medium">
+                {dayOfWeek}
+              </span>
+              <span className="text-base font-small:text-sm font-large:text-lg font-semibold mt-0.5">
+                {day}
+              </span>
             </div>
           );
         })}
@@ -73,10 +79,10 @@ function DateSelector({
       <button
         type="button"
         onClick={handleNext}
-        className="p-2 hover:bg-muted rounded-full transition-colors"
+        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
         disabled
       >
-        <ChevronRight className="w-6 h-6 text-gray-300" />
+        <ChevronRight className="w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 text-gray-300" />
       </button>
     </div>
   );
@@ -90,7 +96,7 @@ function DateSelectorSection({
   setSelectedDate: (date: Date) => void;
 }) {
   return (
-    <div className="p-4">
+    <div className="w-full overflow-x-hidden">
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
     </div>
   );
