@@ -338,11 +338,11 @@ function MealCard({
 
   return (
     <div
-      className={`relative w-full h-[180px] rounded-xl shadow-lg ${textColor} cursor-pointer overflow-hidden ${color} flex flex-col justify-between p-4`}
+      className={`relative w-full rounded-xl shadow-lg ${textColor} cursor-pointer overflow-hidden ${color} flex flex-col justify-between p-4`}
       onClick={onCardClick}
     >
       {/* 제목 + 버튼 */}
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-4">
         <h3 className={`text-base font-semibold flex items-center ${textColor}`}>
           {getMealIcon()}
           {title}
@@ -363,9 +363,9 @@ function MealCard({
       </div>
 
       {/* 메뉴 목록 또는 로딩 스피너 */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1">
         {isLoading ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center py-8">
             <BsArrowClockwise className={`text-3xl ${textColor} animate-spin mb-2`} />
             <span className={`text-sm font-medium ${textColor} text-center`}>
               AI가 식단을 생성중입니다...
