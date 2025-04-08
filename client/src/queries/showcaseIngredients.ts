@@ -1,6 +1,6 @@
 import { deleteIngredient, getIngredient, insertIngredient } from "@/api/ingredients";
 import { Ingredient } from "@/interfaces/Ingredient";
-import { useCurrentMember } from "@/queries/members";
+import { members, useCurrentMember } from "@/queries/members";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
@@ -121,6 +121,11 @@ export function useOptimisticIngredientUpdates() {
             return queryKey[0] === "logs";
           },
         });
+
+        // Invalidate the ingredients query for the current member
+        queryClient.invalidateQueries({
+          queryKey: members.current._ctx.detail(currentMember.member_id)._ctx.ingredients.queryKey,
+        });
       }
     },
   });
@@ -175,6 +180,11 @@ export function useOptimisticIngredientUpdates() {
             const queryKey = query.queryKey as Array<unknown>;
             return queryKey[0] === "logs";
           },
+        });
+
+        // Invalidate the ingredients query for the current member
+        queryClient.invalidateQueries({
+          queryKey: members.current._ctx.detail(currentMember.member_id)._ctx.ingredients.queryKey,
         });
       }
     },

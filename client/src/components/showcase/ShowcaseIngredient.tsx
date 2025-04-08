@@ -60,11 +60,13 @@ export default function ShowcaseIngredient({
       className={`cursor-grab hover:scale-120 transition-all duration-200 ${className}`}
       role="button"
       aria-label={`${draggable ? "Drag " : ""}${ingredient.name || "Unnamed ingredient"}`}
+      style={{ fontSize: "16px" }}
     >
       <img
         src={ingredient.image_path}
         alt={ingredient.name || "Unnamed ingredient"}
         className="w-32 h-32 object-contain"
+        style={{ width: "128px", height: "128px" }}
       />
     </div>
   );
