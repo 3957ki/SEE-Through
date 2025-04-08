@@ -151,10 +151,14 @@ export default function LogPage() {
               <div key={index} className="bg-card rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
                   {/* 재료 이미지 - 왼쪽 */}
-                  <Avatar className="h-10 w-10 mr-3">
-                    <AvatarImage src={entry.ingredient_image} alt={entry.ingredient} />
+                  <Avatar className="h-14 w-14 mr-3 bg-background">
+                    <AvatarImage
+                      src={entry.ingredient_image}
+                      alt={entry.ingredient}
+                      className="object-contain"
+                    />
                     <AvatarFallback>
-                      <Package className="h-4 w-4" />
+                      <Package className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
 
