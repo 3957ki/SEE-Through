@@ -52,14 +52,14 @@ export default function BottomNavigation({ currentPin, currentPage }: BottomNavi
   ];
 
   return (
-    <nav className="w-full h-full flex items-center justify-around">
+    <nav className="w-full h-full flex items-center justify-around bg-background/95 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]">
       {navItems.map((item) => (
         <button
           type="button"
           key={item.page}
           onClick={() => handleNavigate(item.page)}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 w-16 h-full",
+            "flex flex-col items-center justify-center gap-1 flex-1 h-full",
             "transition-colors duration-200",
             currentPage === item.page ? "text-primary" : "text-foreground"
           )}

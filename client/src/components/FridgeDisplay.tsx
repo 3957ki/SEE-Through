@@ -97,7 +97,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             </div>
 
             {/* Navigation Section */}
-            <div className="w-full shrink-0 h-14 px-4 py-2">
+            <div className="w-full shrink-0 h-14 relative z-10">
               <BottomNavigation currentPin={currentPin} currentPage={currentPage} />
             </div>
 
