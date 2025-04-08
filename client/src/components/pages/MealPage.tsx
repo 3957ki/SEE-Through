@@ -10,7 +10,14 @@ import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { BsArrowClockwise, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
+import {
+  BsArrowClockwise,
+  BsHandThumbsDown,
+  BsHandThumbsUp,
+  BsMoonStars,
+  BsSun,
+  BsSunrise,
+} from "react-icons/bs";
 
 function DateSelector({
   selectedDate,
@@ -162,6 +169,20 @@ function MealSection({
   isRefreshing: boolean;
   memberId: string;
 }) {
+  // Get the appropriate icon based on the meal title
+  const getMealIcon = () => {
+    switch (title) {
+      case "아침":
+        return <BsSunrise className="text-orange-500 mr-2" />;
+      case "점심":
+        return <BsSun className="text-amber-500 mr-2" />;
+      case "저녁":
+        return <BsMoonStars className="text-indigo-500 mr-2" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6 relative">
       {isRefreshing && (
@@ -175,7 +196,10 @@ function MealSection({
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h3 className="text-primary text-lg font-bold mb-3">{title}</h3>
+        <h3 className="text-primary text-lg font-bold mb-3 flex items-center">
+          {getMealIcon()}
+          {title}
+        </h3>
         <button
           type="button"
           className="ml-4 p-2 rounded-full hover:bg-muted transition-colors"
