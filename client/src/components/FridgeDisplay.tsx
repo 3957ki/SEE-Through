@@ -115,6 +115,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
                 opacity: isScreensaverActive ? 1 : 0,
                 transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
                 pointerEvents: isScreensaverActive ? "auto" : "none",
+                zIndex: 20,
               }}
             >
               <Screensaver isActive={isScreensaverActive} />
