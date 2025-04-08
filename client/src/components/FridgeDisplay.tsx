@@ -16,7 +16,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PageType } from "@/interfaces/PageType";
 import { cn } from "@/lib/utils";
 import { useCurrentMember } from "@/queries/members";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 interface FridgeDisplayProps {
   className?: string;
@@ -60,6 +60,23 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
   };
 
   const pageContextValue = useMemo(() => ({ currentPage, navigateTo }), [currentPage]);
+
+  const resetPageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (isScreensaverActive == true) {
+      // 화면 꺼짐
+      resetPageTimerRef.current = setTimeout(() => {
+        setCurrentPage("main");
+        hideDialog();
+      }, 1000);
+    } else {
+      // 화면 켜짐
+      if (resetPageTimerRef.current != null) {
+        clearTimeout(resetPageTimerRef.current);
+        resetPageTimerRef.current = null;
+      }
+    }
+  }, [isScreensaverActive]);
 
   const headers = {
     main: <MainHeader />,
