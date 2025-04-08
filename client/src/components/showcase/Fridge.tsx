@@ -276,27 +276,27 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
         <rect x="7.5" y="985.054" width="481" height="830.446" stroke="black" />
         <g filter="url(#filter8_d_191_1501)">
           <mask id="path-17-inside-6_191_1501" fill="white">
-            <path d="M492 959.919H974V985.434H492V959.919Z" />
+            <path d="M495 959.919H977V985.434H495V959.919Z" />
           </mask>
-          <path d="M492 959.919H974V985.434H492V959.919Z" fill="#333333" />
+          <path d="M495 959.919H977V985.434H495V959.919Z" fill="#333333" />
           <path
-            d="M492 959.919H974V985.434H492V959.919Z"
+            d="M495 959.919H977V985.434H495V959.919Z"
             fill="url(#paint5_linear_191_1501)"
             fillOpacity="0.2"
           />
           <path
-            d="M492 959.919V958.919H491V959.919H492ZM492 960.919H974V958.919H492V960.919ZM493 985.434V959.919H491V985.434H493Z"
+            d="M495 959.919V958.919H494V959.919H495ZM495 960.919H974V958.919H495V960.919ZM496 985.434V959.919H494V985.434H496Z"
             fill="black"
             mask="url(#path-17-inside-6_191_1501)"
           />
         </g>
         <g filter="url(#filter9_d_191_1501)">
           <mask id="path-19-inside-7_191_1501" fill="white">
-            <path d="M887 952H974V984.554H887V952Z" />
+            <path d="M890 952H977V984.554H890V952Z" />
           </mask>
-          <path d="M887 952H974V984.554H887V952Z" fill="#222222" />
+          <path d="M890 952H977V984.554H890V952Z" fill="#222222" />
           <path
-            d="M887 952H974V984.554H887V952Z"
+            d="M890 952H977V984.554H890V952Z"
             fill="url(#paint6_linear_191_1501)"
             fillOpacity="0.35"
           />
@@ -307,16 +307,16 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           />
         </g>
         <g filter="url(#filter10_i_191_1501)">
-          <rect x="492" y="984.554" width="482" height="831.446" fill="white" />
+          <rect x="495" y="984.554" width="482" height="831.446" fill="white" />
           <rect
-            x="492"
+            x="495"
             y="984.554"
             width="482"
             height="831.446"
             fill="url(#paint7_linear_191_1501)"
           />
         </g>
-        <rect x="492.5" y="985.054" width="481" height="830.446" stroke="black" />
+        <rect x="495.5" y="985.054" width="481" height="830.446" stroke="black" />
         <g filter="url(#filter11_d_191_1501)">
           <mask id="path-23-inside-8_191_1501" fill="white">
             <path d="M495 952H573V958H495V952Z" />
@@ -356,9 +356,10 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           />
         </g>
         <g filter="url(#filter14_di_191_1501)">
-          <rect x="492" y="7" width="482" height="945" fill="white" />
-          <rect x="492" y="7" width="482" height="945" fill="url(#paint9_linear_191_1501)" />
-          <rect x="492.5" y="7.5" width="481" height="944" stroke="black" />
+          <rect x="495" y="7" width="482" height="945" fill="white" />
+
+          <rect x="495" y="7" width="482" height="945" fill="url(#paint9_linear_191_1501)" />
+          <rect x="495.5" y="7.5" width="481" height="944" stroke="black" />
         </g>
         {/* 오른쪽 도어에 children 렌더링 */}
         <foreignObject x="492" y="7" width="482" height="945">
