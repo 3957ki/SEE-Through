@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BsArrowClockwise,
   BsHandThumbsDown,
@@ -232,10 +232,8 @@ export default function MealPage() {
   const { data: meals, isLoading: isMealsLoading } = useCurrentMemberMealsOf(selectedDate);
   const refreshMutation = useMutateRefreshMeal(selectedDate);
 
-  // State for managing loading visibility
-  const [showLoading, setShowLoading] = useState(false);
-  const loadStartTime = useRef<number>(0);
-  const minLoadingTime = 300; // Shorter minimum display time (300ms)
+  // Simple state for initial loading
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Keep track of the last successfully loaded meal data
   const [lastMeals, setLastMeals] = useState(meals);
@@ -247,27 +245,12 @@ export default function MealPage() {
     }
   }, [meals]);
 
-  // Effect to handle loading state with smart timing
+  // Handle initial loading state
   useEffect(() => {
-    if (isMealsLoading) {
-      // Record when loading started
-      loadStartTime.current = Date.now();
-      setShowLoading(true);
-    } else if (showLoading) {
-      // Calculate how long the loading has been visible
-      const loadingDuration = Date.now() - loadStartTime.current;
-
-      // If loading was visible for less than our minimum time, add a small delay
-      // This prevents quick flashes but doesn't add unnecessary delay for longer operations
-      if (loadingDuration < minLoadingTime) {
-        const remainingTime = minLoadingTime - loadingDuration;
-        setTimeout(() => setShowLoading(false), remainingTime);
-      } else {
-        // If it was already visible long enough, hide immediately
-        setShowLoading(false);
-      }
+    if (!isMealsLoading && isInitialLoad) {
+      setIsInitialLoad(false);
     }
-  }, [isMealsLoading, showLoading]);
+  }, [isMealsLoading, isInitialLoad]);
 
   const handleRefreshMeal = (mealId: string) => {
     refreshMutation.mutate(mealId);
@@ -277,18 +260,17 @@ export default function MealPage() {
 
   // Determine which meal data to display - current or last loaded
   const displayMeals = meals || lastMeals;
-  const showNoDataMessage = !displayMeals && !isMealsLoading && !showLoading;
+  const showNoDataMessage = !displayMeals && !isMealsLoading && !isInitialLoad;
 
   return (
     <div>
       <DateSelectorSection selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
       <div className="relative">
-        {/* Loading spinner with fast fade-in, slightly slower fade-out */}
+        {/* Loading spinner with fade transition */}
         <div
-          className={`flex flex-col items-center justify-center py-8 absolute w-full
-            transition-opacity duration-150 ease-in-out
-            ${showLoading ? "opacity-100 z-10" : "opacity-0 z-0"}
+          className={`absolute inset-0 flex flex-col items-center justify-center py-8 transition-opacity duration-300 ease-in-out
+            ${isMealsLoading && isInitialLoad ? "opacity-100" : "opacity-0 pointer-events-none"}
           `}
         >
           <BsArrowClockwise className="text-4xl text-primary animate-spin mb-2" />
@@ -297,14 +279,10 @@ export default function MealPage() {
           </span>
         </div>
 
-        {/* Content with conditional opacity based on loading state */}
-        <div
-          className={`transition-opacity duration-200 
-            ${showLoading ? "opacity-0" : "opacity-100"}
-          `}
-        >
+        {/* Content */}
+        <div className="space-y-4 p-4">
           {displayMeals ? (
-            <div className="space-y-4 p-4">
+            <>
               <MealSection
                 title="아침"
                 items={displayMeals.breakfast.menu}
@@ -341,7 +319,7 @@ export default function MealPage() {
                 }
                 memberId={currentMember.member_id}
               />
-            </div>
+            </>
           ) : (
             showNoDataMessage && (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
