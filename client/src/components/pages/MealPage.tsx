@@ -10,12 +10,7 @@ import { addDays, format, isSameDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  BsArrowClockwise,
-  BsCalendarEvent,
-  BsHandThumbsDown,
-  BsHandThumbsUp,
-} from "react-icons/bs";
+import { BsArrowClockwise, BsHandThumbsDown, BsHandThumbsUp } from "react-icons/bs";
 
 function DateSelector({
   selectedDate,
@@ -73,28 +68,12 @@ function DateSelector({
 function DateSelectorSection({
   selectedDate,
   setSelectedDate,
-  handleGoToday,
 }: {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
-  handleGoToday: () => void;
 }) {
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-1">
-          <BsCalendarEvent className="w-4 h-4 text-muted-foreground" />
-          <h2 className="text-lg font-medium">식단 캘린더</h2>
-        </div>
-        <button
-          type="button"
-          onClick={handleGoToday}
-          className="text-sm text-primary border border-primary/30 rounded-full px-3 py-1 hover:bg-primary/10"
-        >
-          오늘
-        </button>
-      </div>
-
       <DateSelector selectedDate={selectedDate} onSelect={setSelectedDate} />
     </div>
   );
@@ -266,10 +245,6 @@ export default function MealPage() {
     }
   }, [isMealsLoading, showLoading]);
 
-  const handleGoToday = () => {
-    setSelectedDate(new Date());
-  };
-
   const handleRefreshMeal = (mealId: string) => {
     refreshMutation.mutate(mealId);
   };
@@ -282,11 +257,7 @@ export default function MealPage() {
 
   return (
     <div>
-      <DateSelectorSection
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        handleGoToday={handleGoToday}
-      />
+      <DateSelectorSection selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
       <div className="relative">
         {/* Loading spinner with fast fade-in, slightly slower fade-out */}
