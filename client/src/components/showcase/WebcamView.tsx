@@ -404,7 +404,6 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
         let currentBox: BoundingBox | null = null;
         let isFront = false;
-        let iouText = "";
         let isEdgeText = "";
         let isTooCloseToEdge = false;
 
@@ -476,7 +475,6 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             // IOU 계산
             if (prevBox) {
               iou = calculateIOU(currentBox, prevBox);
-              iouText = `IOU: ${iou.toFixed(2)}`;
             }
 
             // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음 AND 큰 IOU
@@ -490,7 +488,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             }
 
             prevBoundingBoxRef.current = currentBox;
-            isEdgeText = isTooCloseToEdge ? "가장자리: O" : "가장자리: X";
+            isEdgeText = isTooCloseToEdge ? "가장자리: ⭕" : "가장자리: ❌";
           }
         } else {
           nextFaceLevel = { level: 0, cut: LARGE_FACE_CUT };
@@ -516,16 +514,6 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             ctx.drawImage(videoRef.current, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
           }
 
-          // 가장자리 영역 표시 (시각적 피드백을 위해)
-          ctx.strokeStyle = "rgba(255, 255, 0, 0.5)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            EDGE_MARGIN,
-            EDGE_MARGIN,
-            VIDEO_WIDTH - EDGE_MARGIN * 2,
-            VIDEO_HEIGHT - EDGE_MARGIN * 2
-          );
-
           // 얼굴 박스 및 정보 그리기
           if (currentBox) {
             const { originX, originY, width, height } = currentBox;
@@ -535,26 +523,112 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
               boxColor = "#ff0000"; // 빨강
             else if (nextFaceLevel.level === 2) boxColor = "#00ff00"; // 초록
 
+            const cornerLength = Math.min(width, height) * 0.25; // 모서리 길이 좀 더 길게
+
             ctx.strokeStyle = boxColor;
-            ctx.beginPath();
-            ctx.lineWidth = 3;
-            ctx.strokeRect(originX, originY, width, height);
+            ctx.lineWidth = 5; // 라인 두께 증가
 
-            ctx.fillStyle = "rgba(0, 255, 0, 0.7)";
-            ctx.fillRect(originX, originY - 100, 160, 100);
-            ctx.fillStyle = "#000000";
-            ctx.font = "14px Arial";
+            // 모서리를 좀 더 꾸미기 위한 함수
+            const drawFancyCorner = (
+              x1: number,
+              y1: number,
+              x2: number,
+              y2: number,
+              x3: number,
+              y3: number
+            ): void => {
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
 
-            // 정면 여부 표시
-            const facingText = isFront ? "정면: O" : "정면: X";
-            ctx.fillText(facingText, originX + 5, originY - 70);
+              // 첫번째 선분의 중간 지점
+              const midX1 = (x1 + x2) / 2;
+              const midY1 = (y1 + y2) / 2;
 
-            // 가장자리 여부 표시
-            ctx.fillText(isEdgeText, originX + 5, originY - 50);
+              ctx.lineTo(midX1, midY1);
+              ctx.lineTo(x2, y2);
 
-            if (iouText) {
-              ctx.fillText(iouText, originX + 5, originY - 30);
-            }
+              // 두번째 선분의 중간 지점
+              const midX2 = (x2 + x3) / 2;
+              const midY2 = (y2 + y3) / 2;
+
+              ctx.lineTo(midX2, midY2);
+              ctx.lineTo(x3, y3);
+
+              ctx.stroke();
+            };
+
+            // 왼쪽 위 모서리
+            drawFancyCorner(
+              originX,
+              originY + cornerLength,
+              originX,
+              originY,
+              originX + cornerLength,
+              originY
+            );
+
+            // 오른쪽 위 모서리
+            drawFancyCorner(
+              originX + width - cornerLength,
+              originY,
+              originX + width,
+              originY,
+              originX + width,
+              originY + cornerLength
+            );
+
+            // 왼쪽 아래 모서리
+            drawFancyCorner(
+              originX,
+              originY + height - cornerLength,
+              originX,
+              originY + height,
+              originX + cornerLength,
+              originY + height
+            );
+
+            // 오른쪽 아래 모서리
+            drawFancyCorner(
+              originX + width - cornerLength,
+              originY + height,
+              originX + width,
+              originY + height,
+              originX + width,
+              originY + height - cornerLength
+            );
+
+            // 텍스트 박스 표시 함수
+            const drawInfoBox = (
+              ctx: CanvasRenderingContext2D,
+              x: number,
+              y: number,
+              texts: string[]
+            ) => {
+              const padding = 10;
+              const lineHeight = 40;
+              const boxWidth = 180;
+              const boxHeight = texts.length * lineHeight + padding * 2;
+
+              // 둥근 사각형 그리기
+              ctx.beginPath();
+              ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+              ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+              ctx.lineWidth = 1;
+              const radius = 10;
+              ctx.roundRect(x, y, boxWidth, boxHeight, radius);
+              ctx.fill();
+              ctx.stroke();
+
+              // 텍스트 그리기
+              ctx.fillStyle = "#000";
+              ctx.font = "26px 'Arial'";
+              texts.forEach((text, index) => {
+                ctx.fillText(text, x + padding, y + padding + (index + 1) * lineHeight - 6);
+              });
+            };
+
+            const infoTexts = [isFront ? "정       면: ⭕" : "정       면: ❌", `${isEdgeText}`];
+            drawInfoBox(ctx, originX, originY - 120, infoTexts);
           }
         }
       } catch (e) {
