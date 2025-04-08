@@ -67,25 +67,30 @@ export function useCurrentMemberMealsOf(date: Date) {
   const globalCreationKey = "meals_creation_in_progress";
   const creationInProgress = queryClient.getQueryData([globalCreationKey]) === true;
 
-  if (!currentMemberId || currentMemberId === "") {
-    throw new Error("Current member ID is not set or is empty");
-  }
-
   const {
     data,
     isLoading: queryLoading,
     isError,
     error,
-  } = useQuery(members.current._ctx.detail(currentMemberId)._ctx.meals(date));
+  } = useQuery({
+    queryKey: currentMemberId
+      ? members.current._ctx.detail(currentMemberId)._ctx.meals(date).queryKey
+      : [],
+    queryFn: () => getMealsByDate(currentMemberId!, date),
+    enabled: !!currentMemberId && currentMemberId !== "",
+  });
 
   // Include the global creation flag in the loading state
   const isLoading = queryLoading || creationInProgress;
 
   return {
-    data: data as MealPlanResponse,
-    isLoading,
+    data: data as MealPlanResponse | undefined,
+    isLoading: isLoading || !currentMemberId || currentMemberId === "",
     isError,
-    error,
+    error:
+      !currentMemberId || currentMemberId === ""
+        ? new Error("Current member ID is not set or is empty")
+        : error,
   };
 }
 
@@ -93,16 +98,19 @@ export function useMutateRefreshMeal(date: Date) {
   const queryClient = useQueryClient();
   const { currentMemberId } = useCurrentMemberId();
 
-  if (!currentMemberId || currentMemberId === "") {
-    throw new Error("Current member ID is not set or is empty");
-  }
-
   // Generate consistent date string key
   const dateString = date.toISOString().split("T")[0];
 
   return useMutation({
-    mutationFn: (mealId: string) => refreshMeal(mealId),
+    mutationFn: (mealId: string) => {
+      if (!currentMemberId || currentMemberId === "") {
+        throw new Error("Current member ID is not set or is empty");
+      }
+      return refreshMeal(mealId);
+    },
     onSuccess: (refreshedMeal) => {
+      if (!currentMemberId || currentMemberId === "") return;
+
       // Get the current cached meals - update both query systems
 
       // Update the members context query data
