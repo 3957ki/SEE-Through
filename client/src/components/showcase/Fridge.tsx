@@ -228,7 +228,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           </foreignObject>
         )}
         {/* 왼쪽 도어 끝 */}
-        <g filter="url(#filter5_d_191_1501)">
+        <g filter="url(#filter5_d_191_1501)" onClick={toggleDoor}>
           <mask id="path-11-inside-4_191_1501" fill="white">
             <path d="M7 959.039H489V984.554H7V959.039Z" />
           </mask>
