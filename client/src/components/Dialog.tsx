@@ -19,7 +19,7 @@ export function Dialog({ content, isOpen, onClose }: DialogProps) {
     >
       <div
         className={cn(
-          "w-11/12 max-w-[350px] p-6 rounded-lg shadow-xl bg-background text-foreground border border-border",
+          "w-5/6 p-6 rounded-lg shadow-xl bg-background text-foreground border border-border",
           "transform transition-all duration-300 ease-out flex flex-col"
         )}
         onClick={(e) => e.stopPropagation()}
