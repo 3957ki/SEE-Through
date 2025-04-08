@@ -43,15 +43,15 @@
 
 /* Font size classes */
 .font-small {
-  --font-size-multiplier: 0.85;
+  --font-size-multiplier: 0.9;
 }
 
 .font-regular {
-  --font-size-multiplier: 1;
+  --font-size-multiplier: 1.3;
 }
 
 .font-large {
-  --font-size-multiplier: 1.2;
+  --font-size-multiplier: 1.5;
 }
 
 .dark {
