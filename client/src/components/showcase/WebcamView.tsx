@@ -52,6 +52,9 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     nextRequest: null,
   });
 
+  // 마지막 레벨 0 전환 시간을 추적
+  const lastLevelZeroTimeRef = useRef<number | null>(null);
+
   // 캔버스 관련
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -552,11 +555,27 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
   useEffect(() => {
     // 웹소켓 메시지 핸들러
     async function handleFaceRecognition(result: any) {
+      // 현재 레벨이 0이고 응답이 도착한 경우, 마지막 레벨 0 시간 기록
+      if (faceLevelRef.current.level === 0 && lastLevelZeroTimeRef.current === null) {
+        lastLevelZeroTimeRef.current = Date.now();
+        console.log("[WebSocket] Recording level 0 transition time");
+      }
+      // 레벨이 0이 아닌 경우, 마지막 레벨 0 시간 초기화
+      else if (faceLevelRef.current.level !== 0) {
+        lastLevelZeroTimeRef.current = null;
+      }
+
+      // 레벨 0 이후에 도착한 모든 응답 무시 (레벨이 1 또는 2로 변경될 때까지)
+      if (lastLevelZeroTimeRef.current !== null) {
+        console.log("[WebSocket] Ignoring stale response after level 0 transition");
+        requestQueue.current.pending = false;
+        return;
+      }
+
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);
         processingTimeoutRef.current = null;
       }
-
       console.log("[WebSocket] 응답 수신:", result);
 
       requestQueue.current.pending = false;
