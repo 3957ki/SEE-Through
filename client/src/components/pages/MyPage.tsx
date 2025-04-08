@@ -1,4 +1,4 @@
-import { SimpleDialog } from "@/components/dialog/SimpleDialog";
+import { MultilineDialog } from "@/components/dialog/MultilineDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CustomDropdown } from "@/components/ui/custom-dropdown";
@@ -184,17 +184,49 @@ export default function MyPage() {
         },
         {
           onSuccess: () => {
-            showDialog(<SimpleDialog title="회원 정보가 수정되었습니다." />);
+            showDialog(
+              <MultilineDialog
+                content={
+                  <>
+                    회원 정보가
+                    <br />
+                    수정되었습니다.
+                  </>
+                }
+              />
+            );
           },
           onError: (error) => {
             console.error("Error updating member:", error);
-            showDialog(<SimpleDialog title="회원 정보 수정에 실패했습니다." isError />);
+            showDialog(
+              <MultilineDialog
+                content={
+                  <>
+                    회원정보수정에
+                    <br />
+                    실패했습니다.
+                  </>
+                }
+                isError
+              />
+            );
           },
         }
       );
     } catch (error) {
       console.error("Error updating member:", error);
-      showDialog(<SimpleDialog title="회원 정보 수정에 실패했습니다." isError />);
+      showDialog(
+        <MultilineDialog
+          content={
+            <>
+              회원정보수정에
+              <br />
+              실패했습니다.
+            </>
+          }
+          isError
+        />
+      );
     }
   };
 
