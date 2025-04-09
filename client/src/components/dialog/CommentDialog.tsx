@@ -4,6 +4,9 @@ import { AlertCircle, Info } from "lucide-react";
 function CommentDialog({ message, danger = false }: { message: string; danger?: boolean }) {
   const { hideDialog } = useDialog();
 
+  // 메시지 텍스트에 줄바꿈(\n)이 포함되어 있지 않다면, 자동으로 줄바꿈 처리
+  const formattedMessage = message.includes("\n") ? message : message.replace(/([.!?]) /g, "$1\n");
+
   const icon = danger ? (
     <AlertCircle className="w-7 h-7 text-red-600" />
   ) : (
@@ -29,8 +32,8 @@ function CommentDialog({ message, danger = false }: { message: string; danger?: 
         {styles.title}
       </h3>
 
-      <p className="text-sm text-gray-700 text-center whitespace-pre-wrap leading-relaxed">
-        {message}
+      <p className="text-sm text-gray-700 text-center whitespace-pre-line max-w-md mx-auto leading-relaxed break-words">
+        {formattedMessage}
       </p>
 
       <button
