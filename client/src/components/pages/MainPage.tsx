@@ -198,39 +198,6 @@ function Meals() {
     );
   }
 
-  if (mealError || isError) {
-    return (
-      <div className="mt-2 px-4 flex gap-4">
-        {/* "식단 생성하기" 버튼 */}
-        <button
-          type="button"
-          onClick={() => createMeals()}
-          className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-        >
-          식단 생성하기
-        </button>
-      </div>
-    );
-  }
-
-  if (!mealsToday || !mealsTomorrow) {
-    console.log("Meals data is missing");
-    return (
-      <div className="mt-2 px-4">
-        <div className="py-4 text-center text-gray-500">
-          현재 식단 정보가 없습니다.
-          <button
-            type="button"
-            onClick={() => createMeals()}
-            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-          >
-            식단 생성하기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Ensure meal data has the expected structure
   const hasValidMealData =
     mealsToday?.breakfast?.menu &&
@@ -238,20 +205,36 @@ function Meals() {
     mealsToday?.dinner?.menu &&
     mealsTomorrow?.breakfast?.menu;
 
-  if (!hasValidMealData) {
-    console.log("Invalid meal data structure:", { mealsToday, mealsTomorrow });
+  // Error handling for all error cases
+  if (mealError || isError || !mealsToday || !mealsTomorrow || !hasValidMealData) {
+    // Determine the appropriate error message
+    let errorMessage = null;
+
+    if (!mealsToday || !mealsTomorrow) {
+      errorMessage = "현재 식단 정보가 없습니다.";
+    } else if (!hasValidMealData) {
+      errorMessage = "식단 데이터 구조에 문제가 있습니다.";
+    }
+
+    // Log error details for debugging
+    if (mealError || isError) {
+      console.error("Meal error:", mealError || isError);
+    } else if (!mealsToday || !mealsTomorrow) {
+      console.log("Meals data is missing");
+    } else if (!hasValidMealData) {
+      console.log("Invalid meal data structure:", { mealsToday, mealsTomorrow });
+    }
+
     return (
       <div className="mt-2 px-4">
-        <div className="py-4 text-center text-gray-500">
-          식단 데이터 구조에 문제가 있습니다.
-          <button
-            type="button"
-            onClick={() => createMeals()}
-            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-          >
-            식단 다시 생성하기
-          </button>
-        </div>
+        {errorMessage && <div className="py-4 text-center text-gray-500">{errorMessage}</div>}
+        <button
+          type="button"
+          onClick={() => createMeals()}
+          className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
+        >
+          식단 생성하기
+        </button>
       </div>
     );
   }
