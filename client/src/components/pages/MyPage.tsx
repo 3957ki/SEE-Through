@@ -243,7 +243,7 @@ export default function MyPage() {
     }
   };
 
-  // Check for scroll hints visibility
+  // Check for scroll hints visibility with debounce
   const updateScrollHints = useCallback(() => {
     const container = tabsContainerRef.current;
     if (!container || isScrolling) return;
@@ -251,31 +251,58 @@ export default function MyPage() {
     const { scrollLeft, scrollWidth, clientWidth } = container;
     const maxScroll = scrollWidth - clientWidth;
 
-    // Add small threshold for edge detection
+    // Add small threshold and safety checks
     const isAtStart = scrollLeft <= 1;
-    const isAtEnd = Math.abs(maxScroll - scrollLeft) <= 1;
-
-    // Only show hints if there's actually overflow
+    const isAtEnd = maxScroll > 0 && Math.abs(maxScroll - scrollLeft) <= 1;
     const hasOverflow = scrollWidth > clientWidth;
-    setLeftHintVisible(hasOverflow && !isAtStart);
-    setRightHintVisible(hasOverflow && !isAtEnd);
+
+    // Prevent unnecessary updates
+    if (!hasOverflow) {
+      setLeftHintVisible(false);
+      setRightHintVisible(false);
+      return;
+    }
+
+    // Use RAF to prevent rapid state updates
+    requestAnimationFrame(() => {
+      setLeftHintVisible(!isAtStart);
+      setRightHintVisible(!isAtEnd);
+    });
   }, [isScrolling]);
 
-  // Set up scroll event listener and handle font size changes
+  // Set up scroll event listener with debounce
   useEffect(() => {
     const container = tabsContainerRef.current;
     if (!container) return;
 
-    updateScrollHints();
+    let timeoutId: number | null = null;
+    let isUpdating = false;
 
-    // Set up scroll event listener
-    container.addEventListener("scroll", updateScrollHints);
-    window.addEventListener("resize", updateScrollHints);
+    const debouncedUpdate = () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      if (!isUpdating) {
+        timeoutId = window.setTimeout(() => {
+          isUpdating = true;
+          updateScrollHints();
+          isUpdating = false;
+        }, 100);
+      }
+    };
+
+    const handleScroll = () => {
+      if (!isScrolling) {
+        debouncedUpdate();
+      }
+    };
+
+    updateScrollHints();
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", debouncedUpdate, { passive: true });
 
     // Create observers for size and style changes
-    const resizeObserver = new ResizeObserver(() => {
-      updateScrollHints();
-    });
+    const resizeObserver = new ResizeObserver(debouncedUpdate);
 
     const mutationObserver = new MutationObserver((mutations) => {
       const hasFontChange = mutations.some(
@@ -285,16 +312,7 @@ export default function MyPage() {
       );
 
       if (hasFontChange) {
-        // Force immediate reflow
-        container.style.display = "none";
-        container.offsetHeight; // Force reflow
-        container.style.display = "";
-
-        // Multiple updates to catch any delayed rendering
-        setTimeout(updateScrollHints, 0);
-        setTimeout(updateScrollHints, 50);
-        setTimeout(updateScrollHints, 150);
-        setTimeout(updateScrollHints, 300);
+        debouncedUpdate();
       }
     });
 
@@ -308,12 +326,15 @@ export default function MyPage() {
     });
 
     return () => {
-      container.removeEventListener("scroll", updateScrollHints);
-      window.removeEventListener("resize", updateScrollHints);
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", debouncedUpdate);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };
-  }, [updateScrollHints, fontSize]); // Keep fontSize as dependency
+  }, [updateScrollHints, fontSize, isScrolling]);
 
   // Scroll handlers with animation states
   const scrollToStart = useCallback(() => {
@@ -456,7 +477,7 @@ export default function MyPage() {
               </div>
             </div>
 
-            {/* Left scroll hint - extend beyond rounded corners */}
+            {/* Left scroll hint */}
             <div
               className={`
                 absolute left-0 top-0 bottom-0
@@ -466,12 +487,16 @@ export default function MyPage() {
                 ${leftHintVisible ? "opacity-100" : "opacity-0 pointer-events-none"}
               `}
             >
+              <div className="absolute inset-0" aria-hidden="true" />
               <button
+                type="button"
                 onClick={scrollToStart}
                 className={`
+                  relative
                   w-full h-full
                   flex items-center justify-center
-                  bg-gradient-to-r from-background from-60% via-background/95 to-transparent
+                  bg-gradient-to-r from-background/80 via-background/40 to-transparent
+                  backdrop-blur-[1px]
                   text-muted-foreground hover:text-foreground
                   transition-colors
                 `}
@@ -481,7 +506,7 @@ export default function MyPage() {
               </button>
             </div>
 
-            {/* Right scroll hint - extend beyond rounded corners */}
+            {/* Right scroll hint */}
             <div
               className={`
                 absolute right-0 top-0 bottom-0
@@ -491,12 +516,16 @@ export default function MyPage() {
                 ${rightHintVisible ? "opacity-100" : "opacity-0 pointer-events-none"}
               `}
             >
+              <div className="absolute inset-0" aria-hidden="true" />
               <button
+                type="button"
                 onClick={scrollToEnd}
                 className={`
+                  relative
                   w-full h-full
                   flex items-center justify-center
-                  bg-gradient-to-l from-background from-60% via-background/95 to-transparent
+                  bg-gradient-to-l from-background/80 via-background/40 to-transparent
+                  backdrop-blur-[1px]
                   text-muted-foreground hover:text-foreground
                   transition-colors
                 `}
