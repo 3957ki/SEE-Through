@@ -495,8 +495,7 @@ export default function MyPage() {
                   relative
                   w-full h-full
                   flex items-center justify-center
-                  bg-gradient-to-r from-background/80 via-background/40 to-transparent
-                  backdrop-blur-[1px]
+                  bg-gradient-to-r from-background from-30% via-background/90 to-transparent
                   text-muted-foreground hover:text-foreground
                   transition-colors
                 `}
@@ -524,8 +523,7 @@ export default function MyPage() {
                   relative
                   w-full h-full
                   flex items-center justify-center
-                  bg-gradient-to-l from-background/80 via-background/40 to-transparent
-                  backdrop-blur-[1px]
+                  bg-gradient-to-l from-background from-30% via-background/90 to-transparent
                   text-muted-foreground hover:text-foreground
                   transition-colors
                 `}
