@@ -6,16 +6,16 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
 export const showcaseIngredients = [
   {
-    ingredient_id: "01960e59-db82-7c6c-9fa6-b4a0cd4d044c",
-    name: "땅콩버터",
-    image_path:
-      "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/peanut-butter.png",
-  },
-  {
     ingredient_id: "01960e59-db82-7c6c-9f9a-1e130b41e7f6",
     name: "딸기잼",
     image_path:
       "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/strawberry-jam.png",
+  },
+  {
+    ingredient_id: "01960e59-db82-7c6c-9fa6-b4a0cd4d044c",
+    name: "땅콩버터",
+    image_path:
+      "https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/peanut-butter.png",
   },
   {
     ingredient_id: "01960e59-db82-7c6c-9f99-9a4a43040ddc",

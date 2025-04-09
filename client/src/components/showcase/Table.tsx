@@ -15,7 +15,14 @@ export default function Table({ outsideIngredients }: TableProps) {
   const { removeIngredient } = useOptimisticIngredientUpdates();
   const { showDialog } = useDialog();
   const { data: currentMember } = useCurrentMember();
-  const [showIngredients, setShowIngredients] = useState(true);
+  const [hideSelectedIngredients, setHideSelectedIngredients] = useState(false);
+
+  // 숨길 재료 ID 목록 (두부, 계란, 돼지고기의 ID)
+  const ingredientsToHide = [
+    "01960e59-db82-7c6c-9f99-9a4a43040ddc", // 두부
+    "01960e59-db82-7c6c-9f9f-4be039992361", // 계란
+    "01960e59-db82-7c6c-9fa9-6cf9339d17ab", // 돼지고기
+  ];
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -66,9 +73,16 @@ export default function Table({ outsideIngredients }: TableProps) {
     }
   };
 
-  const toggleIngredients = () => {
-    setShowIngredients(!showIngredients);
+  const toggleSelectedIngredients = () => {
+    setHideSelectedIngredients(!hideSelectedIngredients);
   };
+
+  // 필터링된 재료 목록 계산
+  const filteredIngredients = hideSelectedIngredients
+    ? outsideIngredients.filter(
+        (ingredient) => !ingredientsToHide.includes(ingredient.ingredient_id)
+      )
+    : outsideIngredients;
 
   return (
     <div
@@ -81,14 +95,14 @@ export default function Table({ outsideIngredients }: TableProps) {
     >
       {/* 장보기 버튼을 이모지로 대체하고 위치 변경 */}
       <button
-        onClick={toggleIngredients}
-        className="absolute bottom-4 right-27 z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
+        onClick={toggleSelectedIngredients}
+        className="absolute bottom-4 right-28 z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
         style={{
           fontSize: "24px",
           width: "48px",
           height: "48px",
         }}
-        aria-label={showIngredients ? "장보기 숨기기" : "장보기 보기"}
+        aria-label={hideSelectedIngredients ? "모든 재료 보기" : "일부 재료 숨기기"}
       >
         🛒
       </button>
@@ -111,14 +125,13 @@ export default function Table({ outsideIngredients }: TableProps) {
         onDragOver={handleDragOver}
         onDrop={handleDropEvent}
       >
-        {showIngredients &&
-          outsideIngredients.map((ingredient) => (
-            <ShowcaseIngredient
-              key={ingredient.ingredient_id}
-              ingredient={ingredient}
-              className="table"
-            />
-          ))}
+        {filteredIngredients.map((ingredient) => (
+          <ShowcaseIngredient
+            key={ingredient.ingredient_id}
+            ingredient={ingredient}
+            className="table"
+          />
+        ))}
       </div>
     </div>
   );
