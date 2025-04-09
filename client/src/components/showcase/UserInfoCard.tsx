@@ -86,7 +86,7 @@ function UserInfoCard() {
             <div style={{ marginBottom: "12px" }}>
               <div
                 style={{
-                  fontSize: "14px",
+                  fontSize: "16px",
                   fontWeight: "bold",
                   color: "#374151",
                 }}
@@ -105,11 +105,12 @@ function UserInfoCard() {
                   <span
                     key={index}
                     style={{
-                      fontSize: "12px",
-                      padding: "4px 8px",
-                      backgroundColor: "#FEE2E2",
+                      fontSize: "14px",
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(239, 68, 68, 0.1)",
                       color: "#EF4444",
-                      borderRadius: "9999px",
+                      borderRadius: "8px",
+                      fontWeight: "700",
                     }}
                   >
                     {allergy}
@@ -124,7 +125,7 @@ function UserInfoCard() {
             <div>
               <div
                 style={{
-                  fontSize: "14px",
+                  fontSize: "16px",
                   fontWeight: "bold",
                   color: "#374151",
                 }}
@@ -143,11 +144,12 @@ function UserInfoCard() {
                   <span
                     key={index}
                     style={{
-                      fontSize: "12px",
-                      padding: "4px 8px",
-                      backgroundColor: "#DBEAFE",
+                      fontSize: "14px",
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(59, 130, 246, 0.1)",
                       color: "#3B82F6",
-                      borderRadius: "9999px",
+                      borderRadius: "8px",
+                      fontWeight: "700",
                     }}
                   >
                     {disease}
@@ -165,7 +167,7 @@ function UserInfoCard() {
             <div style={{ marginBottom: "12px" }}>
               <div
                 style={{
-                  fontSize: "14px",
+                  fontSize: "16px",
                   fontWeight: "bold",
                   color: "#374151",
                 }}
@@ -184,11 +186,12 @@ function UserInfoCard() {
                   <span
                     key={index}
                     style={{
-                      fontSize: "12px",
-                      padding: "4px 8px",
-                      backgroundColor: "#D1FAE5",
+                      fontSize: "14px",
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(16, 185, 129, 0.1)",
                       color: "#10B981",
-                      borderRadius: "9999px",
+                      borderRadius: "8px",
+                      fontWeight: "700",
                     }}
                   >
                     {food}
@@ -203,7 +206,7 @@ function UserInfoCard() {
             <div>
               <div
                 style={{
-                  fontSize: "14px",
+                  fontSize: "16px",
                   fontWeight: "bold",
                   color: "#374151",
                 }}
@@ -222,11 +225,12 @@ function UserInfoCard() {
                   <span
                     key={index}
                     style={{
-                      fontSize: "12px",
-                      padding: "4px 8px",
-                      backgroundColor: "#FEF3C7",
+                      fontSize: "14px",
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(245, 158, 11, 0.1)",
                       color: "#F59E0B",
-                      borderRadius: "9999px",
+                      borderRadius: "8px",
+                      fontWeight: "700",
                     }}
                   >
                     {food}
