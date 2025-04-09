@@ -488,7 +488,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             }
 
             prevBoundingBoxRef.current = currentBox;
-            isEdgeText = isTooCloseToEdge ? "가장자리: ⭕" : "가장자리: ❌";
+            isEdgeText = isTooCloseToEdge ? "얼굴 위치: 가장자리" : "얼굴 위치: 중앙";
           }
         } else {
           nextFaceLevel = { level: 0, cut: LARGE_FACE_CUT };
@@ -513,6 +513,16 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
           if (videoRef.current) {
             ctx.drawImage(videoRef.current, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
           }
+
+          // EDGE_MARGIN 가장자리 표시 (노란색)
+          ctx.strokeStyle = "yellow";
+          ctx.lineWidth = 4;
+          ctx.strokeRect(
+            EDGE_MARGIN,
+            EDGE_MARGIN,
+            VIDEO_WIDTH - EDGE_MARGIN * 2,
+            VIDEO_HEIGHT - EDGE_MARGIN * 2
+          );
 
           // 얼굴 박스 및 정보 그리기
           if (currentBox) {
@@ -606,7 +616,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             ) => {
               const padding = 10;
               const lineHeight = 40;
-              const boxWidth = 180;
+              const boxWidth = 250;
               const boxHeight = texts.length * lineHeight + padding * 2;
 
               // 둥근 사각형 그리기
@@ -627,7 +637,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
               });
             };
 
-            const infoTexts = [isFront ? "정       면: ⭕" : "정       면: ❌", `${isEdgeText}`];
+            const infoTexts = [isFront ? "얼굴 방향: 정면" : "얼굴 방향: 측면", `${isEdgeText}`];
             drawInfoBox(ctx, originX, originY - 120, infoTexts);
           }
         }
