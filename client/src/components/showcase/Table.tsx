@@ -6,7 +6,7 @@ import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
 import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
-import { DragEvent } from "react";
+import { DragEvent, useState } from "react";
 interface TableProps {
   outsideIngredients: Ingredient[];
 }
@@ -15,6 +15,7 @@ export default function Table({ outsideIngredients }: TableProps) {
   const { removeIngredient } = useOptimisticIngredientUpdates();
   const { showDialog } = useDialog();
   const { data: currentMember } = useCurrentMember();
+  const [showIngredients, setShowIngredients] = useState(true);
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -65,6 +66,10 @@ export default function Table({ outsideIngredients }: TableProps) {
     }
   };
 
+  const toggleIngredients = () => {
+    setShowIngredients(!showIngredients);
+  };
+
   return (
     <div
       className="absolute bottom-0 right-0 overflow-hidden pointer-events-auto"
@@ -74,6 +79,20 @@ export default function Table({ outsideIngredients }: TableProps) {
         fontSize: "16px", // Set absolute font size to prevent inheritance
       }}
     >
+      {/* 장보기 버튼을 이모지로 대체하고 위치 변경 */}
+      <button
+        onClick={toggleIngredients}
+        className="absolute bottom-4 right-27 z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
+        style={{
+          fontSize: "24px",
+          width: "48px",
+          height: "48px",
+        }}
+        aria-label={showIngredients ? "장보기 숨기기" : "장보기 보기"}
+      >
+        🛒
+      </button>
+
       {/* Table image */}
       <img
         src={tableImage}
@@ -92,13 +111,14 @@ export default function Table({ outsideIngredients }: TableProps) {
         onDragOver={handleDragOver}
         onDrop={handleDropEvent}
       >
-        {outsideIngredients.map((ingredient) => (
-          <ShowcaseIngredient
-            key={ingredient.ingredient_id}
-            ingredient={ingredient}
-            className="table"
-          />
-        ))}
+        {showIngredients &&
+          outsideIngredients.map((ingredient) => (
+            <ShowcaseIngredient
+              key={ingredient.ingredient_id}
+              ingredient={ingredient}
+              className="table"
+            />
+          ))}
       </div>
     </div>
   );
