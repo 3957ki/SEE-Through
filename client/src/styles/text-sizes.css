@@ -1,0 +1,81 @@
+/* Base text sizes - scaled up from default */
+.text-xs {
+  font-size: 0.875rem; /* 14px - was 12px */
+  line-height: 1.25rem;
+}
+
+.text-sm {
+  font-size: 1rem; /* 16px - was 14px */
+  line-height: 1.5rem;
+}
+
+.text-base {
+  font-size: 1.125rem; /* 18px - was 16px */
+  line-height: 1.75rem;
+}
+
+.text-lg {
+  font-size: 1.25rem; /* 20px - was 18px */
+  line-height: 1.75rem;
+}
+
+.text-xl {
+  font-size: 1.5rem; /* 24px - was 20px */
+  line-height: 2rem;
+}
+
+.text-2xl {
+  font-size: 1.875rem; /* 30px - was 24px */
+  line-height: 2.25rem;
+}
+
+.text-3xl {
+  font-size: 2.25rem; /* 36px - was 30px */
+  line-height: 2.5rem;
+}
+
+.text-4xl {
+  font-size: 2.5rem; /* 40px - was 36px */
+  line-height: 2.75rem;
+}
+
+/* Variable font size system - scaled up */
+.font-small .text-xs {
+  font-size: 0.75rem; /* 12px - was 10px */
+}
+
+.font-small .text-sm {
+  font-size: 0.875rem; /* 14px - was 12px */
+}
+
+.font-small .text-base {
+  font-size: 1rem; /* 16px - was 14px */
+}
+
+.font-small .text-lg {
+  font-size: 1.125rem; /* 18px - was 16px */
+}
+
+.font-small .text-xl {
+  font-size: 1.25rem; /* 20px - was 18px */
+}
+
+.font-large .text-xs {
+  font-size: 1rem; /* 16px - was 14px */
+}
+
+.font-large .text-sm {
+  font-size: 1.125rem; /* 18px - was 16px */
+}
+
+.font-large .text-base {
+  font-size: 1.25rem; /* 20px - was 18px */
+}
+
+.font-large .text-lg {
+  font-size: 1.5rem; /* 24px - was 20px */
+}
+
+.font-large .text-xl {
+  font-size: 1.75rem; /* 28px - was 24px */
+}
