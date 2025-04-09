@@ -42,18 +42,16 @@ function DateSelector({
   };
 
   return (
-    <div className="flex items-center justify-between w-full max-w-3xl mx-auto px-2 py-1 font-small:py-0.5 font-large:py-2">
+    <div className="flex items-center justify-between w-full max-w-3xl mx-auto px-2 py-2">
       <button
         type="button"
         onClick={handlePrev}
-        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
+        className="p-2 hover:bg-muted rounded-full transition-colors shrink-0"
         disabled={offset === 0}
       >
-        <ChevronLeft
-          className={`w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`}
-        />
+        <ChevronLeft className={`w-5 h-5 ${offset === 0 ? "text-gray-300" : "text-gray-500"}`} />
       </button>
-      <div className="flex-1 grid grid-cols-7 gap-1">
+      <div className="flex-1 grid grid-cols-7 gap-2">
         {visibleDates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const dayOfWeek = format(date, "EEE", { locale: ko });
@@ -61,17 +59,13 @@ function DateSelector({
           return (
             <div
               key={date.toDateString()}
-              className={`flex flex-col items-center px-1 py-1.5 font-small:py-1 font-large:py-2 rounded-lg cursor-pointer transition-all hover:bg-primary/10 ${
+              className={`flex flex-col items-center py-1.5 rounded-lg cursor-pointer transition-all hover:bg-primary/10 ${
                 isSelected ? "bg-primary text-primary-foreground" : "text-foreground"
               }`}
               onClick={() => onSelect(date)}
             >
-              <span className="text-xs font-small:text-[10px] font-large:text-sm font-medium">
-                {dayOfWeek}
-              </span>
-              <span className="text-base font-small:text-sm font-large:text-lg font-semibold mt-0.5">
-                {day}
-              </span>
+              <span className="text-xs font-medium mb-0.5 whitespace-nowrap">{dayOfWeek}</span>
+              <span className="text-base font-semibold">{day}</span>
             </div>
           );
         })}
@@ -79,10 +73,10 @@ function DateSelector({
       <button
         type="button"
         onClick={handleNext}
-        className="p-1.5 font-small:p-1 font-large:p-2 hover:bg-muted rounded-full transition-colors shrink-0"
+        className="p-2 hover:bg-muted rounded-full transition-colors shrink-0"
         disabled
       >
-        <ChevronRight className="w-5 h-5 font-small:w-4 font-small:h-4 font-large:w-6 font-large:h-6 text-gray-300" />
+        <ChevronRight className="w-5 h-5 text-gray-300" />
       </button>
     </div>
   );
@@ -143,7 +137,7 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
 
   return (
     <div
-      className={`flex items-center justify-between px-3 py-2 font-small:py-1.5 font-large:py-2.5 font-small:px-2 font-large:px-4 rounded-md transition-all duration-300 ease-out group ${
+      className={`flex items-center justify-between px-4 py-2.5 font-small:py-2 font-large:py-3 rounded-md transition-all duration-300 ease-out group ${
         isLiked
           ? "bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/10 dark:hover:bg-emerald-950/20 hover:translate-x-0.5"
           : isDisliked
@@ -152,7 +146,7 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
       }`}
     >
       <span
-        className={`text-sm font-medium transition-colors duration-300 ${
+        className={`text-base font-medium flex-1 mr-4 transition-colors duration-300 ${
           isLiked
             ? "text-emerald-600 dark:text-emerald-400"
             : isDisliked
@@ -163,9 +157,9 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
         {name}
       </span>
 
-      <div className="flex items-center gap-3 opacity-70 group-hover:opacity-100 transition-all duration-300">
+      <div className="flex items-center gap-4 shrink-0">
         <BsHandThumbsUp
-          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+          className={`w-5 h-5 transition-all duration-300 hover:scale-110 ${
             isLiked
               ? "text-emerald-600 fill-emerald-600 dark:text-emerald-400 dark:fill-emerald-400"
               : "text-muted-foreground/50 hover:text-emerald-500/90"
@@ -175,7 +169,7 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
         />
 
         <BsHandThumbsDown
-          className={`w-4 h-4 transition-all duration-300 hover:scale-110 ${
+          className={`w-5 h-5 transition-all duration-300 hover:scale-110 ${
             isDisliked
               ? "text-destructive fill-destructive"
               : "text-muted-foreground/50 hover:text-destructive/90"
@@ -209,18 +203,18 @@ function MealSection({
   const getMealIcon = () => {
     switch (title) {
       case "아침":
-        return <BsSunrise className="text-orange-500 mr-2" />;
+        return <BsSunrise className="text-orange-500 shrink-0" />;
       case "점심":
-        return <BsSun className="text-amber-500 mr-2" />;
+        return <BsSun className="text-amber-500 shrink-0" />;
       case "저녁":
-        return <BsMoonStars className="text-indigo-500 mr-2" />;
+        return <BsMoonStars className="text-indigo-500 shrink-0" />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 relative">
+    <div className="bg-white rounded-xl shadow-sm p-4 font-small:p-3 font-large:p-5 mb-6 relative">
       {isRefreshing && (
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center z-10">
           <div className="flex flex-col items-center">
@@ -231,14 +225,14 @@ function MealSection({
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between">
-        <h3 className="text-primary text-lg font-bold mb-3 flex items-center">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
           {getMealIcon()}
-          {title}
-        </h3>
+          <h3 className="text-lg font-bold text-primary">{title}</h3>
+        </div>
         <button
           type="button"
-          className="ml-4 p-2 rounded-full hover:bg-muted transition-colors"
+          className="p-2 rounded-full hover:bg-muted transition-colors shrink-0"
           onClick={() => onRefresh(mealId)}
           disabled={isRefreshing}
           aria-label={`${title} 식단 새로고침`}
@@ -254,8 +248,8 @@ function MealSection({
         ))}
       </div>
       {reason && (
-        <div className="mt-3 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
-          <span className="text-primary mr-1">💡</span> {reason}
+        <div className="mt-4 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+          <span className="text-primary mr-2">💡</span> {reason}
         </div>
       )}
     </div>
