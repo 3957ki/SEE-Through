@@ -245,56 +245,85 @@
   --chart-5: oklch(0.65 0.25 16);
 }
 
-/* Colorblind-friendly Theme (Deuteranopia/Protanopia friendly) */
+/* More Dramatic Colorblind-friendly Theme */
 .colorblind-theme {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2 0.02 270);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 270);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 270);
-  --primary: oklch(0.5 0.15 240); /* Blue - visible for most colorblind types */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9 0.03 270);
-  --secondary-foreground: oklch(0.3 0.1 240);
-  --muted: oklch(0.95 0.02 270);
-  --muted-foreground: oklch(0.5 0.05 270);
-  --accent: oklch(0.95 0.02 270);
-  --accent-foreground: oklch(0.3 0.1 240);
-  --destructive: oklch(0.5 0.15 180); /* Teal - distinct from blue */
+  --background: oklch(1 0 0); /* White */
+  --foreground: oklch(0.15 0.02 270); /* Darker neutral text */
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+
+  /* Brighter teal for primary */
+  --primary: oklch(0.6 0.25 180);
+  --primary-foreground: oklch(1 0 0); /* White text */
+
+  /* Magenta for secondary */
+  --secondary: oklch(0.7 0.14 340);
+  --secondary-foreground: oklch(1 0 0);
+
+  /* Neutral-lighter grays for muted and accent backgrounds */
+  --muted: oklch(0.95 0.015 270);
+  --muted-foreground: oklch(0.4 0.03 270);
+
+  /* Purple accent */
+  --accent: oklch(0.7 0.2 270);
+  --accent-foreground: oklch(1 0 0);
+
+  /* Greenish-yellow for destructive (distinct from teal) */
+  --destructive: oklch(0.75 0.2 85);
+
+  /* Standard border/input neutrals */
   --border: oklch(0.9 0.01 270);
   --input: oklch(0.9 0.01 270);
-  --ring: oklch(0.7 0.1 240);
-  --chart-1: oklch(0.55 0.2 240); /* Blue */
-  --chart-2: oklch(0.7 0.15 180); /* Teal */
-  --chart-3: oklch(0.8 0.1 90); /* Yellow */
-  --chart-4: oklch(0.4 0.1 270); /* Purple */
-  --chart-5: oklch(0.3 0.05 0); /* Black */
+
+  /* Slightly saturated teal for active rings/focus states */
+  --ring: oklch(0.6 0.25 180);
+
+  /* Colorblind-friendly chart palette:
+     1) Teal, 2) Magenta, 3) Gold, 4) Purple, 5) Dark neutral */
+  --chart-1: oklch(0.6 0.25 180);
+  --chart-2: oklch(0.7 0.2 340);
+  --chart-3: oklch(0.75 0.25 85);
+  --chart-4: oklch(0.65 0.2 270);
+  --chart-5: oklch(0.2 0.05 270);
 }
 
-/* Dark Colorblind-friendly Theme */
+/* Dark variant of the colorblind-friendly theme */
 .colorblind-theme.dark {
-  --background: oklch(0.15 0.02 270);
-  --foreground: oklch(0.95 0.01 270);
-  --card: oklch(0.25 0.02 270);
-  --card-foreground: oklch(0.95 0.01 270);
-  --popover: oklch(0.25 0.02 270);
-  --popover-foreground: oklch(0.95 0.01 270);
-  --primary: oklch(0.6 0.2 240); /* Brighter blue for dark mode */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.3 0.04 270);
-  --secondary-foreground: oklch(0.95 0.01 270);
-  --muted: oklch(0.3 0.04 270);
-  --muted-foreground: oklch(0.7 0.04 270);
-  --accent: oklch(0.3 0.04 270);
-  --accent-foreground: oklch(0.95 0.01 270);
-  --destructive: oklch(0.6 0.2 180); /* Teal */
+  --background: oklch(0.1 0.02 270); /* Near-black */
+  --foreground: oklch(0.95 0.01 270); /* Off-white */
+  --card: oklch(0.15 0.02 270);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.02 270);
+  --popover-foreground: var(--foreground);
+
+  /* Teal in dark mode: slightly more luminance/chroma to pop */
+  --primary: oklch(0.65 0.25 180);
+  --primary-foreground: oklch(0.05 0.01 270); /* Very dark text */
+
+  --secondary: oklch(0.7 0.2 340);
+  --secondary-foreground: oklch(0.05 0.01 270);
+
+  /* Muted dark backgrounds, lighter text */
+  --muted: oklch(0.2 0.03 270);
+  --muted-foreground: oklch(0.8 0.03 270);
+
+  --accent: oklch(0.65 0.25 270);
+  --accent-foreground: oklch(0.05 0.01 270);
+
+  /* Greenish-yellow again for destructive */
+  --destructive: oklch(0.65 0.25 85);
+
+  /* Borders/inputs with lower opacity for subtlety on dark */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.55 0.1 240);
-  --chart-1: oklch(0.65 0.25 240); /* Blue */
-  --chart-2: oklch(0.7 0.2 180); /* Teal */
-  --chart-3: oklch(0.8 0.15 90); /* Yellow */
-  --chart-4: oklch(0.5 0.15 270); /* Purple */
-  --chart-5: oklch(0.9 0.05 0); /* White */
+  --ring: oklch(0.65 0.25 180);
+
+  /* Chart colors remain similarly vibrant, just a tad brighter */
+  --chart-1: oklch(0.65 0.27 180);
+  --chart-2: oklch(0.7 0.22 340);
+  --chart-3: oklch(0.8 0.25 85);
+  --chart-4: oklch(0.7 0.25 270);
+  --chart-5: oklch(0.9 0.05 270);
 }
