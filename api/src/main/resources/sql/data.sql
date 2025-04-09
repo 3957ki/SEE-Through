@@ -23,7 +23,7 @@ VALUES
         ]'::JSONB,
         TRUE, FALSE, 35, CURRENT_TIMESTAMP),
        ('7a33bf77-3d07-4ced-adab-feb68a9d2092', '홍정우', '2015-11-23', 9, 'http://localhost:9000/vision/get-faces?user_id=7a33bf77-3d07-4ced-adab-feb68a9d2092',
-        '정상', '크게',
+        '정상', '보통',
         '[
           "소고기",
           "치킨"
