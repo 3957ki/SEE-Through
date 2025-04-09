@@ -16,6 +16,36 @@ import {
   BsSunrise,
 } from "react-icons/bs";
 
+// Custom hook to determine time of day and appropriate greeting
+function useTimeOfDay() {
+  const [timeOfDay, setTimeOfDay] = useState<"morning" | "lunch" | "dinner">("morning");
+
+  useEffect(() => {
+    const updateTimeOfDay = () => {
+      const hour = new Date().getHours();
+
+      if (hour >= 0 && hour < 11) {
+        setTimeOfDay("morning");
+      } else if (hour >= 11 && hour < 16) {
+        setTimeOfDay("lunch");
+      } else {
+        setTimeOfDay("dinner");
+      }
+    };
+
+    // Update immediately
+    updateTimeOfDay();
+
+    // Set up interval to update every minute
+    const intervalId = setInterval(updateTimeOfDay, 60000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return { timeOfDay };
+}
+
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
 
@@ -149,6 +179,7 @@ function IngredientsSection() {
 function Meals() {
   const { data: currentMember } = useCurrentMember();
   const { navigateTo } = usePage();
+  const { timeOfDay } = useTimeOfDay();
 
   const {
     mealsToday,
@@ -161,8 +192,6 @@ function Meals() {
     isLoading,
     isError,
   } = useMemberMeals(currentMember?.member_id);
-
-  const hour = new Date().getHours();
 
   // Only log once per state change to avoid console spam
   useEffect(() => {
@@ -240,12 +269,12 @@ function Meals() {
   }
 
   const selectedMeals = (() => {
-    if (hour >= 0 && hour < 11) {
+    if (timeOfDay === "morning") {
       return [
         { title: "아침", data: mealsToday.breakfast, color: "bg-primary" },
         { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
       ];
-    } else if (hour >= 11 && hour < 16) {
+    } else if (timeOfDay === "lunch") {
       return [
         { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
         { title: "저녁", data: mealsToday.dinner, color: "bg-primary" },
@@ -380,6 +409,21 @@ function MealCard({
 function GreetingSection({ name }: { name?: string }) {
   const { showDialog } = useDialog();
   const { data: currentMember } = useCurrentMember();
+  const { timeOfDay } = useTimeOfDay();
+
+  // Get appropriate greeting based on time of day
+  const getGreeting = () => {
+    switch (timeOfDay) {
+      case "morning":
+        return "좋은 아침입니다";
+      case "lunch":
+        return "좋은 점심입니다";
+      case "dinner":
+        return "좋은 저녁입니다";
+      default:
+        return "안녕하세요";
+    }
+  };
 
   return (
     <div className="py-4">
@@ -398,7 +442,7 @@ function GreetingSection({ name }: { name?: string }) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="text-2xl font-medium">좋은 아침입니다,</p>
+          <p className="text-2xl font-medium">{getGreeting()},</p>
           <p className="text-2xl font-medium">{name}님!</p>
         </div>
       </div>
