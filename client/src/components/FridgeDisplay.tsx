@@ -50,7 +50,7 @@ function Screensaver({ isActive }: { isActive: boolean }) {
 
 function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: FridgeDisplayProps) {
   const [currentPin, setCurrentPin] = useState<string>("0000"); // 기본 비밀번호 0000
-  const { dialogContent, hideDialog } = useDialog();
+  const { dialogContent, hideDialog, isDanger } = useDialog();
   const displayRef = useRef<HTMLDivElement>(null);
   const { data: currentMember } = useCurrentMember();
 
@@ -119,7 +119,12 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             </div>
 
             {/* Dialog should be positioned correctly relative to the container */}
-            <Dialog content={dialogContent} isOpen={dialogContent !== null} onClose={hideDialog} />
+            <Dialog
+              content={dialogContent}
+              isOpen={dialogContent !== null}
+              onClose={hideDialog}
+              danger={isDanger}
+            />
 
             {/* Screensaver Overlay */}
             <div

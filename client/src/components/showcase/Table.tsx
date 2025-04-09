@@ -59,7 +59,8 @@ export default function Table({ outsideIngredients }: TableProps) {
                 <CommentDialog
                   message="땅콩버터에는 땅콩이 들어있어! 땅콩을 먹으면 피부 발진이나 호흡곤란 같은 심각한 반응이 나타날 수 있으니, 절대로 먹지 않는 게 좋아."
                   danger={true}
-                />
+                />,
+                true
               );
             } else {
               // 다른 모든 경우에 응답 메시지를 CommentDialog에 표시
