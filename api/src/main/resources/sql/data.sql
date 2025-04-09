@@ -36,6 +36,41 @@ VALUES ('00000000-0000-0000-0000-000000000001', '김다정', '1978-07-15', 46, '
           "땅콩"
         ]'::JSONB,
         '[]'::JSONB,
+        TRUE, TRUE, 28, CURRENT_TIMESTAMP),
+       ('3e300ea3-41a0-4a46-8000-4cc1725dfdfb', '김다정', '1978-07-15', 46, 'http://localhost:9000/vision/get-faces?user_id=3e300ea3-41a0-4a46-8000-4cc1725dfdfb',
+        '색맹', '보통',
+        '[
+          "오이",
+          "닭가슴살",
+          "두부"
+        ]'::JSONB,
+        '[
+          "돈가스",
+          "라면"
+        ]'::JSONB,
+        '[
+          "갑각류"
+        ]'::JSONB,
+        '[
+          "고혈압",
+          "당뇨"
+        ]'::JSONB,
+        TRUE, FALSE, 35, CURRENT_TIMESTAMP),
+       ('7a33bf77-3d07-4ced-adab-feb68a9d2092', '홍정우', '2015-11-23', 9, 'http://localhost:9000/vision/get-faces?user_id=7a33bf77-3d07-4ced-adab-feb68a9d2092',
+        '정상', '크게',
+        '[
+          "소고기",
+          "치킨"
+        ]'::JSONB,
+        '[
+          "브로콜리",
+          "버섯",
+          "콩"
+        ]'::JSONB,
+        '[
+          "땅콩"
+        ]'::JSONB,
+        '[]'::JSONB,
         TRUE, TRUE, 28, CURRENT_TIMESTAMP);
 
 -- 냉장고 재료 테이블 데이터
