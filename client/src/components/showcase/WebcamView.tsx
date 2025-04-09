@@ -15,10 +15,10 @@ import { useEffect, useRef, useState } from "react";
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const SMALL_FACE_CUT = 8000;
-const LARGE_FACE_CUT = 15000;
-const IOU_CUT = 0.99;
+const LARGE_FACE_CUT = 20000;
+const IOU_CUT = 0.999;
 const MIN_FACE_ANGLE_THRESHOLD = 0.15;
-const MIN_FACE_VERTICAL_THRESHOLD = 0.15;
+const MIN_FACE_VERTICAL_THRESHOLD = 0.25;
 const EDGE_MARGIN = 40;
 
 interface WebcamViewProps {
