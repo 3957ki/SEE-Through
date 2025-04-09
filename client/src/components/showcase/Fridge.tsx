@@ -362,7 +362,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           <rect x="495.5" y="7.5" width="481" height="944" stroke="black" />
         </g>
         {/* 오른쪽 도어에 children 렌더링 */}
-        <foreignObject x="492" y="7" width="482" height="945">
+        <foreignObject x="492" y="7" width="487" height="945">
           <div
             style={{
               width: "100%",
