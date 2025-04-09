@@ -16,6 +16,36 @@ import {
   BsSunrise,
 } from "react-icons/bs";
 
+// Custom hook to determine time of day and appropriate greeting
+function useTimeOfDay() {
+  const [timeOfDay, setTimeOfDay] = useState<"morning" | "lunch" | "dinner">("morning");
+
+  useEffect(() => {
+    const updateTimeOfDay = () => {
+      const hour = new Date().getHours();
+
+      if (hour >= 0 && hour < 11) {
+        setTimeOfDay("morning");
+      } else if (hour >= 11 && hour < 16) {
+        setTimeOfDay("lunch");
+      } else {
+        setTimeOfDay("dinner");
+      }
+    };
+
+    // Update immediately
+    updateTimeOfDay();
+
+    // Set up interval to update every minute
+    const intervalId = setInterval(updateTimeOfDay, 60000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return { timeOfDay };
+}
+
 function IngredientsContent() {
   const [error, setError] = useState<Error | null>(null);
 
@@ -149,6 +179,7 @@ function IngredientsSection() {
 function Meals() {
   const { data: currentMember } = useCurrentMember();
   const { navigateTo } = usePage();
+  const { timeOfDay } = useTimeOfDay();
 
   const {
     mealsToday,
@@ -161,8 +192,6 @@ function Meals() {
     isLoading,
     isError,
   } = useMemberMeals(currentMember?.member_id);
-
-  const hour = new Date().getHours();
 
   // Only log once per state change to avoid console spam
   useEffect(() => {
@@ -198,39 +227,6 @@ function Meals() {
     );
   }
 
-  if (mealError || isError) {
-    return (
-      <div className="mt-2 px-4 flex gap-4">
-        {/* "식단 생성하기" 버튼 */}
-        <button
-          type="button"
-          onClick={() => createMeals()}
-          className="w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-        >
-          식단 생성하기
-        </button>
-      </div>
-    );
-  }
-
-  if (!mealsToday || !mealsTomorrow) {
-    console.log("Meals data is missing");
-    return (
-      <div className="mt-2 px-4">
-        <div className="py-4 text-center text-gray-500">
-          현재 식단 정보가 없습니다.
-          <button
-            type="button"
-            onClick={() => createMeals()}
-            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-          >
-            식단 생성하기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Ensure meal data has the expected structure
   const hasValidMealData =
     mealsToday?.breakfast?.menu &&
@@ -238,31 +234,47 @@ function Meals() {
     mealsToday?.dinner?.menu &&
     mealsTomorrow?.breakfast?.menu;
 
-  if (!hasValidMealData) {
-    console.log("Invalid meal data structure:", { mealsToday, mealsTomorrow });
+  // Error handling for all error cases
+  if (mealError || isError || !mealsToday || !mealsTomorrow || !hasValidMealData) {
+    // Determine the appropriate error message
+    let errorMessage = null;
+
+    if (!mealsToday || !mealsTomorrow) {
+      errorMessage = "현재 식단 정보가 없습니다.";
+    } else if (!hasValidMealData) {
+      errorMessage = "식단 데이터 구조에 문제가 있습니다.";
+    }
+
+    // Log error details for debugging
+    if (mealError || isError) {
+      console.error("Meal error:", mealError || isError);
+    } else if (!mealsToday || !mealsTomorrow) {
+      console.log("Meals data is missing");
+    } else if (!hasValidMealData) {
+      console.log("Invalid meal data structure:", { mealsToday, mealsTomorrow });
+    }
+
     return (
       <div className="mt-2 px-4">
-        <div className="py-4 text-center text-gray-500">
-          식단 데이터 구조에 문제가 있습니다.
-          <button
-            type="button"
-            onClick={() => createMeals()}
-            className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
-          >
-            식단 다시 생성하기
-          </button>
-        </div>
+        {errorMessage && <div className="py-4 text-center text-gray-500">{errorMessage}</div>}
+        <button
+          type="button"
+          onClick={() => createMeals()}
+          className="mt-2 w-full bg-primary text-primary-foreground rounded-lg py-2 px-4"
+        >
+          식단 생성하기
+        </button>
       </div>
     );
   }
 
   const selectedMeals = (() => {
-    if (hour >= 0 && hour < 11) {
+    if (timeOfDay === "morning") {
       return [
         { title: "아침", data: mealsToday.breakfast, color: "bg-primary" },
         { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
       ];
-    } else if (hour >= 11 && hour < 16) {
+    } else if (timeOfDay === "lunch") {
       return [
         { title: "점심", data: mealsToday.lunch, color: "bg-secondary" },
         { title: "저녁", data: mealsToday.dinner, color: "bg-primary" },
@@ -397,6 +409,21 @@ function MealCard({
 function GreetingSection({ name }: { name?: string }) {
   const { showDialog } = useDialog();
   const { data: currentMember } = useCurrentMember();
+  const { timeOfDay } = useTimeOfDay();
+
+  // Get appropriate greeting based on time of day
+  const getGreeting = () => {
+    switch (timeOfDay) {
+      case "morning":
+        return "좋은 아침입니다";
+      case "lunch":
+        return "좋은 오후입니다";
+      case "dinner":
+        return "좋은 저녁입니다";
+      default:
+        return "안녕하세요";
+    }
+  };
 
   return (
     <div className="py-4">
@@ -415,7 +442,7 @@ function GreetingSection({ name }: { name?: string }) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="text-2xl font-medium">좋은 아침입니다,</p>
+          <p className="text-2xl font-medium">{getGreeting()},</p>
           <p className="text-2xl font-medium">{name}님!</p>
         </div>
       </div>
