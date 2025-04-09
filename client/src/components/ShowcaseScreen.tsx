@@ -61,7 +61,7 @@ function ShowcaseScreen() {
         }}
       >
         {/* Left Area - Fridge and Drop Zone */}
-        <div className="w-2/3 h-full relative">
+        <div className="w-3/4 h-full relative">
           <Fridge insideIngredients={insideIngredients} isActive={screensaverActive} />
         </div>
 
@@ -80,7 +80,7 @@ function ShowcaseScreen() {
       </div>
 
       {/* Table positioned outside the flex container */}
-      <div className="absolute bottom-0 right-0 w-full h-full pointer-events-none z-20">
+      <div className="absolute bottom-0 right-[-60px] w-full h-full pointer-events-none z-20">
         <Table outsideIngredients={outsideIngredients} />
       </div>
     </div>
