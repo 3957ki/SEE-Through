@@ -7,7 +7,7 @@ import { useDialog } from "@/contexts/DialogContext";
 import { useCurrentMember, useUpdateMember } from "@/queries/members";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { CalendarIcon, ChevronFirst, ChevronLast, X } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -17,6 +17,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import { LuChevronsLeft, LuChevronsRight } from "react-icons/lu";
 
 const MEASUREMENT_TYPES = ["선호 음식", "비선호 음식", "질병", "알러지"] as const;
 
@@ -476,7 +477,7 @@ export default function MyPage() {
                 `}
                 aria-label="처음으로 스크롤"
               >
-                <ChevronFirst className="w-5 h-5 animate-pulse" />
+                <LuChevronsLeft className="w-5 h-5 animate-pulse" />
               </button>
             </div>
 
@@ -501,7 +502,7 @@ export default function MyPage() {
                 `}
                 aria-label="끝으로 스크롤"
               >
-                <ChevronLast className="w-5 h-5 animate-pulse" />
+                <LuChevronsRight className="w-5 h-5 animate-pulse" />
               </button>
             </div>
           </div>
