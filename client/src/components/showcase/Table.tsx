@@ -1,4 +1,4 @@
-import ttsmp3 from "@/assets/jungwoo_tts.mp3";
+import ttsmp3 from "@/assets/jeongwoo_tts.mp3";
 import tableImage from "@/assets/table.png";
 import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
@@ -49,7 +49,7 @@ export default function Table({ outsideIngredients }: TableProps) {
 
               showDialog(
                 <CommentDialog
-                  message="땅콩버터에는 땅콩이 들어있어. 땅콩을 먹으면 피부 발진이나 호흡곤란 같은 심각한 반응이 나타날 수 있으니, 절대 먹지 않는 게 좋아."
+                  message="땅콩버터에는 땅콩이 들어있어! 땅콩을 먹으면 피부 발진이나 호흡곤란 같은 심각한 반응이 나타날 수 있으니, 절대로 먹지 않는 게 좋아."
                   danger={true}
                 />
               );
