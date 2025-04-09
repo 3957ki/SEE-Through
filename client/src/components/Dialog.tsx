@@ -1,20 +1,37 @@
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 
 interface DialogProps {
   content: ReactNode;
   isOpen: boolean;
   onClose: () => void;
+  danger?: boolean;
 }
 
-export function Dialog({ content, isOpen, onClose }: DialogProps) {
+export function Dialog({ content, isOpen, onClose, danger = false }: DialogProps) {
+  const [isBlinking, setIsBlinking] = useState(false);
+
+  useEffect(() => {
+    if (danger) {
+      setIsBlinking(true);
+      const interval = setInterval(() => {
+        setIsBlinking((prev) => !prev);
+      }, 500);
+
+      return () => {
+        clearInterval(interval);
+        setIsBlinking(false);
+      };
+    }
+  }, [danger]);
+
   if (!isOpen) return null;
 
   return (
     <div
       className="absolute inset-0 z-30 flex items-center justify-center"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+      style={{ backgroundColor: isBlinking ? "rgba(255, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.5)" }}
       onClick={onClose}
     >
       <div
