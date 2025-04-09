@@ -71,7 +71,14 @@ VALUES ('00000000-0000-0000-0000-000000000001', '김다정', '1978-07-15', 46, '
           "땅콩"
         ]'::JSONB,
         '[]'::JSONB,
-        TRUE, TRUE, 28, CURRENT_TIMESTAMP);
+        TRUE, TRUE, 28, CURRENT_TIMESTAMP),
+        ('fc889e51-ec6f-4880-8736-0b1913e644b1', '신규사용자', '2025-04-11', 0, 'http://localhost:9000/vision/get-faces?user_id=fc889e51-ec6f-4880-8736-0b1913e644b1',
+        '정상', '보통',
+        '[]'::JSONB,
+        '[]'::JSONB,
+        '[]'::JSONB,
+        '[]'::JSONB,
+        FALSE, FALSE, 0, NULL);
 
 -- 냉장고 재료 테이블 데이터
 INSERT INTO ingredients (ingredient_id, name, image_path, member_id, inbound_at, expiration_at, embedding_vector)
