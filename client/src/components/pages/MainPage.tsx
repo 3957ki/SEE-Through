@@ -417,7 +417,7 @@ function GreetingSection({ name }: { name?: string }) {
       case "morning":
         return "좋은 아침입니다";
       case "lunch":
-        return "좋은 점심입니다";
+        return "좋은 오후입니다";
       case "dinner":
         return "좋은 저녁입니다";
       default:
