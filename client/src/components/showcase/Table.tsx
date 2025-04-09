@@ -42,7 +42,7 @@ export default function Table({ outsideIngredients }: TableProps) {
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
             // 김정우와 땅콩버터 조건 체크
-            if (currentMember?.name === "김정우" && ingredient.name === "땅콩버터") {
+            if (currentMember?.name === "홍정우" && ingredient.name === "땅콩버터") {
               // jungwoo.mp3 재생 로직 (HTML5 Audio API 사용)
               const audio = new Audio(ttsmp3);
               audio.play().catch((err) => console.error("Failed to play audio:", err));

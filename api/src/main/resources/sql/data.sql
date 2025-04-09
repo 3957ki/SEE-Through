@@ -72,10 +72,10 @@ VALUES ('00000000-0000-0000-0000-000000000001', '김다정', '1978-07-15', 46, '
         ]'::JSONB,
         '[]'::JSONB,
         TRUE, TRUE, 28, CURRENT_TIMESTAMP),
-        ('fc889e51-ec6f-4880-8736-0b1913e644b1', '신규사용자', '2025-04-11', 0, 'http://localhost:9000/vision/get-faces?user_id=fc889e51-ec6f-4880-8736-0b1913e644b1',
+        ('fc889e51-ec6f-4880-8736-0b1913e644b1', '신규 사용자', '2025-04-11', 0, 'http://localhost:9000/vision/get-faces?user_id=fc889e51-ec6f-4880-8736-0b1913e644b1',
         '정상', '보통',
         '[]'::JSONB,
-        '[]'::JSONB,
+        '[]'::JSONB, 
         '[]'::JSONB,
         '[]'::JSONB,
         FALSE, FALSE, 0, NULL);
@@ -179,10 +179,10 @@ VALUES ('01960e59-db82-7c6c-9f9a-1e130b41e7f6', '딸기잼', 'https://see-throug
       ('01961802-54cd-7341-a922-579a7488eb7a','고등어','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/mackerel.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:45:28.141363',NULL,NULL),
       ('01961805-4599-77c8-9145-d490b863a3d6','가자미','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/flatfish.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:48:40.857541',NULL,NULL),
       ('01961805-7aee-731a-b528-cec023371e91','갈치','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/hairtail.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:48:54.510736',NULL,NULL),
-      ('01961805-9d7f-7ff3-8509-b9700315e001','돼지고기','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/pork.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:03.359574',NULL,NULL),
+      ('01961805-9d7f-7ff3-8509-b9700315e001','돼지고기','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/pork2.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:03.359574',NULL,NULL),
       ('01961805-be07-7815-9066-445d0549bb38','소고기','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/beef.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:11.687918',NULL,NULL),
       ('01961805-f8df-74d0-96a8-70dbdd8db088','훈제오리','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/smokedduck.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:26.751437',NULL,NULL),
-      ('01961806-1a56-7bc3-8758-831c23c72ef8','베이컨','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/bacon.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:35.318351',NULL,NULL),
+      ('01961806-1a56-7bc3-8758-831c23c72ef8','베이컨','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/bacon2.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:35.318351',NULL,NULL),
       ('01961806-416c-7d36-a519-7ae9448ce69b','소시지','https://see-through002.s3.ap-northeast-2.amazonaws.com/ingredient/sausage.png','00000000-0000-0000-0000-000000000001','2025-04-09 09:49:45.324949',NULL,NULL);
 
 
