@@ -133,30 +133,38 @@ function IngredientsContent() {
   }
 
   return (
-    <div className="grid grid-cols-5 gap-1">
-      {ingredients.map((ingredient, index) => (
-        <div
-          key={ingredient.ingredient_id}
-          ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
-        >
+    <div className="px-2">
+      <div className="grid grid-cols-4 gap-2">
+        {ingredients.map((ingredient, index) => (
           <div
-            className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleIngredientClick(ingredient)}
+            key={ingredient.ingredient_id}
+            ref={index === ingredients.length - 1 ? lastIngredientRef : undefined}
           >
-            <img
-              src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
-              alt={ingredient.name ?? "Ingredient image"}
-              className="w-full h-full object-cover"
-            />
+            <div
+              className="group relative aspect-square bg-gray-50 rounded-lg overflow-hidden cursor-pointer 
+                border-2 border-gray-300 hover:border-black hover:shadow-md transition-all duration-200"
+              onClick={() => handleIngredientClick(ingredient)}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 bg-gray-50 opacity-40"></div>
+                <img
+                  src={ingredient.image_path ?? "/src/assets/no-ingredient.png"}
+                  alt={ingredient.name ?? "Ingredient image"}
+                  className="w-full h-full object-cover relative z-10"
+                />
+                {/* 호버 시 효과 오버레이 */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 z-20"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
-      {isFetchingNextPage && (
-        <div className="col-span-5 flex flex-col items-center justify-center py-4">
-          <BsArrowClockwise className="text-2xl text-primary animate-spin mb-1" />
-          <span className="text-xs font-medium text-muted-foreground">로딩 중...</span>
-        </div>
-      )}
+        ))}
+        {isFetchingNextPage && (
+          <div className="col-span-4 flex flex-col items-center justify-center py-3">
+            <BsArrowClockwise className="text-2xl text-primary animate-spin mb-1" />
+            <span className="text-xs font-medium text-muted-foreground">로딩 중...</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -165,8 +173,11 @@ function IngredientsSection() {
   const { data: currentMember } = useCurrentMember();
 
   return (
-    <div className="py-4">
-      <h2 className="text-lg font-medium px-4 mb-3">재료 목록</h2>
+    <div className="py-3">
+      <h2 className="text-lg font-medium px-3 mb-2 flex items-center">
+        <span className="w-1 h-5 bg-primary rounded mr-2"></span>
+        재료 목록
+      </h2>
       {currentMember ? (
         <IngredientsContent />
       ) : (
