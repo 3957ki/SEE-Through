@@ -1,9 +1,9 @@
+import ttsmp3 from "@/assets/jungwoo_tts.mp3";
 import tableImage from "@/assets/table.png";
 import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
-import { speakWithOpenAIStreaming } from "@/lib/textToSpeech";
 import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent } from "react";
@@ -35,24 +35,28 @@ export default function Table({ outsideIngredients }: TableProps) {
 
         removeIngredient.mutate(ingredient.ingredient_id, {
           onSuccess: (data) => {
-            // Extract the string message from the object
             console.log(data);
             const messageText =
               typeof data.comment === "string"
                 ? data.comment
                 : (data.comment as { comment?: string })?.comment || "재료가 제거되었습니다.";
 
-            // TTS 먼저 실행
-            speakWithOpenAIStreaming(
-              messageText,
-              currentMember?.age !== undefined && currentMember.age < 13 ? "child" : "adult",
-              data.danger === true
-            );
+            // 김정우와 땅콩버터 조건 체크
+            if (currentMember?.name === "김정우" && ingredient.name === "땅콩버터") {
+              // jungwoo.mp3 재생 로직 (HTML5 Audio API 사용)
+              const audio = new Audio(ttsmp3);
+              audio.play().catch((err) => console.error("Failed to play audio:", err));
 
-            // CommentDialog는 2초 뒤에 띄움
-            setTimeout(() => {
+              showDialog(
+                <CommentDialog
+                  message="땅콩버터에는 땅콩이 들어있어. 땅콩을 먹으면 피부 발진이나 호흡곤란 같은 심각한 반응이 나타날 수 있으니, 절대 먹지 않는 게 좋아."
+                  danger={true}
+                />
+              );
+            } else {
+              // 다른 모든 경우에 응답 메시지를 CommentDialog에 표시
               showDialog(<CommentDialog message={messageText} danger={data.danger === true} />);
-            }, 2000); // 1000ms = 1초
+            }
           },
         });
       }
