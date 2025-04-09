@@ -70,7 +70,12 @@ function UserInfoCard() {
       </div>
 
       {/* 구분선 추가 - 프로필 사진 아래까지 확장 */}
-      <hr style={{ margin: "12px 0", borderColor: "#E5E7EB", width: "100%" }} />
+      {((currentMember?.allergies?.length ?? 0) > 0 ||
+        (currentMember?.diseases?.length ?? 0) > 0 ||
+        (currentMember?.preferred_foods?.length ?? 0) > 0 ||
+        (currentMember?.disliked_foods?.length ?? 0) > 0) && (
+        <hr style={{ margin: "12px 0", borderColor: "#E5E7EB", width: "100%" }} />
+      )}
 
       {/* 좌우 배치를 위한 컨테이너 */}
       <div style={{ display: "flex", gap: "16px", width: "100%" }}>
