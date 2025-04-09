@@ -402,10 +402,14 @@ function GreetingSection({ name }: { name?: string }) {
     <div className="py-4">
       <div className="flex items-center gap-4 px-4">
         <Avatar
-          className="h-12 w-12 cursor-pointer bg-muted rounded-full"
+          className="h-16 w-16 cursor-pointer bg-muted rounded-full overflow-hidden"
           onClick={() => showDialog(<MemberSwitcherDialog />)}
         >
-          <AvatarImage src={currentMember?.image_path} alt="User avatar" />
+          <AvatarImage
+            src={currentMember?.image_path}
+            alt="User avatar"
+            className="rounded-full object-cover w-full h-full"
+          />
           <AvatarFallback>
             <BsPersonCircle className="w-full h-full" />
           </AvatarFallback>

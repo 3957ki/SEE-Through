@@ -1,4 +1,5 @@
 import { useCurrentMember } from "@/queries/members";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { BsPersonCircle } from "react-icons/bs";
 
 function UserInfoCard() {
@@ -20,22 +21,16 @@ function UserInfoCard() {
     >
       {/* 프로필 정보 */}
       <div className="flex items-start">
-        <div className="flex-shrink-0">
-          {currentMember?.image_path ? (
-            <img
-              src={currentMember.image_path}
-              alt={currentMember?.name || ""}
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "9999px",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <BsPersonCircle style={{ width: "48px", height: "48px" }} />
-          )}
-        </div>
+        <Avatar className="h-[64px] w-[64px] cursor-pointer bg-muted rounded-full overflow-hidden">
+          <AvatarImage
+            src={currentMember?.image_path}
+            alt="User avatar"
+            className="rounded-full object-cover w-full h-full"
+          />
+          <AvatarFallback>
+            <BsPersonCircle className="w-full h-full" />
+          </AvatarFallback>
+        </Avatar>
         <div
           style={{
             marginLeft: "16px",
