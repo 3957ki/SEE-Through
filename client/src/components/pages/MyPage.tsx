@@ -7,8 +7,16 @@ import { useDialog } from "@/contexts/DialogContext";
 import { useCurrentMember, useUpdateMember } from "@/queries/members";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { CalendarIcon, X } from "lucide-react";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { CalendarIcon, ChevronFirst, ChevronLast, X } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 
 const MEASUREMENT_TYPES = ["선호 음식", "비선호 음식", "질병", "알러지"] as const;
 
@@ -27,6 +35,10 @@ export default function MyPage() {
   const [dislikedFoods, setDislikedFoods] = useState<string[]>([]);
   const [allergies, setAllergies] = useState<string[]>([]);
   const [diseases, setDiseases] = useState<string[]>([]);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const [leftHintVisible, setLeftHintVisible] = useState(false);
+  const [rightHintVisible, setRightHintVisible] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   // Define options for dropdowns
   const colorVisionOptions = ["정상", "색맹"];
@@ -230,29 +242,141 @@ export default function MyPage() {
     }
   };
 
+  // Check for scroll hints visibility
+  const updateScrollHints = useCallback(() => {
+    const container = tabsContainerRef.current;
+    if (!container || isScrolling) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    const maxScroll = scrollWidth - clientWidth;
+
+    // Add small threshold for edge detection
+    const isAtStart = scrollLeft <= 1;
+    const isAtEnd = Math.abs(maxScroll - scrollLeft) <= 1;
+
+    // Only show hints if there's actually overflow
+    const hasOverflow = scrollWidth > clientWidth;
+    setLeftHintVisible(hasOverflow && !isAtStart);
+    setRightHintVisible(hasOverflow && !isAtEnd);
+  }, [isScrolling]);
+
+  // Set up scroll event listener and handle font size changes
+  useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    updateScrollHints();
+
+    // Set up scroll event listener
+    container.addEventListener("scroll", updateScrollHints);
+    window.addEventListener("resize", updateScrollHints);
+
+    // Create observers for size and style changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateScrollHints();
+    });
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      const hasFontChange = mutations.some(
+        (mutation) =>
+          mutation.type === "attributes" &&
+          (mutation.attributeName === "style" || mutation.attributeName === "class")
+      );
+
+      if (hasFontChange) {
+        // Force immediate reflow
+        container.style.display = "none";
+        container.offsetHeight; // Force reflow
+        container.style.display = "";
+
+        // Multiple updates to catch any delayed rendering
+        setTimeout(updateScrollHints, 0);
+        setTimeout(updateScrollHints, 50);
+        setTimeout(updateScrollHints, 150);
+        setTimeout(updateScrollHints, 300);
+      }
+    });
+
+    // Start observing
+    resizeObserver.observe(container);
+    mutationObserver.observe(container, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeFilter: ["style", "class"],
+    });
+
+    return () => {
+      container.removeEventListener("scroll", updateScrollHints);
+      window.removeEventListener("resize", updateScrollHints);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [updateScrollHints, fontSize]); // Keep fontSize as dependency
+
+  // Scroll handlers with animation states
+  const scrollToStart = useCallback(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    setIsScrolling(true);
+    container.scrollTo({ left: 0, behavior: "smooth" });
+
+    // Update hints immediately
+    setLeftHintVisible(false);
+    setRightHintVisible(true);
+
+    // Reset scrolling state after animation
+    setTimeout(() => {
+      setIsScrolling(false);
+      updateScrollHints();
+    }, 300); // Match this with the CSS transition duration
+  }, [updateScrollHints]);
+
+  const scrollToEnd = useCallback(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    setIsScrolling(true);
+    container.scrollTo({ left: container.scrollWidth - container.clientWidth, behavior: "smooth" });
+
+    // Update hints immediately
+    setLeftHintVisible(true);
+    setRightHintVisible(false);
+
+    // Reset scrolling state after animation
+    setTimeout(() => {
+      setIsScrolling(false);
+      updateScrollHints();
+    }, 300); // Match this with the CSS transition duration
+  }, [updateScrollHints]);
+
   if (!currentMember) return null;
 
   return (
     <div className="pb-16 relative">
-      <div className="p-4 flex flex-col gap-4">
+      <div className="p-4 flex flex-col gap-6">
         {/* User Info Section */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <div className="text-sm text-muted-foreground mb-1">이름</div>
+        <div className="space-y-4">
+          {/* Name Input */}
+          <div>
+            <div className="text-base mb-2">이름</div>
             <Input
               placeholder="이름을 입력하세요"
               value={name}
               onChange={(e) => handleInputChange(e, setName)}
             />
           </div>
-          <div className="flex-1">
-            <div className="text-sm text-muted-foreground mb-1">생일</div>
+
+          {/* Birthday Input */}
+          <div>
+            <div className="text-base mb-2">생일</div>
             <Button
               variant="outline"
               onClick={handleShowCalendar}
               className="w-full justify-start text-left font-normal"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-5 w-5 shrink-0" />
               {birthday ? (
                 format(birthday, "yyyy.MM.dd", { locale: ko })
               ) : (
@@ -262,85 +386,163 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* Color Vision and Font Size Section */}
-        <div className="flex gap-4">
-          <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground mb-1">색맹/색약</span>
-            <div className="flex-grow"></div>
+        {/* Settings Section */}
+        <div className="space-y-4">
+          {/* Color Vision Setting */}
+          <div className="flex flex-col gap-2">
+            <span className="text-base">색맹/색약</span>
             <CustomDropdown
               value={colorVision}
               options={colorVisionOptions}
               onChange={setColorVision}
-              className="w-[120px] h-9 flex-shrink-0"
-              buttonClassName="w-full h-9 flex items-center justify-between px-2 py-1 text-sm border border-input bg-background rounded-md"
-              dropdownClassName="w-[120px]"
+              className="w-full h-10"
+              buttonClassName="w-full h-10 flex items-center justify-between px-3 py-2 text-base border border-input bg-background rounded-md"
+              dropdownClassName="w-full"
             />
           </div>
 
-          <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground mb-1">폰트 크기</span>
-            <div className="flex-grow"></div>
+          {/* Font Size Setting */}
+          <div className="flex flex-col gap-2">
+            <span className="text-base">폰트 크기</span>
             <CustomDropdown
               value={fontSize}
               options={fontSizeOptions}
               onChange={setFontSize}
-              className="w-[120px] h-9 flex-shrink-0"
-              buttonClassName="w-full h-9 flex items-center justify-between px-2 py-1 text-sm border border-input bg-background rounded-md"
-              dropdownClassName="w-[120px]"
+              className="w-full h-10"
+              buttonClassName="w-full h-10 flex items-center justify-between px-3 py-2 text-base border border-input bg-background rounded-md"
+              dropdownClassName="w-full"
             />
           </div>
         </div>
 
-        {/* Measurement Type Selection */}
-        <div className="flex border-b">
-          {MEASUREMENT_TYPES.map((type) => (
-            <button
-              type="button"
-              key={type}
-              className={`py-2 px-2 text-sm ${
-                measurementType === type
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-muted-foreground"
-              }`}
-              style={{ flex: type.length }}
-              onClick={() => setMeasurementType(type)}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-
-        {/* Input Fields */}
-        <div className="space-y-4">
-          <Button variant="outline" className="w-full" onClick={handleShowAddDialog}>
-            {measurementType} 추가
-          </Button>
-          <div className="grid grid-cols-2 gap-4">
-            {getCurrentList().map((item, index) => (
+        {/* Measurement Type Selection - With bidirectional scroll hints */}
+        <div className="flex flex-col gap-4">
+          <div className="relative">
+            {/* Remove rounded-lg from outer container and add padding to create space for hints */}
+            <div className="px-[2px]">
               <div
-                key={index}
-                className="flex-1 py-2 px-3 border rounded-md bg-card flex items-center justify-between gap-2"
+                ref={tabsContainerRef}
+                className={`
+                  flex flex-row gap-2
+                  overflow-x-auto
+                  scrollbar-none
+                  py-1
+                  scroll-smooth
+                  px-1
+                  relative
+                `}
               >
-                <div className="break-words flex-1">{item}</div>
-                <button
-                  type="button"
-                  className="text-muted hover:text-foreground p-1 rounded-full hover:bg-muted"
-                  onClick={() => {
-                    const newList = getCurrentList().filter((_, i) => i !== index);
-                    setCurrentList(newList);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                {MEASUREMENT_TYPES.map((type) => (
+                  <button
+                    type="button"
+                    key={type}
+                    className={`
+                      shrink-0 basis-auto
+                      min-w-[5.5rem]
+                      py-2.5 px-4
+                      text-base rounded-lg transition-colors
+                      ${
+                        measurementType === type
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted"
+                      }
+                    `}
+                    onClick={() => setMeasurementType(type)}
+                  >
+                    {type}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Left scroll hint - extend beyond rounded corners */}
+            <div
+              className={`
+                absolute left-0 top-0 bottom-0
+                w-14
+                transition-opacity duration-300
+                z-20
+                ${leftHintVisible ? "opacity-100" : "opacity-0 pointer-events-none"}
+              `}
+            >
+              <button
+                onClick={scrollToStart}
+                className={`
+                  w-full h-full
+                  flex items-center justify-center
+                  bg-gradient-to-r from-background from-60% via-background/95 to-transparent
+                  text-muted-foreground hover:text-foreground
+                  transition-colors
+                `}
+                aria-label="처음으로 스크롤"
+              >
+                <ChevronFirst className="w-5 h-5 animate-pulse" />
+              </button>
+            </div>
+
+            {/* Right scroll hint - extend beyond rounded corners */}
+            <div
+              className={`
+                absolute right-0 top-0 bottom-0
+                w-14
+                transition-opacity duration-300
+                z-20
+                ${rightHintVisible ? "opacity-100" : "opacity-0 pointer-events-none"}
+              `}
+            >
+              <button
+                onClick={scrollToEnd}
+                className={`
+                  w-full h-full
+                  flex items-center justify-center
+                  bg-gradient-to-l from-background from-60% via-background/95 to-transparent
+                  text-muted-foreground hover:text-foreground
+                  transition-colors
+                `}
+                aria-label="끝으로 스크롤"
+              >
+                <ChevronLast className="w-5 h-5 animate-pulse" />
+              </button>
+            </div>
+          </div>
+
+          {/* Input Fields */}
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              className="w-full py-3 text-base"
+              onClick={handleShowAddDialog}
+            >
+              {measurementType} 추가
+            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {getCurrentList().map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-3 py-2.5 px-4 border rounded-lg bg-card"
+                >
+                  <div className="break-words flex-1 text-base">{item}</div>
+                  <button
+                    type="button"
+                    className="text-muted hover:text-foreground p-1.5 rounded-full hover:bg-muted shrink-0"
+                    onClick={() => {
+                      const newList = getCurrentList().filter((_, i) => i !== index);
+                      setCurrentList(newList);
+                    }}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4">
+        {/* Action Buttons */}
+        <div className="flex gap-3 mt-2">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 py-3 text-base"
             onClick={() => {
               setName(currentMember.name || "");
               setBirthday(currentMember.birth ? new Date(currentMember.birth) : undefined);
@@ -356,7 +558,7 @@ export default function MyPage() {
             취소
           </Button>
           <Button
-            className="flex-1 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            className="flex-1 py-3 text-base bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             disabled={!isModified}
             onClick={handleSubmit}
           >
