@@ -32,7 +32,7 @@ function ShowcaseScreen() {
       style={{
         position: "relative",
         overflow: "hidden",
-        fontSize: "16px", // Set base font size
+        fontSize: "1.5vh", // Set base font size relative to viewport height
       }}
     >
       {/* 배경 이미지 컨테이너 */}
@@ -56,8 +56,8 @@ function ShowcaseScreen() {
       <div
         className="flex w-full h-[100vh] relative z-10"
         style={{
-          gap: "32px", // 8 * 4px = 32px (equivalent to gap-8)
-          padding: "20px", // 5 * 4px = 20px (equivalent to p-5)
+          gap: "3vh",
+          padding: "2vh",
         }}
       >
         {/* Left Area - Fridge and Drop Zone */}
@@ -66,7 +66,7 @@ function ShowcaseScreen() {
         </div>
 
         {/* Right Area - Controls and Ingredient Table */}
-        <div className="w-1/5 h-full flex flex-col relative ml-auto" style={{ gap: "24px" }}>
+        <div className="w-1/5 h-full flex flex-col relative ml-auto" style={{ gap: "2.5vh" }}>
           <div className="h-1/3">
             <WebcamView
               onActivateScreensaver={activateScreensaver}
@@ -80,7 +80,7 @@ function ShowcaseScreen() {
       </div>
 
       {/* Table positioned outside the flex container */}
-      <div className="absolute bottom-0 right-[-60px] w-full h-full pointer-events-none z-20">
+      <div className="absolute bottom-0 right-[-12vh] w-full h-full pointer-events-none z-20">
         <Table outsideIngredients={outsideIngredients} />
       </div>
     </div>
