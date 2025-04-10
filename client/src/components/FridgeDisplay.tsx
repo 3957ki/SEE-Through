@@ -35,7 +35,7 @@ function Screensaver({ isActive }: { isActive: boolean }) {
         width: "100%",
         height: "100%",
         opacity: isActive ? 1 : 0,
-        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)", // quick pop transition for both on/off
+        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)",
         pointerEvents: isActive ? "auto" : "none",
         zIndex: 10,
         borderRadius: "0",
@@ -43,8 +43,20 @@ function Screensaver({ isActive }: { isActive: boolean }) {
         background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
       }}
     >
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center relative">
         <img src={screensaverImage} alt="화면보호기" className="w-full h-full object-cover" />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background:
+              "linear-gradient(145deg, rgba(249, 249, 249, 0.5) 0%, rgba(238, 238, 238, 0.5) 36%, rgba(201, 201, 201, 0.5) 100%)",
+            mixBlendMode: "overlay",
+          }}
+        />
       </div>
     </div>
   );
