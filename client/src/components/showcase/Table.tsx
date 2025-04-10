@@ -96,6 +96,7 @@ export default function Table({ outsideIngredients }: TableProps) {
     >
       {/* 장보기 버튼을 이모지로 대체하고 위치 변경 */}
       <button
+        type="button"
         onClick={toggleSelectedIngredients}
         className="absolute bottom-4 right-28 z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
         style={{

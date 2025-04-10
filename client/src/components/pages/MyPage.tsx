@@ -119,7 +119,10 @@ export default function MyPage() {
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter" && e.currentTarget.value.trim()) {
-              setCurrentList([...getCurrentList(), e.currentTarget.value.trim()]);
+              const newItem = e.currentTarget.value.trim();
+              if (!getCurrentList().includes(newItem)) {
+                setCurrentList([...getCurrentList(), newItem]);
+              }
               hideDialog();
             }
           }}
@@ -134,7 +137,10 @@ export default function MyPage() {
                 .closest("div.p-4")
                 ?.querySelector("input") as HTMLInputElement;
               if (input && input.value.trim()) {
-                setCurrentList([...getCurrentList(), input.value.trim()]);
+                const newItem = input.value.trim();
+                if (!getCurrentList().includes(newItem)) {
+                  setCurrentList([...getCurrentList(), newItem]);
+                }
                 hideDialog();
               }
             }}
@@ -544,9 +550,9 @@ export default function MyPage() {
               {measurementType} 추가
             </Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {getCurrentList().map((item, index) => (
+              {getCurrentList().map((item) => (
                 <div
-                  key={index}
+                  key={`${measurementType}-${item}`}
                   className="flex items-center justify-between gap-3 py-2.5 px-4 border rounded-lg bg-card"
                 >
                   <div className="break-words flex-1 text-base">{item}</div>
@@ -554,7 +560,7 @@ export default function MyPage() {
                     type="button"
                     className="text-muted hover:text-foreground p-1.5 rounded-full hover:bg-muted shrink-0"
                     onClick={() => {
-                      const newList = getCurrentList().filter((_, i) => i !== index);
+                      const newList = getCurrentList().filter((item_) => item_ !== item);
                       setCurrentList(newList);
                     }}
                   >

@@ -101,9 +101,9 @@ function UserInfoCard() {
                   marginTop: "4px",
                 }}
               >
-                {currentMember.allergies.map((allergy, index) => (
+                {currentMember.allergies.map((allergy) => (
                   <span
-                    key={index}
+                    key={`allergy-${allergy}`}
                     style={{
                       fontSize: "14px",
                       padding: "6px 10px",
@@ -140,9 +140,9 @@ function UserInfoCard() {
                   marginTop: "4px",
                 }}
               >
-                {currentMember.diseases.map((disease, index) => (
+                {currentMember.diseases.map((disease) => (
                   <span
-                    key={index}
+                    key={`disease-${disease}`}
                     style={{
                       fontSize: "14px",
                       padding: "6px 10px",
@@ -182,9 +182,9 @@ function UserInfoCard() {
                   marginTop: "4px",
                 }}
               >
-                {currentMember.preferred_foods.map((food, index) => (
+                {currentMember.preferred_foods.map((food) => (
                   <span
-                    key={index}
+                    key={`preferred-food-${food}`}
                     style={{
                       fontSize: "14px",
                       padding: "6px 10px",
@@ -221,9 +221,9 @@ function UserInfoCard() {
                   marginTop: "4px",
                 }}
               >
-                {currentMember.disliked_foods.map((food, index) => (
+                {currentMember.disliked_foods.map((food) => (
                   <span
-                    key={index}
+                    key={`disliked-food-${food}`}
                     style={{
                       fontSize: "14px",
                       padding: "6px 10px",
