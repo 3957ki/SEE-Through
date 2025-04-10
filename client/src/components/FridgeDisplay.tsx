@@ -171,6 +171,14 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
   const pageContextValue = useMemo(() => ({ currentPage, navigateTo }), [currentPage]);
 
   const resetPageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [currentPage]);
+
   useEffect(() => {
     if (isScreensaverActive == true) {
       // 화면 꺼짐
@@ -229,7 +237,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
             <div className="w-full shrink-0 h-14 relative z-20">{headers[currentPage]}</div>
 
             {/* Content Section */}
-            <div className="flex-1 overflow-auto">
+            <div ref={contentRef} className="flex-1 overflow-auto">
               <div className="px-4 py-4">{pages[currentPage]}</div>
             </div>
 
