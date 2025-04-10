@@ -30,31 +30,39 @@ function Screensaver({ isActive }: { isActive: boolean }) {
     <div
       style={{
         position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        opacity: isActive ? 1 : 0,
-        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)",
+        top: -1,
+        left: -1,
+        right: -1,
+        bottom: -1,
         pointerEvents: isActive ? "auto" : "none",
         zIndex: 10,
-        borderRadius: "0",
-        boxShadow: "none",
+        borderRadius: "inherit",
+        overflow: "hidden",
         background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
+        border: "none",
+        outline: "none",
+        transform: "translateZ(0)",
       }}
     >
       <div className="w-full h-full flex items-center justify-center relative">
-        <img src={screensaverImage} alt="화면보호기" className="w-full h-full object-cover" />
+        <img
+          src={screensaverImage}
+          alt="화면보호기"
+          className="w-full h-full object-cover"
+          style={{
+            borderRadius: "inherit",
+            border: "none",
+          }}
+        />
         <div
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
+            inset: 0,
             background:
               "linear-gradient(145deg, rgba(249, 249, 249, 0.5) 0%, rgba(238, 238, 238, 0.5) 36%, rgba(201, 201, 201, 0.5) 100%)",
             mixBlendMode: "overlay",
+            borderRadius: "inherit",
+            border: "none",
           }}
         />
       </div>
@@ -114,10 +122,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
         <PageContext value={pageContextValue}>
           <div
             ref={displayRef}
-            className="overflow-hidden flex flex-col rounded shadow border relative w-full h-full bg-background text-foreground border-border text-base"
-            style={{
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            }}
+            className="overflow-hidden flex flex-col rounded border relative w-full h-full bg-background text-foreground border-border text-base"
           >
             {/* Header Section */}
             <div className="w-full shrink-0 h-14 relative z-20">{headers[currentPage]}</div>
@@ -149,7 +154,9 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
                 width: "100%",
                 height: "100%",
                 opacity: isScreensaverActive ? 1 : 0,
-                transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: isScreensaverActive
+                  ? "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)" // Fast, sharp fade-in
+                  : "opacity 0.5s cubic-bezier(0.2, 0, 0, 1)", // Powerful fade-out with overshoot
                 pointerEvents: isScreensaverActive ? "auto" : "none",
                 zIndex: 100,
               }}
