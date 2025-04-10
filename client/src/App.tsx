@@ -92,10 +92,10 @@ function AppContent({
           </div>
         </div>
       )}
-      <ShowcaseToggleButton
+      {/* <ShowcaseToggleButton
         onClick={() => setIsShowcase((prev) => !prev)}
         title="toggle showcase"
-      />
+      /> */}
     </DialogProvider>
   );
 }
