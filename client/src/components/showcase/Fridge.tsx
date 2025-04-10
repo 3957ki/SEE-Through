@@ -3,7 +3,7 @@ import FridgeDisplay from "@/components/FridgeDisplay";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import Ingredient from "@/interfaces/Ingredient";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
-import { useEffect, useState, type CSSProperties, type DragEvent } from "react";
+import { DragEvent, useEffect, useState, type CSSProperties } from "react";
 
 // Constants for FridgeDisplay dimensions
 const FRIDGE_DISPLAY_WIDTH = 600;
@@ -71,15 +71,67 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
     opacity: leftDoorOpen ? 0 : 1,
   };
 
+  const getIngredientVisualInfo = (ingredientId: string) => {
+    switch (ingredientId) {
+      // 딸기잼
+      case "01960e59-db82-7c6c-9f9a-1e130b41e7f6":
+        return {
+          bottom: "6%",
+          left: "10%",
+          zIndex: 3,
+          size: 18,
+        };
+      // 땅콩버터
+      case "01960e59-db82-7c6c-9fa6-b4a0cd4d044c":
+        return {
+          bottom: "5%",
+          left: "40%",
+          zIndex: 2,
+          size: 18,
+        };
+      // 두부
+      case "01960e59-db82-7c6c-9f99-9a4a43040ddc":
+        return {
+          bottom: "2%",
+          left: "70%",
+          zIndex: 1,
+          size: 18,
+        };
+      // 계란
+      case "01960e59-db82-7c6c-9f9f-4be039992361":
+        return {
+          bottom: "33%",
+          left: "18%",
+          zIndex: 1,
+          size: 19,
+        };
+      // 돼지고기
+      case "01960e59-db82-7c6c-9fa9-6cf9339d17ab":
+        return {
+          bottom: "35%",
+          left: "60%",
+          zIndex: 2,
+          size: 15,
+        };
+      default:
+        return {
+          bottom: "0",
+          left: "0",
+          zIndex: 0,
+          size: 14.4,
+        };
+    }
+  };
+
   return (
-    <div className="relative w-full h-full" style={{ fontSize: "16px" }}>
+    <div className="relative w-full h-full" style={{ fontSize: "1.5vh" }}>
       <svg
         width="100%"
         height="100%"
         viewBox="0 0 988 1038"
         style={{
           overflow: "visible",
-          fontSize: "16px", // Prevent font-size inheritance
+          fontSize: "1.5vh",
         }}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +220,7 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
           </foreignObject>
         </g>
         {leftDoorOpen && (
-          <foreignObject x="130" y="110" width="358" height="590" style={{ pointerEvents: "all" }}>
+          <foreignObject x="130" y="110" width="370" height="590" style={{ pointerEvents: "all" }}>
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleFridgeDrop}
@@ -176,57 +228,23 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
                 width: "100%",
                 height: "100%",
                 position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                paddingTop: "20%",
-                paddingLeft: "5%",
               }}
             >
-              {/* Top row - empty */}
-              <div style={{ height: "35%" }} />
-
-              {/* Middle row - 2 items centered */}
-              <div
-                style={{
-                  height: "33%",
-                  display: "flex",
-                  paddingLeft: "15%",
-                  alignItems: "flex-end",
-                  minWidth: "min-content",
-                  flexShrink: 0,
-                }}
-              >
-                {insideIngredients.slice(3, 5).map((item) => (
-                  <div key={`${item.ingredient_id}`}>
-                    <ShowcaseIngredient ingredient={item} className="fridge" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom row - 3 items */}
-              <div
-                style={{
-                  height: "32%",
-                  display: "flex",
-                  paddingLeft: "5%",
-                  alignItems: "flex-end",
-                  minWidth: "min-content",
-                  flexShrink: 0,
-                }}
-              >
-                {insideIngredients.slice(0, 3).map((item, index) => (
-                  <div
-                    key={`${item.ingredient_id}`}
-                    style={{
-                      flexShrink: 0,
-                      marginLeft: index > 0 ? "-3%" : "0",
-                    }}
-                  >
-                    <ShowcaseIngredient ingredient={item} className="fridge" />
-                  </div>
-                ))}
-              </div>
+              {insideIngredients.map((item) => (
+                <div
+                  key={`${item.ingredient_id}`}
+                  style={{
+                    position: "absolute",
+                    ...getIngredientVisualInfo(item.ingredient_id),
+                  }}
+                >
+                  <ShowcaseIngredient
+                    ingredient={item}
+                    className="fridge"
+                    size={getIngredientVisualInfo(item.ingredient_id).size}
+                  />
+                </div>
+              ))}
             </div>
           </foreignObject>
         )}
@@ -406,6 +424,30 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
             </div>
           </div>
         </foreignObject>
+        {/* Container for all ingredients with relative positioning */}
+        {/* <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          {insideIngredients.map((item) => (
+            <div
+              key={`${item.ingredient_id}`}
+              style={{
+                position: "absolute",
+                ...getIngredientPosition(item.ingredient_id),
+              }}
+            >
+              <ShowcaseIngredient
+                ingredient={item}
+                className="fridge"
+                size={getIngredientPosition(item.ingredient_id).size}
+              />
+            </div>
+          ))}
+        </div> */}
         <defs>
           <filter
             id="filter0_d_191_1501"

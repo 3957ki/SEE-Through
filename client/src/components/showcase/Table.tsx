@@ -12,6 +12,7 @@ interface TableProps {
 }
 
 export default function Table({ outsideIngredients }: TableProps) {
+  const GLOBAL_Y_OFFSET = -2;
   const { removeIngredient } = useOptimisticIngredientUpdates();
   const { showDialog } = useDialog();
   const { data: currentMember } = useCurrentMember();
@@ -89,20 +90,25 @@ export default function Table({ outsideIngredients }: TableProps) {
     <div
       className="absolute bottom-0 right-0 overflow-hidden pointer-events-auto"
       style={{
-        width: "40vw", // Using viewport width instead of percentage
-        height: "33.33vh", // Using viewport height instead of percentage
-        fontSize: "16px", // Set absolute font size to prevent inheritance
+        width: "40vw",
+        height: "33.33vh",
+        fontSize: "1.5vh",
+        transform: "scale(1.2)", // Scale up the entire table to match Fridge's relative sizing
+        transformOrigin: "bottom right",
       }}
     >
       {/* 장보기 버튼을 이모지로 대체하고 위치 변경 */}
       <button
         type="button"
         onClick={toggleSelectedIngredients}
-        className="absolute bottom-4 right-28 z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
+        className="absolute z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
         style={{
-          fontSize: "24px",
-          width: "48px",
-          height: "48px",
+          bottom: "2vh",
+          right: "11vh",
+          width: "4vh",
+          height: "4vh",
+          fontSize: "2vh",
+          zIndex: 100,
         }}
         aria-label={hideSelectedIngredients ? "모든 재료 보기" : "일부 재료 숨기기"}
       >
@@ -114,24 +120,43 @@ export default function Table({ outsideIngredients }: TableProps) {
         src={tableImage}
         alt="Table surface"
         className="absolute bottom-0 left-0 h-full w-auto min-w-full object-cover object-left"
-        style={{ fontSize: "16px" }} // Prevent font-size inheritance
+        style={{ fontSize: "1.5vh" }}
       />
 
       {/* Ingredients container */}
       <div
-        className="absolute inset-0 flex flex-wrap justify-start items-end"
+        className="absolute inset-0 flex items-end"
         style={{
           padding: "5% 5% 13% 5%",
-          fontSize: "16px", // Prevent font-size inheritance
+          fontSize: "1.5vh",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          display: "flex",
+          flexWrap: "nowrap",
         }}
         onDragOver={handleDragOver}
         onDrop={handleDropEvent}
       >
-        {filteredIngredients.map((ingredient) => (
+        {filteredIngredients.map((ingredient, index) => (
           <ShowcaseIngredient
             key={ingredient.ingredient_id}
             ingredient={ingredient}
             className="table"
+            xOffset={index * -3}
+            yOffset={
+              // Adjust positions based on ingredient IDs
+              ingredient.ingredient_id === "01960e59-db82-7c6c-9f99-9a4a43040ddc"
+                ? 2 + GLOBAL_Y_OFFSET // tofu
+                : ingredient.ingredient_id === "01960e59-db82-7c6c-9f9f-4be039992361"
+                  ? 0 + GLOBAL_Y_OFFSET // eggs
+                  : ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab"
+                    ? -1 + GLOBAL_Y_OFFSET // meat
+                    : ingredient.ingredient_id === "01960e59-db82-7c6c-9fa6-b4a0cd4d044c"
+                      ? 0 + GLOBAL_Y_OFFSET // peanut butter
+                      : ingredient.ingredient_id === "01960e59-db82-7c6c-9f9a-1e130b41e7f6"
+                        ? 0 + GLOBAL_Y_OFFSET // strawberry jam
+                        : 0 + GLOBAL_Y_OFFSET // default for other ingredients
+            }
           />
         ))}
       </div>
