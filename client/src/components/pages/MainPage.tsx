@@ -396,13 +396,13 @@ function MealCard({
           </div>
         ) : (
           <div className="w-full h-full overflow-y-auto scrollbar-hide">
-            <ul className="space-y-0.5">
-              {data.menu.map((item, index) => (
+            <ul className="space-y-0.5 list-disc pl-4">
+              {data.menu.map((item) => (
                 <li
-                  key={index}
-                  className={`flex items-center text-sm font-medium leading-tight ${textColor}`}
+                  key={`${data.meal_id}-${item}`}
+                  className={`text-sm font-medium leading-tight ${textColor}`}
                 >
-                  <span className="truncate">• {item}</span>
+                  <span className="truncate block">{item}</span>
                 </li>
               ))}
             </ul>
