@@ -34,13 +34,12 @@ function Screensaver({ isActive }: { isActive: boolean }) {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: "#1c1c1c",
         opacity: isActive ? 1 : 0,
         transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)", // quick pop transition for both on/off
         pointerEvents: isActive ? "auto" : "none",
         zIndex: 10,
-        borderRadius: "0.375rem",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        borderRadius: "0",
+        boxShadow: "none",
         background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
       }}
     >
