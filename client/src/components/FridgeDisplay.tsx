@@ -54,17 +54,6 @@ function Screensaver({ isActive }: { isActive: boolean }) {
             border: "none",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(145deg, rgba(249, 249, 249, 0.5) 0%, rgba(238, 238, 238, 0.5) 36%, rgba(201, 201, 201, 0.5) 100%)",
-            mixBlendMode: "overlay",
-            borderRadius: "inherit",
-            border: "none",
-          }}
-        />
       </div>
     </div>
   );
