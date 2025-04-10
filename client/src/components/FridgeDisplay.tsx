@@ -1,3 +1,4 @@
+import screensaverImage from "@/assets/screen-saver.png";
 import { Dialog } from "@/components/Dialog";
 import LogHeader from "@/components/headers/LogHeader";
 import MainHeader from "@/components/headers/MainHeader";
@@ -43,7 +44,9 @@ function Screensaver({ isActive }: { isActive: boolean }) {
         background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
       }}
     >
-      <div className="w-full h-full flex items-center justify-center" />
+      <div className="w-full h-full flex items-center justify-center">
+        <img src={screensaverImage} alt="화면보호기" className="w-full h-full object-cover" />
+      </div>
     </div>
   );
 }
