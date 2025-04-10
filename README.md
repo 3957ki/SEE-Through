@@ -62,13 +62,7 @@ Resolves: #S002 (Jira 이슈 번호)
 브랜치는 기능 단위로 생성하며, 다음 규칙을 따릅니다.
 
 ```
-<타입>/<작업 내용>
-```
-
-동일한 기능의 프론트엔드와 백엔드를 분리하여 작업 시 다음과 같이 표기합니다.
-
-```
-<타입>/<fe/be>-<작업 내용>
+<타입>/<헤더>/<작업 내용>
 ```
 
 ### 브랜치 타입
@@ -76,14 +70,14 @@ Resolves: #S002 (Jira 이슈 번호)
 |------|------|
 | `feat` | 새로운 기능 개발 |
 | `fix` | 버그 수정 |
-| `hotfix` | 긴급 버그 수정 (배포 후 발생한 버그) |
-| `refactor` | 코드 리팩토링 |
-| `chore` | 빌드, 설정 변경 등 기타 작업 |
+| `chore` | 기타 작업 |
+
+### 브랜치 헤더
+Jira에 작성한 `[]` 헤더와 통일합니다.
 
 ### 브랜치 예시
 ```
-feat/login-api
-feat/fe-vision
-fix/user-profile-bug
-hotfix/payment-error
+feat/spring/login-api
+feat/vision/face-detection
+fix/fe/user-profile-bug
 ```

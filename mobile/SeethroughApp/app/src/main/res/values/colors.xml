@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="st_black">#030303</color>
+    <color name="st_white">#FCFCFE</color>
+    <color name="st_gray">#E9E9EB</color>
+    <color name="st_dark_gray">#8D8D8F</color>
+    <color name="st_blue">#3F9EF8</color>
+</resources>

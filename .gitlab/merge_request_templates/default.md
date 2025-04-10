@@ -1,7 +1,7 @@
 # Merge Request 제목 `브랜치 이름`으로 변경 후 이 라인 지우기
 
 ## :white_check_mark: Merge하기 전 체크리스트
-
+- [ ] merge target 브랜치를 확인했나요? (대부분의 경우 `dev`여야 합니다.)
 - [ ] IDE의 error 및 warning들을 전부 확인/해결했나요?
 - [ ] 로컬에서 성공적으로 빌드가 되었나요?
 
