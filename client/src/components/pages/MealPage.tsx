@@ -139,19 +139,15 @@ function MealItem({ name, memberId }: { name: string; memberId: string }) {
     <div
       className={`flex items-center justify-between px-4 py-2.5 font-small:py-2 font-large:py-3 rounded-md transition-all duration-300 ease-out group ${
         isLiked
-          ? "bg-emerald-50/80 hover:bg-emerald-100/90 dark:bg-emerald-950/10 dark:hover:bg-emerald-950/20 hover:translate-x-0.5"
+          ? "bg-emerald-50/80 dark:bg-emerald-950/10"
           : isDisliked
-            ? "bg-destructive/5 hover:bg-destructive/10 hover:translate-x-0.5"
-            : "hover:bg-muted/10 hover:translate-x-0.5"
+            ? "bg-destructive/5"
+            : "hover:bg-secondary/50"
       }`}
     >
       <span
         className={`text-base font-medium flex-1 mr-4 transition-colors duration-300 ${
-          isLiked
-            ? "text-emerald-600 dark:text-emerald-400"
-            : isDisliked
-              ? "text-destructive"
-              : "group-hover:text-foreground/80"
+          isLiked ? "text-emerald-600 dark:text-emerald-400" : isDisliked ? "text-destructive" : ""
         }`}
       >
         {name}
@@ -243,8 +239,8 @@ function MealSection({
         </button>
       </div>
       <div className="space-y-1">
-        {items.map((item, index) => (
-          <MealItem key={index} name={item} memberId={memberId} />
+        {items.map((item) => (
+          <MealItem key={`${mealId}-${item}`} name={item} memberId={memberId} />
         ))}
       </div>
       {reason && (

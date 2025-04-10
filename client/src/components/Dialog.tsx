@@ -42,6 +42,7 @@ export function Dialog({ content, isOpen, onClose, danger = false }: DialogProps
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
           aria-label="Close dialog"

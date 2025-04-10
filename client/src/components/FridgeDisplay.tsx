@@ -76,7 +76,7 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
         resetPageTimerRef.current = null;
       }
     }
-  }, [isScreensaverActive]);
+  }, [isScreensaverActive, hideDialog]);
 
   const headers = {
     main: <MainHeader />,

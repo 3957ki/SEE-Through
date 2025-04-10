@@ -148,7 +148,7 @@ export default function LogPage() {
           {/* 로그 항목들 */}
           <div className="space-y-2">
             {entries.map((entry, index) => (
-              <div key={index} className="bg-card rounded-lg p-3 shadow-sm">
+              <div key={`${date}-${index}`} className="bg-card rounded-lg p-3 shadow-sm">
                 <div className="flex items-center mb-2">
                   {/* 재료 이미지 - 왼쪽 */}
                   <Avatar className="h-14 w-14 mr-3 bg-background">
