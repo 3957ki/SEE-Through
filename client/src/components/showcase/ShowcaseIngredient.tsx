@@ -6,12 +6,18 @@ interface ShowcaseIngredientProps {
   onClick?: (ingredient: Ingredient) => void;
   draggable?: boolean;
   className?: string;
+  yOffset?: number;
+  xOffset?: number;
+  size?: number;
 }
 
 export default function ShowcaseIngredient({
   ingredient,
   draggable = true,
   className = "",
+  yOffset = 0,
+  xOffset = 0,
+  size = 14.4,
 }: ShowcaseIngredientProps) {
   const ingredientRef = useRef<HTMLDivElement>(null);
 
@@ -60,13 +66,21 @@ export default function ShowcaseIngredient({
       className={`cursor-grab hover:scale-120 transition-all duration-200 ${className}`}
       role="button"
       aria-label={`${draggable ? "Drag " : ""}${ingredient.name || "Unnamed ingredient"}`}
-      style={{ fontSize: "16px" }}
+      style={{
+        fontSize: "1.5vh",
+        transform: `translate(${xOffset}vh, ${yOffset}vh)`,
+      }}
     >
       <img
         src={ingredient.image_path}
         alt={ingredient.name || "Unnamed ingredient"}
-        className="w-32 h-32 object-contain"
-        style={{ width: "128px", height: "128px" }}
+        className="object-contain"
+        style={{
+          width: `${size}vh`,
+          height: `${size}vh`,
+          minWidth: `${size}vh`,
+          minHeight: `${size}vh`,
+        }}
       />
     </div>
   );
