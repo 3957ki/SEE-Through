@@ -16,8 +16,8 @@ const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 const SMALL_FACE_CUT = 8000;
 const LARGE_FACE_CUT = 20000;
-const IOU_CUT = 0.999;
-const MIN_FACE_ANGLE_THRESHOLD = 0.15;
+const IOU_CUT = 0.99;
+const MIN_FACE_ANGLE_THRESHOLD = 0.25;
 const MIN_FACE_VERTICAL_THRESHOLD = 0.25;
 const EDGE_MARGIN = 40;
 
@@ -480,7 +480,8 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             // 레벨 2가 되기 위한 조건: 충분한 크기 AND 정면 바라보기 AND 화면 가장자리에 너무 가깝지 않음 AND 큰 IOU
             if (
               area >= currentCut &&
-              ((isFront && iou > IOU_CUT && !isTooCloseToEdge) || faceLevelRef.current.level == 2)
+              ((isFront && iou < 1 && iou > IOU_CUT && !isTooCloseToEdge) ||
+                faceLevelRef.current.level == 2)
             ) {
               nextFaceLevel = { level: 2, cut: SMALL_FACE_CUT };
             } else {
