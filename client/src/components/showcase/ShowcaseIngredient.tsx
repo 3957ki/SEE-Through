@@ -76,10 +76,12 @@ export default function ShowcaseIngredient({
         alt={ingredient.name || "Unnamed ingredient"}
         className="object-contain"
         style={{
-          width: `${size}vh`,
-          height: `${size}vh`,
-          minWidth: `${size}vh`,
-          minHeight: `${size}vh`,
+          width: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? size * 0.75 : size}vh`,
+          height: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? size * 0.75 : size}vh`,
+          minWidth: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? size * 0.75 : size}vh`,
+          minHeight: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? size * 0.75 : size}vh`,
+          marginLeft: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? `${size * 0.125}vh` : "0"}`,
+          marginRight: `${ingredient.ingredient_id === "01960e59-db82-7c6c-9fa9-6cf9339d17ab" ? `${size * 0.125}vh` : "0"}`,
         }}
       />
     </div>

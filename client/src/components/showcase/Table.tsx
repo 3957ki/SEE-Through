@@ -108,8 +108,8 @@ export default function Table({ outsideIngredients }: TableProps) {
         onClick={toggleSelectedIngredients}
         className="absolute z-10 bg-white hover:bg-gray-100 text-blue-500 font-bold rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
         style={{
-          bottom: "2vh",
-          right: "11vh",
+          bottom: "3vh",
+          right: "15vh",
           width: "4vh",
           height: "4vh",
           fontSize: "2vh",
