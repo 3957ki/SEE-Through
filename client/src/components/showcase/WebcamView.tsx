@@ -753,60 +753,13 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     };
   }, []);
 
-  // 컨테이너에 맞는 최대 크기로 조정하되, 비율 유지
-  useEffect(() => {
-    const resizeWebcam = () => {
-      if (!videoRef.current || !videoCanvasRef.current || !overlayCanvasRef.current) return;
-
-      const parentElement = videoRef.current.parentElement;
-      if (!parentElement) return;
-
-      // 부모 요소의 크기 측정
-      const parentWidth = parentElement.clientWidth;
-      const parentHeight = parentElement.clientHeight;
-
-      // 원래 비디오 비율 (4:3)
-      const videoRatio = VIDEO_WIDTH / VIDEO_HEIGHT;
-
-      // 부모 요소에 맞는 최대 크기 계산
-      let width, height;
-
-      // 부모 요소의 비율이 비디오 비율보다 넓은 경우
-      if (parentWidth / parentHeight > videoRatio) {
-        // 높이에 맞추고 가운데 정렬
-        height = parentHeight;
-        width = height * videoRatio;
-      } else {
-        // 너비에 맞추고 가운데 정렬
-        width = parentWidth;
-        height = width / videoRatio;
-      }
-
-      // 컨테이너에 적용
-      parentElement.style.width = `${parentWidth}px`;
-      parentElement.style.height = `${parentHeight}px`;
-
-      // 비디오와 캔버스 크기 설정
-      const elements = [videoRef.current, videoCanvasRef.current, overlayCanvasRef.current];
-      elements.forEach((el) => {
-        if (el) {
-          el.style.width = `${width}px`;
-          el.style.height = `${height}px`;
-          el.style.position = "absolute";
-          el.style.left = `${(parentWidth - width) / 2}px`;
-          el.style.top = `${(parentHeight - height) / 2}px`;
-        }
-      });
-    };
-
-    // 초기 크기 설정 및 리사이즈 이벤트 리스너 추가
-    resizeWebcam();
-    window.addEventListener("resize", resizeWebcam);
-
-    return () => {
-      window.removeEventListener("resize", resizeWebcam);
-    };
-  }, []);
+  const aspectRatioStyle = {
+    aspectRatio: `${VIDEO_WIDTH}/${VIDEO_HEIGHT}`,
+    width: "100%",
+    maxWidth: "100%",
+    maxHeight: "100%",
+    margin: "0 auto",
+  };
 
   if (error) {
     return (
@@ -817,10 +770,47 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <video ref={videoRef} autoPlay playsInline muted style={{ opacity: 0 }} />
-      <canvas ref={videoCanvasRef} width={VIDEO_WIDTH} height={VIDEO_HEIGHT} />
-      <canvas ref={overlayCanvasRef} width={VIDEO_WIDTH} height={VIDEO_HEIGHT} />
+    <div className="w-full h-full flex items-center justify-center">
+      <div style={aspectRatioStyle} className="relative">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          style={{
+            opacity: 0,
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={videoCanvasRef}
+          width={VIDEO_WIDTH}
+          height={VIDEO_HEIGHT}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={overlayCanvasRef}
+          width={VIDEO_WIDTH}
+          height={VIDEO_HEIGHT}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
     </div>
   );
 }
