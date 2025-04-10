@@ -753,38 +753,64 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
     };
   }, []);
 
+  const aspectRatioStyle = {
+    aspectRatio: `${VIDEO_WIDTH}/${VIDEO_HEIGHT}`,
+    width: "100%",
+    maxWidth: "100%",
+    maxHeight: "100%",
+    margin: "0 auto",
+  };
+
   if (error) {
     return (
-      <div className="bg-black rounded-md w-full h-full flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         <p className="text-red-400 text-center text-sm">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-black rounded-md w-full h-full flex items-center justify-center relative">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0 }}
-      />
-      <canvas
-        ref={videoCanvasRef}
-        width={VIDEO_WIDTH}
-        height={VIDEO_HEIGHT}
-        className="w-full h-full object-cover"
-        style={{ position: "absolute", top: 0, left: 0 }}
-      />
-      <canvas
-        ref={overlayCanvasRef}
-        width={VIDEO_WIDTH}
-        height={VIDEO_HEIGHT}
-        className="w-full h-full object-cover"
-        style={{ position: "absolute", top: 0, left: 0 }}
-      />
+    <div className="w-full h-full flex items-center justify-center">
+      <div style={aspectRatioStyle} className="relative">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          style={{
+            opacity: 0,
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={videoCanvasRef}
+          width={VIDEO_WIDTH}
+          height={VIDEO_HEIGHT}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+        <canvas
+          ref={overlayCanvasRef}
+          width={VIDEO_WIDTH}
+          height={VIDEO_HEIGHT}
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
     </div>
   );
 }
