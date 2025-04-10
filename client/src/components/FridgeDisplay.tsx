@@ -1,3 +1,4 @@
+import screensaverImage from "@/assets/screen-saver.png";
 import { Dialog } from "@/components/Dialog";
 import LogHeader from "@/components/headers/LogHeader";
 import MainHeader from "@/components/headers/MainHeader";
@@ -29,21 +30,31 @@ function Screensaver({ isActive }: { isActive: boolean }) {
     <div
       style={{
         position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "#1c1c1c",
-        opacity: isActive ? 1 : 0,
-        transition: "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)", // quick pop transition for both on/off
+        top: -1,
+        left: -1,
+        right: -1,
+        bottom: -1,
         pointerEvents: isActive ? "auto" : "none",
         zIndex: 10,
-        borderRadius: "0.375rem",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        borderRadius: "inherit",
+        overflow: "hidden",
         background: "linear-gradient(145deg, #232323 0%, #171717 100%)",
+        border: "none",
+        outline: "none",
+        transform: "translateZ(0)",
       }}
     >
-      <div className="w-full h-full flex items-center justify-center" />
+      <div className="w-full h-full flex items-center justify-center relative">
+        <img
+          src={screensaverImage}
+          alt="화면보호기"
+          className="w-full h-full object-cover"
+          style={{
+            borderRadius: "inherit",
+            border: "none",
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -100,9 +111,12 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
         <PageContext value={pageContextValue}>
           <div
             ref={displayRef}
-            className="overflow-hidden flex flex-col rounded shadow border relative w-full h-full bg-background text-foreground border-border text-base"
+            className="overflow-hidden flex flex-col rounded border relative w-full h-full bg-background text-foreground border-border text-base"
             style={{
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              transition:
+                "transform 0.5s cubic-bezier(0.2, 0, 0, 1), filter 0.5s cubic-bezier(0.2, 0, 0, 1)",
+              transform: isScreensaverActive ? "scale(0.98)" : "scale(1)",
+              // filter: isScreensaverActive ? "brightness(0.7)" : "brightness(1.05)",
             }}
           >
             {/* Header Section */}
@@ -135,7 +149,9 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
                 width: "100%",
                 height: "100%",
                 opacity: isScreensaverActive ? 1 : 0,
-                transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: isScreensaverActive
+                  ? "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)" // Quick fade to black
+                  : "opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1)", // Dramatic fade-out with emphasis
                 pointerEvents: isScreensaverActive ? "auto" : "none",
                 zIndex: 100,
               }}
