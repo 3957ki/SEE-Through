@@ -67,7 +67,7 @@ function ShowcaseScreen() {
 
         {/* Right Area - Controls and Ingredient Table */}
         <div className="w-1/5 h-full flex flex-col relative ml-auto" style={{ gap: "2.5vh" }}>
-          <div className="h-1/3">
+          <div className="h-1/">
             <WebcamView
               onActivateScreensaver={activateScreensaver}
               onDeactivateScreensaver={deactivateScreensaver}
