@@ -4,6 +4,7 @@ import CommentDialog from "@/components/dialog/CommentDialog";
 import ShowcaseIngredient from "@/components/showcase/ShowcaseIngredient";
 import { useDialog } from "@/contexts/DialogContext";
 import Ingredient from "@/interfaces/Ingredient";
+import { speakWithOpenAIStreaming } from "@/lib/textToSpeech";
 import { useCurrentMember } from "@/queries/members";
 import { useOptimisticIngredientUpdates } from "@/queries/showcaseIngredients";
 import { DragEvent, useState } from "react";
@@ -66,6 +67,10 @@ export default function Table({ outsideIngredients }: TableProps) {
             } else {
               // 다른 모든 경우에 응답 메시지를 CommentDialog에 표시
               showDialog(<CommentDialog message={messageText} danger={data.danger === true} />);
+
+              // OpenAI TTS로 메시지 읽기
+              const voiceType = currentMember?.age && currentMember.age < 12 ? "child" : "adult";
+              speakWithOpenAIStreaming(messageText, voiceType, data.danger === true);
             }
           },
         });
