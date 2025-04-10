@@ -123,6 +123,12 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
           <div
             ref={displayRef}
             className="overflow-hidden flex flex-col rounded border relative w-full h-full bg-background text-foreground border-border text-base"
+            style={{
+              transition:
+                "transform 0.5s cubic-bezier(0.2, 0, 0, 1), filter 0.5s cubic-bezier(0.2, 0, 0, 1)",
+              transform: isScreensaverActive ? "scale(0.98)" : "scale(1)",
+              // filter: isScreensaverActive ? "brightness(0.7)" : "brightness(1.05)",
+            }}
           >
             {/* Header Section */}
             <div className="w-full shrink-0 h-14 relative z-20">{headers[currentPage]}</div>
@@ -155,8 +161,8 @@ function FridgeDisplay({ ref, className = "", isScreensaverActive = false }: Fri
                 height: "100%",
                 opacity: isScreensaverActive ? 1 : 0,
                 transition: isScreensaverActive
-                  ? "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)" // Fast, sharp fade-in
-                  : "opacity 0.5s cubic-bezier(0.2, 0, 0, 1)", // Powerful fade-out with overshoot
+                  ? "opacity 0.25s cubic-bezier(0.4, 0, 1, 1)" // Quick fade to black
+                  : "opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1)", // Dramatic fade-out with emphasis
                 pointerEvents: isScreensaverActive ? "auto" : "none",
                 zIndex: 100,
               }}
