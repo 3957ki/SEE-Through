@@ -109,9 +109,9 @@ function Fridge({ insideIngredients, isActive }: FridgeProps) {
       case "01960e59-db82-7c6c-9fa9-6cf9339d17ab":
         return {
           bottom: "35%",
-          left: "60%",
+          left: "55%",
           zIndex: 2,
-          size: 15,
+          size: 20,
         };
       default:
         return {
