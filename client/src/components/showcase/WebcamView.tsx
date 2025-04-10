@@ -771,7 +771,10 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
 
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <div style={aspectRatioStyle} className="relative">
+      <div
+        style={aspectRatioStyle}
+        className="relative bg-white rounded-md shadow-md overflow-hidden"
+      >
         <video
           ref={videoRef}
           autoPlay
@@ -784,6 +787,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             height: "100%",
             top: 0,
             left: 0,
+            borderRadius: "0.375rem",
           }}
         />
         <canvas
@@ -796,6 +800,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             height: "100%",
             top: 0,
             left: 0,
+            borderRadius: "0.375rem",
           }}
         />
         <canvas
@@ -808,6 +813,7 @@ function WebcamView({ onActivateScreensaver, onDeactivateScreensaver }: WebcamVi
             height: "100%",
             top: 0,
             left: 0,
+            borderRadius: "0.375rem",
           }}
         />
       </div>
