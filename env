@@ -1,0 +1,6 @@
+DB_HOST=db
+DB_PORT=3306
+DB_URL=jdbc:postgresql://j12s002.p.ssafy.io:57829/see_through?currentSchema=public&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+DB_NAME=see_through
+DB_USERNAME=s002seethrough
+DB_PASSWORD=seethru002!

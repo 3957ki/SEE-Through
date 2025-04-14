@@ -1,6 +1,7 @@
 package com.example.seethroughapp.adapter;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,8 @@ import com.bumptech.glide.Glide;
 import com.example.seethroughapp.R;
 import com.example.seethroughapp.data.model.inoutlog.InOutLog;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class InOutLogAdapter extends RecyclerView.Adapter<InOutLogAdapter.InOutLogViewHolder>  {
@@ -34,6 +37,15 @@ public class InOutLogAdapter extends RecyclerView.Adapter<InOutLogAdapter.InOutL
     public void onBindViewHolder(InOutLogAdapter.InOutLogViewHolder holder, int position) {
         InOutLog inOutLog = inOutLogList.get(position);
 
+        String createdAd = inOutLog.getCreatedAt();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+            LocalDateTime dateTime = LocalDateTime.parse(createdAd, inputFormatter);
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 - a h시 mm분", java.util.Locale.KOREAN);
+            createdAd = dateTime.format(outputFormatter);
+        }
+
         if ("입고".equals(inOutLog.getMovementName()))
             holder.inOutTypeTextView.setTextColor(Color.parseColor("#2196F3"));
         else if ("출고".equals(inOutLog.getMovementName()))
@@ -41,7 +53,7 @@ public class InOutLogAdapter extends RecyclerView.Adapter<InOutLogAdapter.InOutL
         holder.ingredientTextView.setText(inOutLog.getIngredientName());
         holder.inOutTypeTextView.setText(inOutLog.getMovementName());
         holder.nameTextView.setText(inOutLog.getMemberName());
-        holder.inOutTimeTextView.setText(inOutLog.getCreatedAt());
+        holder.inOutTimeTextView.setText(createdAd);
         Glide.with(holder.itemView.getContext())
                 .load(inOutLog.getIngredientImagePath())
                 .into(holder.iconImageView);
